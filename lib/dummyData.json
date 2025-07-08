@@ -1,0 +1,86 @@
+{
+    "users": [
+        {
+            "id": "f1a1f8e2-1111-4f81-aaaa-000000000001",
+            "name": "Ahmad Rafi",
+            "role": "user",
+            "created_at": "2025-07-01T08:00:00Z"
+        },
+        {
+            "id": "f1a1f8e2-1111-4f81-bbbb-000000000002",
+            "name": "Dina Ayu",
+            "role": "manager",
+            "created_at": "2025-07-01T08:05:00Z"
+        },
+        {
+            "id": "f1a1f8e2-1111-4f81-cccc-000000000003",
+            "name": "Bagus Pratama",
+            "role": "admin",
+            "created_at": "2025-07-01T08:10:00Z"
+        }
+    ],
+    "attendances": [
+        {
+            "id": "a1a1a1a1-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "user_id": "f1a1f8e2-1111-4f81-aaaa-000000000001",
+            "date": "2025-07-08",
+            "check_in": "2025-07-08T08:02:00Z",
+            "check_out": "2025-07-08T17:01:00Z",
+            "notes": "Tepat waktu",
+            "created_at": "2025-07-08T17:05:00Z",
+            "status": "HADIR"
+        },
+        {
+            "id": "a1a1a1a1-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+            "user_id": "f1a1f8e2-1111-4f81-bbbb-000000000002",
+            "date": "2025-07-08",
+            "check_in": null,
+            "check_out": null,
+            "notes": "Izin",
+            "created_at": "2025-07-08T07:00:00Z",
+            "status": "IZIN"
+        }
+    ],
+    "permissions": [
+        {
+            "id": "p1p1p1p1-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "user_id": "f1a1f8e2-1111-4f81-bbbb-000000000002",
+            "type": "izin",
+            "start_date": "2025-07-08",
+            "end_date": "2025-07-08",
+            "reason": "Keperluan keluarga",
+            "status": "approved",
+            "created_at": "2025-07-07T15:00:00Z"
+        },
+        {
+            "id": "p1p1p1p1-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+            "user_id": "f1a1f8e2-1111-4f81-aaaa-000000000001",
+            "type": "cuti",
+            "start_date": "2025-07-10",
+            "end_date": "2025-07-12",
+            "reason": "Cuti tahunan",
+            "status": "pending",
+            "created_at": "2025-07-06T10:00:00Z"
+        }
+    ],
+    "schedules": [
+        {
+            "id": "s1s1s1s1-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "day": "senin",
+            "start_time": "08:00:00",
+            "end_time": "17:00:00"
+        },
+        {
+            "id": "s1s1s1s1-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+            "day": "selasa",
+            "start_time": "08:00:00",
+            "end_time": "17:00:00"
+        },
+        {
+            "id": "s1s1s1s1-cccc-cccc-cccc-cccccccccccc",
+            "day": "rabu",
+            "start_time": "08:00:00",
+            "end_time": "17:00:00"
+        }
+    ]
+}
