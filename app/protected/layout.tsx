@@ -23,6 +23,13 @@ export default function ProtectedLayout({
               </div>
               <Link href={"/"}>Mahative Studio</Link>
             </div>
+            <div className="flex items-center gap-2">
+              <Link href={"/protected/attendances"}>Attendance</Link>
+              <Link href={"/protected/schedule"}>Schedule</Link>
+              <Link href={"/protected/users"}>users</Link>
+              <Link href={"/protected/"}>Home</Link>
+              <Link href={"/protected/permissions"}>Permissions</Link>
+              </div>
             {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
           </div>
         </nav>

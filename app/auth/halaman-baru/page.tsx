@@ -3,14 +3,17 @@ import React from "react";
 export default function page() {
   return (
       <div className="flex min-h-screen bg-gradient-to-r from-fuchsia-500 to-indigo-500 relative overflow-hidden">
+
       {/* KIRI - ILUSTRASI */}
       <div className="hidden md:flex w-1/2 items-center justify-center relative">
+
         {/* Logo di atas */}
         <img
-          src="	https://siprakerin.com/assets/images/logo2.png"
+          src={'/logo1.png'}
           alt="SIPRAKERIN Logo"
           className="absolute top-8 left-8 w-14"
         />
+        
         {/* Gambar Ilustrasi */}
         <img
           src="https://siprakerin.com/assets/images/auth/login.svg"

@@ -5,15 +5,15 @@ const absensiData = attendance.attendances;
 
 export default function TabelAbsensi() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-blue-100 p-6">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl p-6">
-        <h1 className="text-3xl font-bold text-indigo-700 mb-6 border-b pb-3">
+    <div className="min-h-screen">
+      <div className="max-w-6xl mx-auto bg-zinc-900 rounded-2xl shadow-xl p-6">
+        <h1 className="text-3xl font-bold text-cyan-400 mb-6 border-b border-cyan-700 pb-3">
           Daftar Kehadiran Siswa
         </h1>
 
         <div className="overflow-x-auto rounded-xl shadow-sm">
           <table className="min-w-full table-auto border-collapse text-sm">
-            <thead className="bg-indigo-600 text-white uppercase text-xs">
+            <thead className="bg-cyan-700 text-white uppercase text-xs">
               <tr>
                 <th className="px-4 py-3 text-left">Nama</th>
                 <th className="px-4 py-3 text-left">Tanggal</th>
@@ -23,35 +23,35 @@ export default function TabelAbsensi() {
                 <th className="px-4 py-3 text-left">Status</th>
               </tr>
             </thead>
-            <tbody className="text-gray-700">
+            <tbody>
               {absensiData.map((item, index) => (
                 <tr
                   key={index}
-                  className="hover:bg-indigo-50 transition-all border-b"
+                  className="hover:bg-zinc-800 transition-all border-b border-zinc-700"
                 >
-                  <td className="px-4 py-3 font-medium">
+                  <td className="px-4 py-3 font-medium text-white">
                     {item.nama || "Tanpa Nama"}
                   </td>
-                  <td className="px-4 py-3">{item.date}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-white">{item.date}</td>
+                  <td className="px-4 py-3 text-white">
                     {item.check_in
                       ? new Date(item.check_in).toLocaleTimeString()
                       : "-"}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-white">
                     {item.check_out
                       ? new Date(item.check_out).toLocaleTimeString()
                       : "-"}
                   </td>
-                  <td className="px-4 py-3">{item.notes}</td>
+                  <td className="px-4 py-3 text-zinc-200">{item.notes}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${
                         item.status === "HADIR"
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-green-200 text-green-800"
                           : item.status === "IZIN"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-600"
+                          ? "bg-yellow-200 text-yellow-800"
+                          : "bg-red-300 text-red-800"
                       }`}
                     >
                       {item.status}
