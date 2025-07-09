@@ -3,6 +3,8 @@ import data from "@/lib/dummyData.json";
 import { LucidePencil, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { Schedule } from '@/lib/type';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
+import { redirect } from 'next/navigation';
 
 const page = async () => {
     // const dummyData = data
@@ -10,6 +12,10 @@ const page = async () => {
     const { data, error } = await supabase
         .from('schedules')
         .select('*');
+
+    if (error) {
+        redirect("/auth/login");
+    }
     return (
         <div className=" rounded-2xl shadow-lg dark:shadow-white/20 p-8">
             <div className="mb-6 flex items-center justify-between">
@@ -21,7 +27,7 @@ const page = async () => {
 
             <div className="overflow-x-auto rounded-lg   border border-gray-200">
                 <table className="min-w-full text-sm ">
-                    <thead className="bg-inherit text-xs uppercase tracking-wide">
+                    <thead className="bg-blue-600 text-white text-xs uppercase tracking-wide">
                         <tr>
                             <th className="px-6 py-4 text-left">No</th>
                             <th className="px-6 py-4 text-left">Hari</th>
