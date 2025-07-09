@@ -2,7 +2,7 @@ import React from "react";
 
 export default function page() {
   return (
-       <div className="flex min-h-screen bg-gradient-to-r from-fuchsia-500 to-indigo-500 relative overflow-hidden">
+      <div className="flex min-h-screen bg-gradient-to-r from-fuchsia-500 to-indigo-500 relative overflow-hidden">
       {/* KIRI - ILUSTRASI */}
       <div className="hidden md:flex w-1/2 items-center justify-center relative">
         {/* Logo di atas */}
@@ -24,21 +24,21 @@ export default function page() {
         <div className="w-full max-w-md">
           <h2 className="text-3xl font-bold text-indigo-700 mb-2">SIGN IN</h2>
           <p className="text-sm text-gray-600 mb-6">
-            Masukkan Email, Username, NISN, NIP, atau No. Telp dan password untuk login
+            Masukkan Username dan password untuk login
           </p>
           <form className="space-y-4">
             <div>
               <input
                 type="text"
-                placeholder="Email, Username, NISN, NIP, atau No. Telp"
-                className="w-full px-4 py-3 bg-white border border-indigo-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                placeholder="Username"
+                className="w-full px-4 py-3 bg-white border border-indigo-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
               />
             </div>
             <div>
               <input
                 type="password"
                 placeholder="Masukkan Password"
-                className="w-full px-4 py-3 bg-white border border-indigo-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full px-4 py-3 bg-white border border-indigo-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-black"
               />
             </div>
             <button

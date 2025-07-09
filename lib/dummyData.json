@@ -20,26 +20,38 @@
         }
     ],
     "attendances": [
-        {
-            "id": "a1a1a1a1-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "user_id": "f1a1f8e2-1111-4f81-aaaa-000000000001",
-            "date": "2025-07-08",
-            "check_in": "2025-07-08T08:02:00Z",
-            "check_out": "2025-07-08T17:01:00Z",
-            "notes": "Tepat waktu",
-            "created_at": "2025-07-08T17:05:00Z",
-            "status": "HADIR"
-        },
-        {
-            "id": "a1a1a1a1-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
-            "user_id": "f1a1f8e2-1111-4f81-bbbb-000000000002",
-            "date": "2025-07-08",
-            "check_in": null,
-            "check_out": null,
-            "notes": "Izin",
-            "created_at": "2025-07-08T07:00:00Z",
-            "status": "IZIN"
-        }
+         {
+      "nama": "Muhammad Arya Dwi Darmawan",
+      "date": "2025-07-08",
+      "check_in": "2025-07-08T08:02:00Z",
+      "check_out": "2025-07-08T17:01:00Z",
+      "notes": "Tepat waktu",
+      "status": "HADIR"
+    },
+    {
+      "nama": "Rizki Maulana",
+      "date": "2025-07-08",
+      "check_in": null,
+      "check_out": null,
+      "notes": "Izin ke dokter",
+      "status": "IZIN"
+    },
+     {
+      "nama": "Hazael",
+      "date": "2025-07-08",
+      "check_in": null,
+      "check_out": null,
+      "notes": "Main Ps",
+      "status": "ALPA"
+    },
+    {
+      "nama": "Cukurukuk",
+      "date": "2025-07-08",
+      "check_in": null,
+      "check_out": null,
+      "notes": "Mbanteng",
+      "status": "ALPA"
+    }
     ],
     "permissions": [
         {
