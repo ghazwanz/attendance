@@ -11,11 +11,11 @@ export default function TabelAbsensi() {
           📋 Tabel Kehadiran
         </h1>
         <p className="text-gray-400 mb-5 text-sm">
-          Data kehadiran siswa secara keseluruhan
+          Data kehadiran karyawan secara keseluruhan
         </p>
 
         <div className="overflow-x-auto rounded-xl">
-          <table className="min-w-full table-auto text-sm text-white border-separate border-spacing-0">
+          <table className="min-w-full table-auto text-sm text-white border-separate border-spacing-y-3">
             <thead>
               <tr className="bg-blue-600 text-white text-xs uppercase">
                 <th className="py-3 px-4 rounded-tl-lg">NO</th>
@@ -24,7 +24,7 @@ export default function TabelAbsensi() {
                 <th className="py-3 px-4">Check-in</th>
                 <th className="py-3 px-4">Check-out</th>
                 <th className="py-3 px-4">Keterangan</th>
-                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 rounded-tr-lg">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -33,7 +33,7 @@ export default function TabelAbsensi() {
                   key={index}
                   className={`${
                     index % 2 === 0 ? "bg-[#0f0f0f]" : "bg-[#111827]"
-                  } border-b border-white/10 transition`}
+                  } transition rounded-xl shadow-md`}
                 >
                   <td className="py-3 px-4 font-semibold">{index + 1}</td>
                   <td className="py-3 px-4 font-semibold uppercase">
