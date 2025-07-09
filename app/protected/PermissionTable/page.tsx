@@ -5,15 +5,15 @@ const PermissionTable = () => {
   const { permissions } = data;
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-8">
-      <div className="max-w-6xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+    <div className="min-h-screen  px-4 py-8">
+      <div className="max-w-6xl mx-auto  p-6 rounded-2xl shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-6 text-blue-700">
           Surat Izin Tidak Masuk PKL
         </h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left border-separate border-spacing-y-2">
             <thead>
-              <tr className="bg-blue-600 text-white text-sm uppercase tracking-wider">
+              <tr className="bg-blue-600  text-sm uppercase tracking-wider">
                 <th className="px-4 py-3 rounded-l-xl">Tanggal Mulai</th>
                 <th className="px-4 py-3">Tanggal Selesai</th>
                 <th className="px-4 py-3">Jenis</th>
@@ -26,7 +26,7 @@ const PermissionTable = () => {
               {permissions.map((item) => (
                 <tr
                   key={item.id}
-                  className="bg-white rounded-xl shadow-sm hover:bg-gray-50 transition"
+                  className=" rounded-xl shadow-sm transition"
                 >
                   <td className="px-4 py-3 rounded-l-xl">{item.start_date}</td>
                   <td className="px-4 py-3">{item.end_date}</td>
