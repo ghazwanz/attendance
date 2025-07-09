@@ -28,7 +28,7 @@ export default function ProtectedLayout({
               <Link href={"/protected/schedule"}>Schedule</Link>
               <Link href={"/protected/users"}>users</Link>
               <Link href={"/protected/"}>Home</Link>
-              <Link href={"/protected/permissions"}>Permissions</Link>
+              <Link href={"/protected/permission"}>Permission</Link>
               </div>
             {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
           </div>
