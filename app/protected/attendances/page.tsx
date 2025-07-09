@@ -7,13 +7,13 @@ export default function TabelAbsensi() {
   return (
     <div className="min-h-screen">
       <div className="max-w-6xl mx-auto bg-zinc-900 rounded-2xl shadow-xl p-6">
-        <h1 className="text-3xl font-bold text-cyan-400 mb-6 border-b border-cyan-700 pb-3">
+        <h1 className="text-3xl font-bold text-blue-500 mb-6 border-b border-indigo-500 pb-3">
           Daftar Kehadiran Siswa
         </h1>
 
         <div className="overflow-x-auto rounded-xl shadow-sm">
           <table className="min-w-full table-auto border-collapse text-sm">
-            <thead className="bg-cyan-700 text-white uppercase text-xs">
+            <thead className="bg-indigo-500 text-white uppercase text-xs">
               <tr>
                 <th className="px-4 py-3 text-left">Nama</th>
                 <th className="px-4 py-3 text-left">Tanggal</th>
@@ -27,7 +27,7 @@ export default function TabelAbsensi() {
               {absensiData.map((item, index) => (
                 <tr
                   key={index}
-                  className="hover:bg-zinc-800 transition-all border-b border-zinc-700"
+                  className="hover:bg-zinc-800 transition-all border-b border-indigo-500"
                 >
                   <td className="px-4 py-3 font-medium text-white">
                     {item.nama || "Tanpa Nama"}
