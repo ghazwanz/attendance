@@ -5,7 +5,7 @@ import { LucidePencil, Trash2 } from 'lucide-react';
 const page = () => {
   const dummyData = data
   return (
-    <div className=" rounded-2xl dark:bg-black shadow-lg shadow-white/20 p-8">
+    <div className=" rounded-2xl shadow-lg dark:shadow-white/20 p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold">📋 Tabel User</h2>
@@ -13,9 +13,9 @@ const page = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <div className="overflow-x-auto rounded-lg   border border-gray-200">
         <table className="min-w-full text-sm ">
-          <thead className="bg-muted text-xs uppercase tracking-wide">
+          <thead className="bg-inherit text-xs uppercase tracking-wide">
             <tr>
               <th className="px-6 py-4 text-left">No</th>
               <th className="px-6 py-4 text-left">Nama</th>
@@ -28,7 +28,7 @@ const page = () => {
             {dummyData.users.map((user, index) => (
               <tr
                 key={user.id}
-                className={`${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : ' bg-gray-50 dark:bg-gray-900'
+                className={`${index % 2 === 0 ? 'bg-white dark:bg-inherit' : ' bg-gray-50 dark:bg-gray-900'
                   } border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
               >
                 <td className="px-6 py-4 font-medium">{index + 1}</td>
