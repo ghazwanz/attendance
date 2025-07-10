@@ -1,9 +1,20 @@
-import React from 'react'
-import data from "@/lib/dummyData.json";
+// 'use client'
+// import React, { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/server';
 import { LucidePencil, Trash2 } from 'lucide-react';
+import { User } from '@/lib/type';
+import { redirect } from 'next/navigation';
 
-const page = () => {
-  const dummyData = data
+const page = async () => {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+          .from('users')
+          .select('*');
+  
+      if (error) {
+          redirect("/auth/login");
+      }
+
   return (
     <div className=" rounded-2xl shadow-lg dark:shadow-white/20 p-8">
       <div className="mb-6 flex items-center justify-between">
@@ -25,49 +36,51 @@ const page = () => {
             </tr>
           </thead>
           <tbody>
-            {dummyData.users.map((user, index) => (
-              <tr
-                key={user.id}
-                className={`${index % 2 === 0 ? 'bg-white dark:bg-inherit' : ' bg-gray-50 dark:bg-gray-900'
-                  } border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
-              >
-                <td className="px-6 py-4 font-medium">{index + 1}</td>
-                <td className="px-6 py-4">{user.name}</td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`px-3 py-1 text-xs font-semibold rounded-full ${(user.role === 'admin' || user.role === 'manager')
-                        ? 'bg-red-100 text-red-600'
-                        : 'bg-blue-100 text-blue-600'
-                      }`}
-                  >
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  {new Date(user.created_at).toLocaleDateString('id-ID')}
-                </td>
-                <td className="px-6 py-4 space-x-2">
-                  <button
-                    className="inline-flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-full text-xs transition"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Hapus
-                  </button>
-                  <button
-                    className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-600 hover:bg-yellow-200 px-3 py-1.5 rounded-full text-xs transition"
-                  >
-                    <LucidePencil className="w-4 h-4" />
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {dummyData.users.length === 0 && (
+
+           {data.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-center text-gray-400 py-6">
                   Tidak ada data pengguna.
                 </td>
               </tr>
+            ) : (
+              data.map((user, index) => (
+                <tr
+                  key={user.id}
+                  className={`${index % 2 === 0 ? 'bg-white dark:bg-inherit' : ' bg-gray-50 dark:bg-gray-900'
+                    } border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
+                >
+                  <td className="px-6 py-4 font-medium">{index + 1}</td>
+                  <td className="px-6 py-4">{user.name}</td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-3 py-1 text-xs font-semibold rounded-full ${(user.role === 'admin')
+                          ? 'bg-red-100 text-red-600'
+                          : 'bg-blue-100 text-blue-600'
+                        }`}
+                    >
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {new Date(user.created_at).toLocaleDateString('id-ID')}
+                  </td>
+                  <td className="px-6 py-4 space-x-2">
+                    <button
+                      className="inline-flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-full text-xs transition"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Hapus
+                    </button>
+                    <button
+                      className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-600 hover:bg-yellow-200 px-3 py-1.5 rounded-full text-xs transition"
+                    >
+                      <LucidePencil className="w-4 h-4" />
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
