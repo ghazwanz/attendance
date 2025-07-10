@@ -7,13 +7,16 @@ const absensiData = attendance.attendances;
 export default async function TabelAbsensi() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from('attendances')
-    .select(`
+    .from("attendances")
+    .select(
+      `
     *,
     users(
       name
     )
-  `)
+  `
+    );
+
   return (
     <div className="flex items-center justify-center bg-transparent py-10 px-4">
       <div className="max-w-6xl w-full rounded-2xl shadow-lg dark:shadow-white/20 p-6 border border-white/20">
@@ -25,7 +28,7 @@ export default async function TabelAbsensi() {
         </p>
 
         <div className="overflow-x-auto rounded-xl">
-          <table className="min-w-full table-auto text-sm  border-separate border-spacing-y-3">
+          <table className="min-w-full table-auto text-sm border-separate border-spacing-y-3">
             <thead>
               <tr className="bg-blue-600 text-white text-xs uppercase">
                 <th className="py-3 px-4 rounded-tl-lg">NO</th>
@@ -39,15 +42,18 @@ export default async function TabelAbsensi() {
             </thead>
             <tbody>
               {data?.map((item, index) => (
-                // console.log(item),
                 <tr
                   key={item.id}
-                  className={`${index % 2 === 0 ? 'bg-white dark:bg-inherit' : ' bg-gray-50 dark:bg-gray-900'
-                    } border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
+                  className={`transition duration-150
+                    ${index % 2 === 0
+                      ? "bg-white dark:bg-[#1e293b]"
+                      : "bg-blue-50 dark:bg-[#0f172a]"
+                    }
+                    hover:bg-gray-100 dark:hover:bg-gray-700`}
                 >
                   <td className="py-3 px-4 font-semibold">{index + 1}</td>
                   <td className="py-3 px-4 font-semibold uppercase">
-                    {item.users.name || "Tanpa Nama"}
+                    {item.users?.name || "Tanpa Nama"}
                   </td>
                   <td className="py-3 px-4">{item.date}</td>
                   <td className="py-3 px-4">
@@ -64,15 +70,16 @@ export default async function TabelAbsensi() {
                         : "-"}
                     </span>
                   </td>
-                  <td className="py-3 px-4">{item.notes}</td>
+                  <td className="py-3 px-4">{item.notes || "-"}</td>
                   <td className="py-3 px-4">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${item.status === "HADIR"
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        item.status === "HADIR"
                           ? "bg-green-200 text-green-800"
                           : item.status === "IZIN"
-                            ? "bg-yellow-200 text-yellow-800"
-                            : "bg-red-300 text-red-800"
-                        }`}
+                          ? "bg-yellow-200 text-yellow-800"
+                          : "bg-red-300 text-red-800"
+                      }`}
                     >
                       {item.status}
                     </span>
