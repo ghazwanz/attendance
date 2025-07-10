@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 
     const supabase = await createClient();
     const { data, error } = await supabase
-      .from('permisssions')
+      .from('permissions')
       .select("*")
 
   return (
