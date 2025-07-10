@@ -6,10 +6,10 @@ const PermissionTable = () => {
 
   return (
     <div className="min-h-screen  px-4 py-8">
-      <div className="max-w-6xl mx-auto  p-6 rounded-2xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-6 text-blue-700">
+      <div className="max-w-6xl w-full bg-[#0f0f0f] rounded-2xl shadow-[0_0_30px_3px_rgba(255,255,255,0.1)] p-6 border border-white/20">
+        <h1 className="text-3xl font-bold text-center mb-6 text-white">
           Surat Izin Tidak Masuk PKL
-        </h2>
+        </h1>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left border-separate border-spacing-y-2">
             <thead>
@@ -20,8 +20,8 @@ const PermissionTable = () => {
                 <th className="px-4 py-3">Alasan</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 rounded-r-xl">Dibuat Pada</th>
-              </tr>
-            </thead>
+              </tr>             
+            </thead> 
             <tbody>
               {permissions.map((item) => (
                 <tr
