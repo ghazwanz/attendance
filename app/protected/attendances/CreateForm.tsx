@@ -14,7 +14,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
   const [attendanceId, setAttendanceId] = useState<number | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString()
 
   useEffect(() => {
     const init = async () => {
@@ -44,7 +44,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
 
   const handleCheckIn = async (e: any) => {
     e.preventDefault();
-    const now = new Date().toTimeString().split(" ")[0];
+    const now = new Date().toISOString();
 
     const { error, data } = await supabase
       .from("attendances")
@@ -146,7 +146,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
             : "bg-blue-600 hover:bg-blue-700"
         }`}
       >
-        {hasCheckedIn ? "💾 Simpan Absensi Pulang" : "💾 Simpan Absensi Masuk"}
+        💾 {hasCheckedIn ? "Absensi Pulang" : "Simpan Absensi Masuk"}
       </button>
     </form>
   );
