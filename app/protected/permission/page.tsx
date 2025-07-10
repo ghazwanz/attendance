@@ -2,13 +2,20 @@ import React from "react";
 // import datas from "@/lib/dummyData.json";
 import { createClient } from "@/lib/supabase/server";
 
- export default async function PermissionTable () {
+export default async function PermissionTable() {
   // const { permissions } = data;
 
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('permisssions')
-      .select("*")
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('permissions')
+    .select(
+      `
+    *,
+    users(
+      name
+    ) 
+  `
+    );
 
   return (
     <div className="flex items-center justify-center bg-transparent py-10 px-4">
@@ -33,22 +40,21 @@ import { createClient } from "@/lib/supabase/server";
               </tr>
             </thead>
             <tbody>
-              {data?.map((item,index) => (
+              {data?.map((item, index) => (
                 <tr key={index} className=" text-white-800 rounded-xl shadow-sm transition">
-                  <td className="px-4 py-3 rounded-l-xl">{item.id}</td>
+                  <td className="px-4 py-3 rounded-l-xl">{item.users.name}</td>
                   <td className="px-4 py-3">{item.start_date}</td>
                   <td className="px-4 py-3">{item.end_date}</td>
                   <td className="px-4 py-3 capitalize">{item.type}</td>
                   <td className="px-4 py-3">{item.reason}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                        item.status === "approved"
+                      className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${item.status === "approved"
                           ? "bg-green-100 text-green-700"
                           : item.status === "rejected"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
+                            ? "bg-red-100 text-red-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
                     >
                       {item.status}
                     </span>
@@ -76,4 +82,4 @@ import { createClient } from "@/lib/supabase/server";
   );
 };
 
-  
+
