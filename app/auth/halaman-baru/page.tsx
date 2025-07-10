@@ -9,7 +9,7 @@ export default function page() {
         {/* Logo */}
         <img
           src="/logo1.png"
-          alt="SIPRAKERIN Logo"
+          alt="MAHATIVE Logo"
           className="absolute top-8 left-8 w-14"
         />
 

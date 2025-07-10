@@ -1,58 +1,78 @@
 import React from "react";
 import attendance from "@/lib/dummyData.json";
+import { createClient } from "@/lib/supabase/server";
 
 const absensiData = attendance.attendances;
 
-export default function TabelAbsensi() {
+export default async function TabelAbsensi() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('attendances')
+    .select(`
+    *,
+    users(
+      name
+    )
+  `)
   return (
-    <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto bg-zinc-900 rounded-2xl shadow-xl p-6">
-        <h1 className="text-3xl font-bold text-blue-500 mb-6 border-b border-indigo-500 pb-3">
-          Daftar Kehadiran Siswa
+    <div className="flex items-center justify-center bg-transparent py-10 px-4">
+      <div className="max-w-6xl w-full rounded-2xl shadow-lg dark:shadow-white/20 p-6 border border-white/20">
+        <h1 className="text-3xl font-bold mt-1 items-center gap-2 mb-1">
+          📋 Tabel Kehadiran
         </h1>
+        <p className="text-gray-500 mt-1 mb-5 text-sm">
+          Data kehadiran karyawan secara keseluruhan
+        </p>
 
-        <div className="overflow-x-auto rounded-xl shadow-sm">
-          <table className="min-w-full table-auto border-collapse text-sm">
-            <thead className="bg-indigo-500 text-white uppercase text-xs">
-              <tr>
-                <th className="px-4 py-3 text-left">Nama</th>
-                <th className="px-4 py-3 text-left">Tanggal</th>
-                <th className="px-4 py-3 text-left">Check-in</th>
-                <th className="px-4 py-3 text-left">Check-out</th>
-                <th className="px-4 py-3 text-left">Keterangan</th>
-                <th className="px-4 py-3 text-left">Status</th>
+        <div className="overflow-x-auto rounded-xl">
+          <table className="min-w-full table-auto text-sm  border-separate border-spacing-y-3">
+            <thead>
+              <tr className="bg-blue-600 text-white text-xs uppercase">
+                <th className="py-3 px-4 rounded-tl-lg">NO</th>
+                <th className="py-3 px-4">Nama</th>
+                <th className="py-3 px-4">Tanggal</th>
+                <th className="py-3 px-4">Check-in</th>
+                <th className="py-3 px-4">Check-out</th>
+                <th className="py-3 px-4">Keterangan</th>
+                <th className="py-3 px-4 rounded-tr-lg">Status</th>
               </tr>
             </thead>
             <tbody>
-              {absensiData.map((item, index) => (
+              {data?.map((item, index) => (
+                // console.log(item),
                 <tr
-                  key={index}
-                  className="hover:bg-zinc-800 transition-all border-b border-indigo-500"
+                  key={item.id}
+                  className={`${index % 2 === 0 ? 'bg-white dark:bg-inherit' : ' bg-gray-50 dark:bg-gray-900'
+                    } border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
                 >
-                  <td className="px-4 py-3 font-medium text-white">
-                    {item.nama || "Tanpa Nama"}
+                  <td className="py-3 px-4 font-semibold">{index + 1}</td>
+                  <td className="py-3 px-4 font-semibold uppercase">
+                    {item.users.name || "Tanpa Nama"}
                   </td>
-                  <td className="px-4 py-3 text-white">{item.date}</td>
-                  <td className="px-4 py-3 text-white">
-                    {item.check_in
-                      ? new Date(item.check_in).toLocaleTimeString()
-                      : "-"}
+                  <td className="py-3 px-4">{item.date}</td>
+                  <td className="py-3 px-4">
+                    <span className="bg-yellow-300 text-black px-3 py-1 rounded-full font-mono text-xs">
+                      {item.check_in
+                        ? new Date(item.check_in).toLocaleTimeString()
+                        : "-"}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 text-white">
-                    {item.check_out
-                      ? new Date(item.check_out).toLocaleTimeString()
-                      : "-"}
+                  <td className="py-3 px-4">
+                    <span className="bg-blue-200 text-blue-800 px-3 py-1 rounded-full font-mono text-xs">
+                      {item.check_out
+                        ? new Date(item.check_out).toLocaleTimeString()
+                        : "-"}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 text-zinc-200">{item.notes}</td>
-                  <td className="px-4 py-3">
+                  <td className="py-3 px-4">{item.notes}</td>
+                  <td className="py-3 px-4">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        item.status === "HADIR"
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${item.status === "HADIR"
                           ? "bg-green-200 text-green-800"
                           : item.status === "IZIN"
-                          ? "bg-yellow-200 text-yellow-800"
-                          : "bg-red-300 text-red-800"
-                      }`}
+                            ? "bg-yellow-200 text-yellow-800"
+                            : "bg-red-300 text-red-800"
+                        }`}
                     >
                       {item.status}
                     </span>
