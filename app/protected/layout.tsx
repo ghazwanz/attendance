@@ -28,7 +28,7 @@ export default function ProtectedLayout({
 
             {/* Logo & Brand */}
             <div className="flex items-center gap-3">
-              <Image src="/logo1.png" width={32} height={32} alt="Logo" />
+              <Image src="/logo1.png" width={32} height={32} className="dark:invert-0 invert" alt="Logo" />
               <span className="font-semibold text-lg tracking-wide">
                 Mahative Studio
               </span>
