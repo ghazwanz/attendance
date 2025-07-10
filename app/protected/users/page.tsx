@@ -1,9 +1,10 @@
 // 'use client'
 // import React, { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/server';
-import { LucidePencil, Trash2 } from 'lucide-react';
+import { LucidePencil, Plus, Trash2 } from 'lucide-react';
 import { User } from '@/lib/type';
-import { redirect } from 'next/navigation';
+import { redirect} from 'next/navigation';
+import Link from 'next/link';
 
 const page = async () => {
       const supabase = await createClient();
@@ -14,7 +15,6 @@ const page = async () => {
       if (error) {
           redirect("/auth/login");
       }
-
   return (
     <div className=" rounded-2xl shadow-lg dark:shadow-white/20 p-8">
       <div className="mb-6 flex items-center justify-between">
@@ -22,7 +22,15 @@ const page = async () => {
           <h2 className="text-3xl font-bold">📋 Tabel User</h2>
           <p className="text-gray-500 mt-1">Data pengguna yang terdaftar di sistem</p>
         </div>
+        <Link
+      href="input_user"
+      className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium">
+      <Plus className="w-4 h-4" />
+      Tambah Pengguna
+      </Link>
       </div>
+
+      
 
       <div className="overflow-x-auto rounded-lg   border border-gray-200">
         <table className="min-w-full text-sm ">
