@@ -9,6 +9,9 @@ export default function Page() {
   const supabase = createClient();
   const [data, setData] = useState<any[]>([]);
   const [selected, setSelected] = useState<any | null>(null);
+  const [checkoutItem, setCheckoutItem] = useState<any | null>(null);
+  const [deleteItem, setDeleteItem] = useState<any | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const fetchData = async () => {
     const { data, error } = await supabase
@@ -21,9 +24,22 @@ export default function Page() {
     fetchData();
   }, []);
 
+  const showSuccessToast = (message: string) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
   return (
     <div className="min-h-screen py-10 px-4 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
       <div className="max-w-6xl mx-auto space-y-10">
+        {/* Notifikasi Berhasil */}
+        {successMessage && (
+          <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="bg-green-600 text-white text-sm px-5 py-3 rounded-xl shadow-lg animate-bounce">
+              ✅ {successMessage}
+            </div>
+          </div>
+        )}
 
         {/* Judul Halaman */}
         <div className="text-center">
@@ -36,7 +52,12 @@ export default function Page() {
         {/* Form Absensi */}
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
           <h2 className="text-xl font-semibold mb-4">📝 Form Absensi</h2>
-          <CreateForm onRefresh={fetchData} />
+          <CreateForm
+            onRefresh={() => {
+              fetchData();
+              showSuccessToast("Absensi masuk berhasil disimpan!");
+            }}
+          />
         </div>
 
         {/* Tabel Kehadiran */}
@@ -67,10 +88,12 @@ export default function Page() {
                     } hover:bg-gray-100 dark:hover:bg-slate-600`}
                   >
                     <td className="py-2 px-4">{i + 1}</td>
-                    <td className="py-2 px-4 uppercase">{item.users?.name || "Tanpa Nama"}</td>
+                    <td className="py-2 px-4 uppercase">
+                      {item.users?.name || "Tanpa Nama"}
+                    </td>
                     <td className="py-2 px-4">{item.date}</td>
                     <td className="py-2 px-4">
-                      <span className="bg-yellow-200 text-yellow-900 px-2 py-1 rounded-full font-mono text-xs">
+                      <span className="text-yellow-400 font-mono text-sm">
                         {item.check_in
                           ? new Date(item.check_in).toLocaleTimeString([], {
                               hour: "2-digit",
@@ -81,7 +104,7 @@ export default function Page() {
                       </span>
                     </td>
                     <td className="py-2 px-4">
-                      <span className="bg-blue-200 text-blue-900 px-2 py-1 rounded-full font-mono text-xs">
+                      <span className="text-blue-400 font-mono text-sm">
                         {item.check_out
                           ? new Date(item.check_out).toLocaleTimeString([], {
                               hour: "2-digit",
@@ -94,23 +117,37 @@ export default function Page() {
                     <td className="py-2 px-4">{item.notes || "-"}</td>
                     <td className="py-2 px-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        className={`text-sm font-semibold ${
                           item.status === "HADIR"
-                            ? "bg-green-200 text-green-800"
+                            ? "text-green-400"
                             : item.status === "IZIN"
-                            ? "bg-yellow-200 text-yellow-800"
-                            : "bg-red-200 text-red-800"
+                            ? "text-yellow-400"
+                            : "text-red-400"
                         }`}
                       >
                         {item.status}
                       </span>
                     </td>
-                    <td className="py-2 px-4">
+                    <td className="py-2 px-4 space-x-2 flex flex-wrap gap-2">
+                      {!item.check_out && (
+                        <button
+                          onClick={() => setCheckoutItem(item)}
+                          className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                        >
+                          🕒 Pulang
+                        </button>
+                      )}
                       <button
                         onClick={() => setSelected(item)}
-                        className="text-blue-600 hover:underline font-medium"
+                        className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                       >
-                        Edit
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteItem(item)}
+                        className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                      >
+                        🗑 Delete
                       </button>
                     </td>
                   </tr>
@@ -120,7 +157,7 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Modal Update */}
+        {/* Modal Edit */}
         {selected && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg max-w-md w-full relative">
@@ -136,8 +173,124 @@ export default function Page() {
                 onDone={() => {
                   setSelected(null);
                   fetchData();
+                  showSuccessToast("Absensi berhasil diperbarui!");
                 }}
               />
+            </div>
+          </div>
+        )}
+
+        {/* Modal Konfirmasi Pulang */}
+        {checkoutItem && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl max-w-md w-full relative transition-all">
+              <button
+                onClick={() => setCheckoutItem(null)}
+                className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-lg"
+              >
+                ✖
+              </button>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                🕒 Konfirmasi Absensi Pulang
+              </h2>
+              <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 mb-4">
+                <p><strong>👤 Nama:</strong> {checkoutItem.users?.name || "Tanpa Nama"}</p>
+                <p><strong>📅 Tanggal:</strong> {checkoutItem.date}</p>
+                <p><strong>⏰ Check-in:</strong> {checkoutItem.check_in ? new Date(checkoutItem.check_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-"}</p>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  📝 Catatan Kegiatan
+                </label>
+                <textarea
+                  rows={3}
+                  className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: Mengerjakan halaman dashboard dan integrasi API."
+                  onChange={(e) =>
+                    setCheckoutItem({
+                      ...checkoutItem,
+                      notes: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setCheckoutItem(null)}
+                  className="px-4 py-2 text-sm rounded-md bg-gray-300 dark:bg-slate-600 hover:bg-gray-400 dark:hover:bg-slate-500 text-black dark:text-white"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={async () => {
+                    const now = new Date().toISOString();
+                    const { error } = await supabase
+                      .from("attendances")
+                      .update({
+                        check_out: now,
+                        notes: checkoutItem.notes || null,
+                      })
+                      .eq("id", checkoutItem.id);
+
+                    if (!error) {
+                      setCheckoutItem(null);
+                      fetchData();
+                      showSuccessToast("Absensi pulang berhasil disimpan!");
+                    }
+                  }}
+                  className="px-4 py-2 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white font-semibold shadow"
+                >
+                  ✅ Konfirmasi Pulang
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Konfirmasi Hapus */}
+        {deleteItem && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl max-w-md w-full relative">
+              <button
+                onClick={() => setDeleteItem(null)}
+                className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-lg"
+              >
+                ✖
+              </button>
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 text-center">
+                🗑 Konfirmasi Hapus Data
+              </h2>
+              <p className="text-sm text-center text-gray-600 dark:text-gray-300 mb-6">
+                Apakah kamu yakin ingin menghapus data absensi milik{" "}
+                <strong>{deleteItem.users?.name || "Tanpa Nama"}</strong> pada{" "}
+                <strong>{deleteItem.date}</strong>?
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setDeleteItem(null)}
+                  className="px-4 py-2 text-sm rounded-md bg-gray-300 dark:bg-slate-600 hover:bg-gray-400 dark:hover:bg-slate-500 text-black dark:text-white"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={async () => {
+                    const { error } = await supabase
+                      .from("attendances")
+                      .delete()
+                      .eq("id", deleteItem.id);
+                    if (!error) {
+                      setData((prev) => prev.filter((d) => d.id !== deleteItem.id));
+                      showSuccessToast("Data absensi berhasil dihapus!");
+                      setDeleteItem(null);
+                    }
+                  }}
+                  className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white font-semibold shadow"
+                >
+                  ✅ Ya, Hapus
+                </button>
+              </div>
             </div>
           </div>
         )}
