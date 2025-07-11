@@ -27,6 +27,7 @@ export type Attendance = {
 export type Permission = {
     id: string;
     user_id: string;
+    users:{name: string}; // Reference to User
     type: "izin" | "cuti" | "sakit"; // Example permission types
     reason: string;
     start_date: string; // ISO 8601 format, e.g., "2023-10-01"

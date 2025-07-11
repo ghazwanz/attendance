@@ -1,75 +1,223 @@
-import React from "react";
-// import datas from "@/lib/dummyData.json";
-import { createClient } from "@/lib/supabase/server";
+'use client';
 
-export default async function PermissionTable() {
-  // const { permissions } = data;
+import React, { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Permission } from '@/lib/type';
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('permissions')
-    .select(
-      `
-    *,
-    users(
-      name
-    ) 
-  `
-    );
+export default function PermissionTable() {
+  const supabase = createClient();
+  const [data, setData] = useState<Permission[]>([]);
+  const [form, setForm] = useState({
+    user_id: '',
+    type: 'izin',
+    start_date: '',
+    end_date: '',
+    reason: '',
+  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = async () => {
+    const { data, error } = await supabase
+      .from('permissions')
+      .select('*, users(name)')
+      .order('created_at', { ascending: false });
+    if (!error) setData(data);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!form.user_id) return alert('User ID wajib diisi');
+    setLoading(true);
+
+    if (editingId) {
+      // Update mode
+      const { error } = await supabase
+        .from('permissions')
+        .update(form)
+        .eq('id', editingId);
+
+      if (!error) {
+        resetForm();
+        fetchData();
+      } else {
+        alert('Gagal update data');
+      }
+    } else {
+      // Create mode
+      const { error } = await supabase.from('permissions').insert({
+        ...form,
+        status: 'pending',
+      });
+
+      if (!error) {
+        resetForm();
+        fetchData();
+      } else {
+        alert('Gagal tambah data');
+      }
+    }
+
+    setLoading(false);
+  };
+
+  const handleEdit = (item:Permission) => {
+    setForm({
+      user_id: item.user_id,
+      type: item.type,
+      start_date: item.start_date,
+      end_date: item.end_date,
+      reason: item.reason,
+    });
+    setEditingId(item.id);
+  };
+
+  const resetForm = () => {
+    setForm({
+      user_id: '',
+      type: 'izin',
+      start_date: '',
+      end_date: '',
+      reason: '',
+    });
+    setEditingId(null);
+  };
 
   return (
-    <div className="flex items-center justify-center bg-transparent py-10 px-4">
-      <div className="max-w-6xl w-full rounded-2xl shadow-lg dark:shadow-white/20 p-6 border border-white/20">
-        <h1 className="text-3xl font-bold mt-1 items-center gap-2 mb-1">
-          📋 Tabel Izin
-        </h1>
-        <p className="text-gray-500 mt-1 mb-5 text-sm">
-          Data Izin karyawan secara keseluruhan
-        </p>
+    <div className="flex flex-col items-center justify-center py-10 px-4">
+      <div className="max-w-6xl w-full rounded-2xl shadow-lg p-6 border border-white/20">
+        <h1 className="text-3xl font-bold mb-2">📋 Tabel Izin</h1>
+
+        {/* FORM */}
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 bg-white/5 p-4 rounded-xl"
+        >
+          <input
+            type="text"
+            name="user_id"
+            placeholder="User ID"
+            value={form.user_id}
+            onChange={handleChange}
+            required
+            className="px-3 py-2 rounded bg-white/10 text-white border border-white/20"
+          />
+          <select
+            name="type"
+            value={form.type}
+            onChange={handleChange}
+            className="px-3 py-2 rounded bg-white/10 text-white border border-white/20"
+          >
+            <option value="izin">Izin</option>
+            <option value="cuti">Cuti</option>
+          </select>
+          <input
+            type="date"
+            name="start_date"
+            value={form.start_date}
+            onChange={handleChange}
+            required
+            className="px-3 py-2 rounded bg-white/10 text-white border border-white/20"
+          />
+          <input
+            type="date"
+            name="end_date"
+            value={form.end_date}
+            onChange={handleChange}
+            required
+            className="px-3 py-2 rounded bg-white/10 text-white border border-white/20"
+          />
+          <input
+            type="text"
+            name="reason"
+            placeholder="Alasan"
+            value={form.reason}
+            onChange={handleChange}
+            required
+            className="px-3 py-2 rounded bg-white/10 text-white border border-white/20 col-span-2"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+              disabled={loading}
+            >
+              {editingId ? 'Update' : 'Tambah'}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="text-sm text-gray-400 underline"
+              >
+                Batal Edit
+              </button>
+            )}
+          </div>
+        </form>
+
+        {/* TABEL */}
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm text-left border-separate border-spacing-y-2">
             <thead>
-              <tr className="bg-blue-600 text-white text-sm uppercase tracking-wider">
+              <tr className="bg-blue-600 text-white uppercase tracking-wider">
                 <th className="px-4 py-3 rounded-l-xl">Nama</th>
-                <th className="px-4 py-3">Tanggal Mulai</th>
-                <th className="px-4 py-3">Tanggal Selesai</th>
+                <th className="px-4 py-3">Mulai</th>
+                <th className="px-4 py-3">Selesai</th>
                 <th className="px-4 py-3">Jenis</th>
                 <th className="px-4 py-3">Alasan</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 rounded-r-xl">Dibuat Pada</th>
+                <th className="px-4 py-3">Dibuat</th>
+                <th className="px-4 py-3 rounded-r-xl">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {data?.map((item, index) => (
-                <tr key={index} className=" text-white-800 rounded-xl shadow-sm transition">
-                  <td className="px-4 py-3 rounded-l-xl">{item.users.name}</td>
+              {data?.map((item) => (
+                <tr key={item.id} className=" text-white rounded-xl shadow-sm">
+                  <td className="px-4 py-3 rounded-l-xl">{item.users?.name || '-'}</td>
                   <td className="px-4 py-3">{item.start_date}</td>
-                  <td className="px-4 py-3">{item.end_date}</td>
+                  <td className="px-4 py-3">{item.end_date}</td>    
                   <td className="px-4 py-3 capitalize">{item.type}</td>
                   <td className="px-4 py-3">{item.reason}</td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${item.status === "approved"
-                          ? "bg-green-100 text-green-700"
-                          : item.status === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
+                      className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+                        item.status === 'diterima'
+                          ? 'bg-green-100 text-green-700'
+                          : item.status === 'ditolak'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}
                     >
                       {item.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 rounded-r-xl">
-                    {new Date(item.created_at).toLocaleString("id-ID", {
-                      dateStyle: "short",
-                      timeStyle: "short",
+                  <td className="px-4 py-3">
+                    {new Date(item.created_at).toLocaleString('id-ID', {
+                      dateStyle: 'short',
+                      timeStyle: 'short',
                     })}
+                  </td>
+                  <td className="px-4 py-3 rounded-r-xl">
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="text-blue-600 hover:underline text-xs"
+                    >
+                      Edit
+                    </button>
                   </td>
                 </tr>
               ))}
               {data?.length === 0 && (
                 <tr>
-                  <td>
+                  <td colSpan={8} className="text-center text-gray-500 py-4">
                     Tidak ada data surat izin.
                   </td>
                 </tr>
@@ -80,6 +228,4 @@ export default async function PermissionTable() {
       </div>
     </div>
   );
-};
-
-
+}
