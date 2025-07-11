@@ -2,22 +2,53 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function UpdateForm({ attendance, onDone }: { attendance: any; onDone: () => void }) {
-  const [form, setForm] = useState(attendance);
+export default function UpdateForm({
+  attendance,
+  onDone,
+}: {
+  attendance: any;
+  onDone: () => void;
+}) {
   const supabase = createClient();
+  const [form, setForm] = useState({
+    ...attendance,
+    // pastikan hanya mengambil jam dari waktu check_in dan check_out
+    check_in: attendance.check_in
+      ? new Date(attendance.check_in).toTimeString().slice(0, 5)
+      : "",
+    check_out: attendance.check_out
+      ? new Date(attendance.check_out).toTimeString().slice(0, 5)
+      : "",
+  });
 
   const handleUpdate = async (e: any) => {
     e.preventDefault();
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
+    // gabungkan date + time untuk menghasilkan ISO timestamp
+    const checkInTime = form.check_in
+      ? new Date(`${form.date}T${form.check_in}:00`).toISOString()
+      : null;
+
+    const checkOutTime = form.check_out
+      ? new Date(`${form.date}T${form.check_out}:00`).toISOString()
+      : null;
+
     const { error } = await supabase
       .from("attendances")
-      .update(form)
+      .update({
+        date: form.date,
+        check_in: checkInTime,
+        check_out: checkOutTime,
+        notes: form.notes,
+        status: form.status,
+      })
       .eq("id", form.id);
 
-    if (error) alert(error.message);
+    if (error) alert("❌ " + error.message);
     else {
       alert("✅ Absensi berhasil diperbarui!");
       onDone();
@@ -33,7 +64,9 @@ export default function UpdateForm({ attendance, onDone }: { attendance: any; on
 
       {/* Tanggal */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">📅 Tanggal</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          📅 Tanggal
+        </label>
         <input
           type="date"
           value={form.date}
@@ -44,7 +77,9 @@ export default function UpdateForm({ attendance, onDone }: { attendance: any; on
 
       {/* Check In */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">🕐 Waktu Masuk</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          🕐 Waktu Masuk
+        </label>
         <input
           type="time"
           value={form.check_in}
@@ -55,7 +90,9 @@ export default function UpdateForm({ attendance, onDone }: { attendance: any; on
 
       {/* Check Out */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">🕔 Waktu Pulang</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          🕔 Waktu Pulang
+        </label>
         <input
           type="time"
           value={form.check_out}
@@ -66,7 +103,9 @@ export default function UpdateForm({ attendance, onDone }: { attendance: any; on
 
       {/* Keterangan */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">📝 Keterangan</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          📝 Keterangan
+        </label>
         <input
           type="text"
           placeholder="Contoh: Hadir tepat waktu"
@@ -78,7 +117,9 @@ export default function UpdateForm({ attendance, onDone }: { attendance: any; on
 
       {/* Status */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">📌 Status</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          📌 Status
+        </label>
         <select
           value={form.status}
           onChange={(e) => setForm({ ...form, status: e.target.value })}

@@ -60,33 +60,47 @@ export default function Page() {
                 {data.map((item, i) => (
                   <tr
                     key={item.id}
-                    className={`transition duration-150 ${i % 2 === 0
-                      ? "bg-white dark:bg-slate-800"
-                      : "bg-blue-50 dark:bg-slate-700"
-                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                    className={`transition duration-150 ${
+                      i % 2 === 0
+                        ? "bg-white dark:bg-slate-800"
+                        : "bg-blue-50 dark:bg-slate-700"
+                    } hover:bg-gray-100 dark:hover:bg-slate-600`}
                   >
                     <td className="py-2 px-4">{i + 1}</td>
                     <td className="py-2 px-4 uppercase">{item.users?.name || "Tanpa Nama"}</td>
                     <td className="py-2 px-4">{item.date}</td>
                     <td className="py-2 px-4">
                       <span className="bg-yellow-200 text-yellow-900 px-2 py-1 rounded-full font-mono text-xs">
-                        {item.check_in?.slice(0, 5) || "-"}
+                        {item.check_in
+                          ? new Date(item.check_in).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })
+                          : "-"}
                       </span>
                     </td>
                     <td className="py-2 px-4">
                       <span className="bg-blue-200 text-blue-900 px-2 py-1 rounded-full font-mono text-xs">
-                        {item.check_out?.slice(0, 5) || "-"}
+                        {item.check_out
+                          ? new Date(item.check_out).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })
+                          : "-"}
                       </span>
                     </td>
                     <td className="py-2 px-4">{item.notes || "-"}</td>
                     <td className="py-2 px-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${item.status === "HADIR"
-                          ? "bg-green-200 text-green-800"
-                          : item.status === "IZIN"
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          item.status === "HADIR"
+                            ? "bg-green-200 text-green-800"
+                            : item.status === "IZIN"
                             ? "bg-yellow-200 text-yellow-800"
                             : "bg-red-200 text-red-800"
-                          }`}
+                        }`}
                       >
                         {item.status}
                       </span>
