@@ -78,81 +78,87 @@ export default function Page() {
                 </tr>
               </thead>
               <tbody>
-                {data.map((item, i) => (
-                  <tr
-                    key={item.id}
-                    className={`transition duration-150 ${
-                      i % 2 === 0
-                        ? "bg-white dark:bg-slate-800"
-                        : "bg-blue-50 dark:bg-slate-700"
-                    } hover:bg-gray-100 dark:hover:bg-slate-600`}
-                  >
-                    <td className="py-2 px-4">{i + 1}</td>
-                    <td className="py-2 px-4 uppercase">
-                      {item.users?.name || "Tanpa Nama"}
-                    </td>
-                    <td className="py-2 px-4">{item.date}</td>
-                    <td className="py-2 px-4">
-                      <span className="text-yellow-400 font-mono text-sm">
-                        {item.check_in
-                          ? new Date(item.check_in).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })
-                          : "-"}
-                      </span>
-                    </td>
-                    <td className="py-2 px-4">
-                      <span className="text-blue-400 font-mono text-sm">
-                        {item.check_out
-                          ? new Date(item.check_out).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })
-                          : "-"}
-                      </span>
-                    </td>
-                    <td className="py-2 px-4">{item.notes || "-"}</td>
-                    <td className="py-2 px-4">
-                      <span
-                        className={`text-sm font-semibold ${
-                          item.status === "HADIR"
-                            ? "text-green-400"
-                            : item.status === "IZIN"
-                            ? "text-yellow-400"
-                            : "text-red-400"
-                        }`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="py-2 px-4 space-x-2 flex flex-wrap gap-2">
-                      {!item.check_out && (
-                        <button
-                          onClick={() => setCheckoutItem(item)}
-                          className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                        >
-                          🕒 Pulang
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setSelected(item)}
-                        className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => setDeleteItem(item)}
-                        className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                      >
-                        🗑 Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+  {data.length === 0 ? (
+    <tr>
+      <td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
+        🚫 Tidak ada absensi.
+      </td>
+    </tr>
+  ) : (
+    data.map((item, i) => (
+      <tr
+        key={item.id}
+        className={`transition duration-150 ${
+          i % 2 === 0
+            ? "bg-white dark:bg-slate-800"
+            : "bg-blue-50 dark:bg-slate-700"
+        } hover:bg-gray-100 dark:hover:bg-slate-600`}
+      >
+        <td className="py-2 px-4">{i + 1}</td>
+        <td className="py-2 px-4 uppercase">{item.users?.name || "Tanpa Nama"}</td>
+        <td className="py-2 px-4">{item.date}</td>
+        <td className="py-2 px-4">
+          <span className="text-yellow-400 font-mono text-sm">
+            {item.check_in
+              ? new Date(item.check_in).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })
+              : "-"}
+          </span>
+        </td>
+        <td className="py-2 px-4">
+          <span className="text-blue-400 font-mono text-sm">
+            {item.check_out
+              ? new Date(item.check_out).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })
+              : "-"}
+          </span>
+        </td>
+        <td className="py-2 px-4">{item.notes || "-"}</td>
+        <td className="py-2 px-4">
+          <span
+            className={`text-sm font-semibold ${
+              item.status === "HADIR"
+                ? "text-green-400"
+                : item.status === "IZIN"
+                ? "text-yellow-400"
+                : "text-red-400"
+            }`}
+          >
+            {item.status}
+          </span>
+        </td>
+        <td className="py-2 px-4 space-x-2 flex flex-wrap gap-2">
+          {!item.check_out && (
+            <button
+              onClick={() => setCheckoutItem(item)}
+              className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+            >
+              🕒 Pulang
+            </button>
+          )}
+          <button
+            onClick={() => setSelected(item)}
+            className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+          >
+            ✏️ Edit
+          </button>
+          <button
+            onClick={() => setDeleteItem(item)}
+            className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+          >
+            🗑 Delete
+          </button>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
             </table>
           </div>
         </div>
