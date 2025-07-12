@@ -6,7 +6,7 @@ export type User = {
 }
 
 export type Schedule = {
-    id: string;
+    id?: string;
     day: string;
     start_time: string;
     end_time: string;

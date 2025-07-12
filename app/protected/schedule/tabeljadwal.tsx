@@ -1,18 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LucidePencil, Trash2 } from 'lucide-react';
 import { Schedule } from '@/lib/type';
 import { createClient } from '@/lib/supabase/client';
 import DeleteModal from './delete';
 import EditModal from './edit';
 
-export default function Tabeljadwal({ initialData }: { initialData: Schedule[] }) {
-    const [data, setData] = useState(initialData);
+export default function Tabeljadwal() {
+    const [data, setData] = useState<Schedule[]>([]);
     const [showDelete, setShowDelete] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const [selectedItem, setSelectedItem] = useState<Schedule | null>(null);
-    const supabase = createClient();
+    const supabase =  createClient();
+    const fetchData = async () => {
+        const { data, error } = await supabase
+          .from("schedules")
+          .select("*");
+        if (!error) setData(data || []);
+      };
+    
+      useEffect(() => {
+        fetchData();
+      }, [data]);
+
 
     const handleDelete = async (item: Schedule) => {
         const { error } = await supabase.from('schedules').delete().eq('id', item.id);
