@@ -16,7 +16,7 @@ export default function PermissionTable() {
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);       
 
   const fetchUsers = async () => {
     const { data, error } = await supabase.from("users").select("id, name");
@@ -122,7 +122,7 @@ export default function PermissionTable() {
               </option>
             ))}
           </select>
-
+                             
           <select
             name="type"
             value={form.type}
