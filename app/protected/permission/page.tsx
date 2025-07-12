@@ -224,9 +224,9 @@ export default function PermissionTable() {
                   <td className="px-4 py-3 rounded-r-xl">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="text-blue-600 hover:underline text-xs"
+                      className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                     >
-                      Edit
+                      ✏️ Edit
                     </button>
                   </td>
                 </tr>
