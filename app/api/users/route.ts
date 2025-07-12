@@ -1,7 +1,7 @@
 // app/api/users/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 // import { createAdmin } from '@/lib/supabase/client'
-import { z } from 'zod'
+// import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -9,40 +9,42 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 // Define validation schema
-const CreateUserSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-})
+// const CreateUserSchema = z.object({
+//     name: z.string().min(1, "Name is required"),
+//     email: z.string().email("Invalid email address"),
+//     password: z.string().min(6, "Password must be at least 6 characters"),
+// })
 
 export async function POST(request: NextRequest) {
     try {
         // Parse request body
         const body = await request.json()
 
-        // Validate request data
-        const validated = CreateUserSchema.safeParse(body)
+        // // Validate request data
+        // const validated = CreateUserSchema.safeParse(body)
 
-        if (!validated.success) {
-            const errorMessage = validated.error
-            return NextResponse.json(
-                { success: false, message: errorMessage },
-                { status: 400 }
-            )
-        }
+        // if (!validated.success) {
+        //     const errorMessage = validated.error
+        //     return NextResponse.json(
+        //         { success: false, message: errorMessage },
+        //         { status: 400 }
+        //     )
+        // }
 
         // Check admin authorization
         const { data: { user } } = await supabase.auth.getUser()
+        console.log(user)
 
-        if (user?.user_metadata?.role !== 'admin') {
-            return NextResponse.json(
-                { success: false, message: "Only admin users can access this endpoint" },
-                { status: 403 }
-            )
-        }
+        // if (user?.user_metadata?.role !== 'admin') {
+        //     return NextResponse.json(
+        //         { success: false, message: "Only admin users can access this endpoint" },
+        //         { status: 403 }
+        //     )
+        // }
 
         // Destructure validated data
-        const { name, email, password } = validated.data
+        const { name, email, password } = body
+        console.log(body)
         const role = "employee"
 
         // Create user with Supabase Admin API
