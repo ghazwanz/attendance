@@ -51,9 +51,21 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
     init();
   }, [supabase, today]);
 
-  const handleCheckIn = async (e: any) => {
-    e.preventDefault();
-    const now = new Date().toISOString();
+  const handleCheckIn = async (status: string) => {
+    const now = new Date();
+    const nowISO = now.toISOString();
+
+    // Batas waktu masuk: 08:00
+    const batasMasuk = new Date();
+    batasMasuk.setHours(8, 0, 0, 0); // jam 08:00:00
+
+    // Cek keterlambatan jika status HADIR
+    let finalStatus = status;
+    if (status === "HADIR" && now > batasMasuk) {
+      finalStatus = "TERLAMBAT";
+    }
+
+    setForm({ status: finalStatus });
 
     const { error, data } = await supabase
       .from("attendances")
@@ -61,10 +73,10 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
         {
           user_id: userId,
           date: today,
-          check_in: now,
+          check_in: nowISO,
           check_out: null,
           notes: null,
-          status: form.status,
+          status: finalStatus,
         },
       ])
       .select()
@@ -79,7 +91,6 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
       setShowSuccess(true);
 
       setTimeout(() => setShowSuccess(false), 2000);
-
       onRefresh();
     }
   };
@@ -106,39 +117,34 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
           </p>
         </div>
       ) : (
-        // Form absensi masuk
-        <form
-          onSubmit={handleCheckIn}
-          className="space-y-5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 p-6 rounded-xl shadow-md transition-all"
-        >
+        <div className="space-y-5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 p-6 rounded-xl shadow-md transition-all">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
             📥 Absensi Masuk
           </h2>
 
-          {/* Status Kehadiran */}
+          {/* Tombol Pilih Status Kehadiran */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              📌 Status Kehadiran
+              📌 Pilih Status Kehadiran
             </label>
-            <select
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="HADIR">HADIR</option>
-              <option value="IZIN">IZIN</option>
-              <option value="ALPA">ALPA</option>
-            </select>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => handleCheckIn("HADIR")}
+                className="flex-1 py-2 rounded-lg font-semibold text-white transition-all bg-green-600 hover:bg-green-700"
+              >
+                ✅ HADIR
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCheckIn("IZIN")}
+                className="flex-1 py-2 rounded-lg font-semibold text-white transition-all bg-yellow-500 hover:bg-yellow-600"
+              >
+                📄 IZIN
+              </button>
+            </div>
           </div>
-
-          {/* Tombol Simpan */}
-          <button
-            type="submit"
-            className="w-full py-3 font-semibold rounded-lg transition-all shadow-md hover:shadow-lg text-white bg-blue-600 hover:bg-blue-700"
-          >
-            💾 Simpan Absensi Masuk
-          </button>
-        </form>
+        </div>
       )}
     </>
   );
