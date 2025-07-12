@@ -6,7 +6,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import EditUserModal from './EditUserModal';
-import { User } from '@/lib/type'; // ✅ PAKAI INI SAJA, JANGAN BUAT ULANG TYPE LAGI
+import DeleteUserModal from './DeleteUserModal'; // ✅ Tambah ini
+import { User } from '@/lib/type';
 
 const Page = () => {
   const supabase = createClient();
@@ -14,7 +15,9 @@ const Page = () => {
   const [userData, setUserData] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null); // ✅ sudah aman
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false); // ✅
+  const [userToDelete, setUserToDelete] = useState<User | null>(null); // ✅
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,12 +50,22 @@ const Page = () => {
     setEditModalOpen(true);
   };
 
+  const openDeleteModal = (user: User) => {
+    setUserToDelete(user);
+    setDeleteModalOpen(true);
+  };
+
   const handleUserUpdated = async () => {
     if (userData?.role === 'admin') {
       const { data } = await supabase.from('users').select('*');
       setUsers(data ?? []);
     }
     setEditModalOpen(false);
+  };
+
+  const handleUserDeleted = (deletedId: string) => {
+    setUsers((prev) => prev.filter((u) => u.id !== deletedId));
+    setDeleteModalOpen(false);
   };
 
   return (
@@ -120,7 +133,10 @@ const Page = () => {
                   </td>
                   {userData?.role === 'admin' && (
                     <td className="px-6 py-4 space-x-2">
-                      <button className="inline-flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-full text-xs transition">
+                      <button
+                        onClick={() => openDeleteModal(user)}
+                        className="inline-flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-full text-xs transition"
+                      >
                         <Trash2 className="w-4 h-4" />
                         Hapus
                       </button>
@@ -140,12 +156,21 @@ const Page = () => {
         </table>
       </div>
 
-      {/* Modal */}
+      {/* Modal Edit */}
       {editModalOpen && selectedUser && (
         <EditUserModal
           user={selectedUser}
           onClose={() => setEditModalOpen(false)}
           onUpdated={handleUserUpdated}
+        />
+      )}
+
+      {/* Modal Delete */}
+      {deleteModalOpen && userToDelete && (
+        <DeleteUserModal
+          user={userToDelete}
+          onClose={() => setDeleteModalOpen(false)}
+          onDeleted={handleUserDeleted}
         />
       )}
     </div>
