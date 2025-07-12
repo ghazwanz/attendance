@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
 
         // Check admin authorization
         const { data: { user } } = await supabase.auth.getUser()
-        console.log(user)
 
         // if (user?.user_metadata?.role !== 'admin') {
         //     return NextResponse.json(
@@ -44,7 +43,6 @@ export async function POST(request: NextRequest) {
 
         // Destructure validated data
         const { name, email, password } = body
-        console.log(body)
         const role = "employee"
 
         // Create user with Supabase Admin API

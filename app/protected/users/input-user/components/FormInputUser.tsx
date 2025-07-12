@@ -1,8 +1,10 @@
 'use client'
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { useRouter } from 'next/navigation'
 
 const FormInputUser = () => {
+    const router = useRouter()
     const [state, setState] = useState<{
         success?: boolean
         message?: string
@@ -38,8 +40,7 @@ const FormInputUser = () => {
                     message: result.message || 'User created successfully!',
                     pending: false 
                 })
-                // Reset form on success
-                e.currentTarget.reset()
+                router.push('/protected/users/')
             } else {
                 setState({ 
                     success: false, 
@@ -48,6 +49,7 @@ const FormInputUser = () => {
                 })
             }
         } catch (error) {
+            console.log(error)
             setState({ 
                 success: false, 
                 message: 'Network error. Please try again.',

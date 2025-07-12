@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import EditUserModal from './EditUserModal';
 import DeleteUserModal from './DeleteUserModal'; // ✅ Tambah ini
 import { User } from '@/lib/type';
+import AddUser from './AddUser';
 
 const Page = () => {
   const supabase = createClient();
@@ -18,6 +19,7 @@ const Page = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false); // ✅
   const [userToDelete, setUserToDelete] = useState<User | null>(null); // ✅
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,7 +45,7 @@ const Page = () => {
     };
 
     fetchData();
-  }, []);
+  }, [users]);
 
   const openEditModal = (user: User) => {
     setSelectedUser(user);
@@ -78,13 +80,13 @@ const Page = () => {
         </div>
 
         {userData?.role === 'admin' && (
-          <Link
-            href="./users/input-user"
+          <button
+            onClick={() => setCreateModalOpen((prev)=> !prev)}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium"
           >
             <Plus className="w-4 h-4" />
             Tambah Pengguna
-          </Link>
+          </button>
         )}
       </div>
 
@@ -170,6 +172,14 @@ const Page = () => {
         <DeleteUserModal
           user={userToDelete}
           onClose={() => setDeleteModalOpen(false)}
+          onDeleted={handleUserDeleted}
+        />
+      )}
+
+      {/* Modal Delete */}
+      {createModalOpen && (
+        <AddUser
+          onClose={() => setCreateModalOpen(false)}
           onDeleted={handleUserDeleted}
         />
       )}
