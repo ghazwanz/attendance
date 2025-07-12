@@ -62,7 +62,7 @@ export default function ProtectedLayout({
         </nav>
 
         {/* CONTENT */}
-        <div className="flex-1 flex w-full flex-col gap-20 max-w-6xl p-5">
+        <div className="flex-1 flex w-full flex-col gap-20 max-w-7xl p-5">
           {children}
         </div>
 
