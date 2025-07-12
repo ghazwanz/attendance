@@ -1,74 +1,82 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { Permission } from '@/lib/type';
+import React, { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Permission } from "@/lib/type";
 
 export default function PermissionTable() {
   const supabase = createClient();
   const [data, setData] = useState<Permission[]>([]);
   const [form, setForm] = useState({
-    user_id: '',
-    type: 'izin',
-    start_date: '',
-    end_date: '',
-    reason: '',
+    user_id: "",
+    type: "izin",
+    start_date: "",
+    end_date: "",
+    reason: "",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
+
+  const fetchUsers = async () => {
+    const { data, error } = await supabase.from("users").select("id, name");
+    if (!error && data) setUsers(data);
+  };
 
   const fetchData = async () => {
     const { data, error } = await supabase
-      .from('permissions')
-      .select('*, users(name)')
-      .order('created_at', { ascending: false });
+      .from("permissions")
+      .select("*, users(name)")
+      .order("created_at", { ascending: false });
     if (!error) setData(data);
   };
 
   useEffect(() => {
     fetchData();
+    fetchUsers();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!form.user_id) return alert('User ID wajib diisi');
+    if (!form.user_id) return alert("User ID wajib diisi");
     setLoading(true);
 
     if (editingId) {
       // Update mode
       const { error } = await supabase
-        .from('permissions')
+        .from("permissions")
         .update(form)
-        .eq('id', editingId);
+        .eq("id", editingId);
 
       if (!error) {
         resetForm();
         fetchData();
       } else {
-        alert('Gagal update data');
+        alert("Gagal update data");
       }
     } else {
       // Create mode
-      const { error } = await supabase.from('permissions').insert({
+      const { error } = await supabase.from("permissions").insert({
         ...form,
-        status: 'pending',
+        status: "pending",
       });
 
       if (!error) {
         resetForm();
         fetchData();
       } else {
-        alert('Gagal tambah data');
+        alert("Gagal tambah data");
       }
     }
 
     setLoading(false);
   };
 
-  const handleEdit = (item:Permission) => {
+  const handleEdit = (item: Permission) => {
     setForm({
       user_id: item.user_id,
       type: item.type,
@@ -81,11 +89,11 @@ export default function PermissionTable() {
 
   const resetForm = () => {
     setForm({
-      user_id: '',
-      type: 'izin',
-      start_date: '',
-      end_date: '',
-      reason: '',
+      user_id: "",
+      type: "izin",
+      start_date: "",
+      end_date: "",
+      reason: "",
     });
     setEditingId(null);
   };
@@ -100,15 +108,21 @@ export default function PermissionTable() {
           onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 bg-white/5 p-4 rounded-xl"
         >
-          <input
-            type="text"
+          <select
             name="user_id"
-            placeholder="User ID"
             value={form.user_id}
             onChange={handleChange}
             required
             className="px-3 py-2 rounded bg-white/10 text-white border border-white/20"
-          />
+          >
+            <option value="">Pilih Nama User</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
+          </select>
+
           <select
             name="type"
             value={form.type}
@@ -149,7 +163,7 @@ export default function PermissionTable() {
               className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
               disabled={loading}
             >
-              {editingId ? 'Update' : 'Tambah'}
+              {editingId ? "Update" : "Tambah"}
             </button>
             {editingId && (
               <button
@@ -181,28 +195,30 @@ export default function PermissionTable() {
             <tbody>
               {data?.map((item) => (
                 <tr key={item.id} className=" text-white rounded-xl shadow-sm">
-                  <td className="px-4 py-3 rounded-l-xl">{item.users?.name || '-'}</td>
+                  <td className="px-4 py-3 rounded-l-xl">
+                    {item.users?.name || "-"}
+                  </td>
                   <td className="px-4 py-3">{item.start_date}</td>
-                  <td className="px-4 py-3">{item.end_date}</td>    
+                  <td className="px-4 py-3">{item.end_date}</td>
                   <td className="px-4 py-3 capitalize">{item.type}</td>
                   <td className="px-4 py-3">{item.reason}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                        item.status === 'diterima'
-                          ? 'bg-green-100 text-green-700'
-                          : item.status === 'ditolak'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                        item.status === "diterima"
+                          ? "bg-green-100 text-green-700"
+                          : item.status === "ditolak"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
                       }`}
                     >
                       {item.status}
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {new Date(item.created_at).toLocaleString('id-ID', {
-                      dateStyle: 'short',
-                      timeStyle: 'short',
+                    {new Date(item.created_at).toLocaleString("id-ID", {
+                      dateStyle: "short",
+                      timeStyle: "short",
                     })}
                   </td>
                   <td className="px-4 py-3 rounded-r-xl">
