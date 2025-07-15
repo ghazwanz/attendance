@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { QrCode } from "lucide-react";
-// import { QRCodeSVG } from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 
 // Simulasi data user (nanti bisa kamu ambil dari Supabase)
 const userMock = {
