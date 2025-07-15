@@ -12,6 +12,7 @@ export default function Page() {
   const [checkoutItem, setCheckoutItem] = useState<any | null>(null);
   const [deleteItem, setDeleteItem] = useState<any | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null); // 🆕
 
   const fetchData = async () => {
     const { data, error } = await supabase
@@ -32,6 +33,7 @@ export default function Page() {
   return (
     <div className="min-h-screen py-10 px-4 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
       <div className="max-w-6xl mx-auto space-y-10">
+
         {/* Notifikasi Berhasil */}
         {successMessage && (
           <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
@@ -99,42 +101,35 @@ export default function Page() {
                       <td className="py-2 px-4">
                         <span className="text-yellow-400 font-mono text-sm">
                           {item.check_in
-                            ? new Date(item.check_in).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })
+                            ? new Date(item.check_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
                             : "-"}
                         </span>
                       </td>
                       <td className="py-2 px-4">
                         <span className="text-blue-400 font-mono text-sm">
                           {item.check_out
-                            ? new Date(item.check_out).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })
+                            ? new Date(item.check_out).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
                             : "-"}
                         </span>
                       </td>
                       <td className="py-2 px-4">{item.notes || "-"}</td>
                       <td className="py-2 px-4">
-                        <span
-                          className={`text-sm font-semibold ${item.status === "HADIR"
-                              ? "text-green-400"
-                              : item.status === "IZIN"
-                                ? "text-yellow-400"
-                                : "text-red-400"
-                            }`}
-                        >
+                        <span className={`text-sm font-semibold ${item.status === "HADIR"
+                          ? "text-green-400"
+                          : item.status === "IZIN"
+                            ? "text-yellow-400"
+                            : "text-red-400"
+                          }`}>
                           {item.status}
                         </span>
                       </td>
                       <td className="py-2 px-4 space-x-2 flex flex-wrap gap-2">
                         {!item.check_out && (
                           <button
-                            onClick={() => setCheckoutItem(item)}
+                            onClick={() => {
+                              setCheckoutItem(item);
+                              setCheckoutError(null); // reset error saat buka modal
+                            }}
                             className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                           >
                             🕒 Pulang
@@ -197,6 +192,7 @@ export default function Page() {
               <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 🕒 Konfirmasi Absensi Pulang
               </h2>
+
               <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 mb-4">
                 <p><strong>👤 Nama:</strong> {checkoutItem.users?.name || "Tanpa Nama"}</p>
                 <p><strong>📅 Tanggal:</strong> {checkoutItem.date}</p>
@@ -217,8 +213,10 @@ export default function Page() {
                       notes: e.target.value,
                     })
                   }
-
                 />
+                {checkoutError && (
+                  <p className="text-red-500 text-sm mt-2">{checkoutError}</p>
+                )}
               </div>
 
               <div className="flex justify-end gap-2">
@@ -228,15 +226,14 @@ export default function Page() {
                 >
                   Batal
                 </button>
-                // Tombol "✅ Konfirmasi Pulang"
                 <button
                   onClick={async () => {
                     const now = new Date();
                     const batasPulang = new Date();
-                    batasPulang.setHours(16, 0, 0, 0); // 16:00 WIB
+                    batasPulang.setHours(16, 0, 0, 0);
 
                     if (now < batasPulang) {
-                      alert("⛔ Belum waktunya pulang. Absensi pulang hanya bisa dilakukan setelah jam 16:00.");
+                      setCheckoutError("⛔ Belum waktunya pulang. Absensi pulang hanya bisa dilakukan setelah jam 16:00.");
                       return;
                     }
 
@@ -251,6 +248,7 @@ export default function Page() {
 
                     if (!error) {
                       setCheckoutItem(null);
+                      setCheckoutError(null);
                       fetchData();
                       showSuccessToast("Absensi pulang berhasil disimpan!");
                     }
@@ -264,7 +262,7 @@ export default function Page() {
           </div>
         )}
 
-        {/* Modal Konfirmasi Hapus */}
+        {/* Modal Hapus */}
         {deleteItem && (
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl max-w-md w-full relative">
