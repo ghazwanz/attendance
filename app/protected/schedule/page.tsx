@@ -1,10 +1,4 @@
 import React from 'react'
-import data from "@/lib/dummyData.json";
-import { LucidePencil, Trash2 } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
-import { Schedule } from '@/lib/type';
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { redirect } from 'next/navigation';
 import Tabeljadwal from './tabeljadwal';
 import Tambahjadwal from './Tambahjadwal';
 

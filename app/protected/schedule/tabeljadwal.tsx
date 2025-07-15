@@ -22,7 +22,7 @@ export default function Tabeljadwal() {
     
       useEffect(() => {
         fetchData();
-      }, [data]);
+      }, []);
 
 
     const handleDelete = async (item: Schedule) => {
