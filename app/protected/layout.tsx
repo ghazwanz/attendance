@@ -12,6 +12,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import { Toaster } from "react-hot-toast";
 
 export default function ProtectedLayout({
   children,
@@ -64,6 +65,7 @@ export default function ProtectedLayout({
         {/* CONTENT */}
         <div className="flex-1 flex w-full flex-col gap-20 max-w-7xl p-5">
           {children}
+          <Toaster position="top-center" reverseOrder={false} />
         </div>
 
         {/* FOOTER */}
