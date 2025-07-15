@@ -27,8 +27,7 @@ const Tambahjadwal = () => {
                 setShowSuccess(false)
             }, 2000)
             setShowEdit(false)
-            router.refresh() // Refresh halaman setelah menyimpan
-            router.refresh() // Refresh halaman setelah menyimpan
+            window.location.reload()
         }
     }
 
