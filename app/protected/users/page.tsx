@@ -45,7 +45,7 @@ const Page = () => {
     };
 
     fetchData();
-  }, [users]);
+  }, []);
 
   const openEditModal = (user: User) => {
     setSelectedUser(user);

@@ -1,47 +1,102 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 
-const QrReader = dynamic(() => import('react-qr-scanner'), { ssr: false });
+const QrScanner = dynamic(() => import('react-qr-scanner'), { ssr: false });
 
 export default function ScanAttendance() {
   const supabase = createClient();
   const [scannedData, setScannedData] = useState(null);
   const [message, setMessage] = useState('');
+  const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('environment');
 
   const handleScan = async (data: string | null) => {
     if (data && !scannedData) {
+      console.log('📥 Data hasil scan:', data);
+
       try {
-        const parsed = JSON.parse(data); // ambil { id, name, role }
+        const parsed = JSON.parse(data); // QR berisi { id, name, role }
+        console.log('✅ Data parsed:', parsed);
+
         const now = new Date();
         const today = now.toISOString().split('T')[0];
 
-        // Simpan ke attendance
-        const { error } = await supabase.from('attendances').insert({
-          user_id: parsed.id,
-          date: today,
-          check_in: now.toISOString(),
-          status: 'HADIR',
-        });
+        setScannedData(parsed);
 
-        if (error) {
-          console.error(error);
-          setMessage('❌ Gagal menyimpan absensi.');
-        } else {
-          setMessage(`✅ Absensi berhasil untuk ${parsed.name}`);
-          setScannedData(parsed); // mencegah double input
+        // Cek apakah sudah absen hari ini
+        const { data: existing, error: fetchError } = await supabase
+          .from('attendances')
+          .select('*')
+          .eq('user_id', parsed.id)
+          .eq('date', today)
+          .maybeSingle();
+
+        if (fetchError) {
+          console.error('❌ Gagal cek absen:', fetchError);
+          setMessage('❌ Gagal cek data absen.');
+          return;
         }
 
+        if (!existing) {
+          console.log('📝 Menyimpan data absen masuk ke Supabase...');
+          const { error: insertError } = await supabase.from('attendances').insert({
+            user_id: parsed.id,
+            name: parsed.name,
+            date: today,
+            check_in: now.toISOString(),
+            status: 'HADIR',
+          });
+
+          if (insertError) {
+            console.error('❌ Insert error:', insertError);
+            setMessage('❌ Gagal simpan absen masuk.');
+          } else {
+            setMessage(`✅ ${parsed.name} absen masuk!`);
+          }
+        } else if (!existing.check_out) {
+          const checkInTime = new Date(existing.check_in);
+          const checkOutTime = new Date(checkInTime.getTime() + 8 * 60 * 60 * 1000);
+
+          console.log('📝 Menyimpan data absen pulang...');
+          const { error: updateError } = await supabase
+            .from('attendances')
+            .update({
+              check_out: checkOutTime.toISOString(),
+              status: 'PULANG',
+            })
+            .eq('id', existing.id);
+
+          if (updateError) {
+            console.error('❌ Update error:', updateError);
+            setMessage('❌ Gagal simpan absen pulang.');
+          } else {
+            setMessage(`👋 ${parsed.name} absen pulang jam ${checkOutTime.toLocaleTimeString()}`);
+          }
+        } else {
+          setMessage(`✅ ${parsed.name} sudah absen masuk & pulang hari ini.`);
+        }
+
+        // Reset
         setTimeout(() => {
           setScannedData(null);
           setMessage('');
-        }, 5000); // Reset setelah 5 detik
+        }, 5000);
       } catch (err) {
-        setMessage('QR tidak valid');
+        console.error('❌ QR tidak valid:', err);
+        setMessage('⚠️ QR tidak valid.');
       }
     }
+  };
+
+  const handleError = (err: any) => {
+    console.error('❌ QR error:', err);
+    setMessage('QR error.');
+  };
+
+  const toggleCamera = () => {
+    setCameraFacing((prev) => (prev === 'user' ? 'environment' : 'user'));
   };
 
   return (
@@ -54,11 +109,19 @@ export default function ScanAttendance() {
         </div>
       )}
 
+      <button
+        onClick={toggleCamera}
+        className="mb-4 px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition"
+      >
+        Ganti Kamera ({cameraFacing === 'user' ? 'Depan' : 'Belakang'})
+      </button>
+
       <div className="w-full max-w-md">
-        <QrReader
+        <QrScanner
           delay={500}
-          onError={(err) => console.error(err)}
+          onError={handleError}
           onScan={handleScan}
+          facingMode={cameraFacing}
           style={{ width: '100%' }}
         />
       </div>
