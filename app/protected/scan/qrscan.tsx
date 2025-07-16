@@ -30,7 +30,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
 
     // Enhanced configuration for better QR code detection
     const config = {
-      fps: 10,
+      fps: 20,
       qrbox: { width: 250, height: 250 },
       aspectRatio: 1.0,
       disableFlip: false,

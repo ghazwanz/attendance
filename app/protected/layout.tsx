@@ -5,6 +5,8 @@ import {
   CalendarCheck2,
   ClipboardList,
   CalendarClock,
+  QrCodeIcon,
+  QrCode,
 } from "lucide-react";
 import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
@@ -36,25 +38,30 @@ export default function ProtectedLayout({
             <div className="flex justify-between items-center h-16 relative">
 
               {/* ✅ Logo */}
-              <div className="flex items-center gap-3">
-                <Image src="/logo1.png" width={32} height={32} className="dark:invert-0 invert" alt="Logo" />
-                <span className="font-semibold text-lg tracking-wide text-gray-900 dark:text-white">
-                  Mahative Studio
-                </span>
-              </div>
+              <Link href={"/protected"}>
+                <div className="flex items-center gap-3">
+                  <Image src="/logo1.png" width={32} height={32} className="dark:invert-0 invert" alt="Logo" />
+                  <span className="font-semibold md:text-lg text-sm tracking-wide text-gray-900 dark:text-white">
+                    Mahative Studio
+                  </span>
+                </div>
+              </Link>
 
               {/* 🍔 Hamburger (mobile only) */}
-              <label htmlFor="nav-toggle" className="sm:hidden cursor-pointer text-gray-700 dark:text-white">
+              <label htmlFor="nav-toggle" className="lg:hidden cursor-pointer text-gray-700 dark:text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </label>
 
               {/* ✅ Menu Desktop — POSISI TENGAH */}
-              <div className="hidden sm:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+              <div className="hidden lg:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                 <div className="flex items-center gap-6 text-sm">
                   <Link href="/protected/" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
                     <Home size={16} /> Home
+                  </Link>
+                  <Link href="/protected/scan" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
+                    <QrCode size={16} /> Scan
                   </Link>
                   <Link href="/protected/users" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
                     <Users size={16} /> Users
@@ -72,16 +79,19 @@ export default function ProtectedLayout({
               </div>
 
               {/* ✅ Kanan */}
-              <div className="hidden sm:flex items-center gap-4">
+              <div className="hidden lg:flex items-center gap-1">
                 <ThemeSwitcher />
                 {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
               </div>
             </div>
 
             {/* 📱 Dropdown Mobile Menu */}
-            <div className="peer-checked:flex hidden flex-col gap-4 py-4 sm:hidden text-sm border-t border-gray-200 dark:border-slate-700">
+            <div className="peer-checked:flex hidden flex-col gap-4 py-4 lg:hidden text-sm border-t border-gray-200 dark:border-slate-700">
               <Link href="/protected/" className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition">
                 <Home size={16} /> Home
+              </Link>
+              <Link href="/protected/scan" className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition">
+                <QrCode size={16} /> Scan
               </Link>
               <Link href="/protected/users" className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition">
                 <Users size={16} /> Users
