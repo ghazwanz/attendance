@@ -10,7 +10,10 @@ export default function PermissionTable() {
   const [showForm, setShowForm] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedIdToDelete, setSelectedIdToDelete] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedIdToDelete, setSelectedIdToDelete] = useState<string | null>(
+    null
+  );
   const [data, setData] = useState<Permission[]>([]);
   const [form, setForm] = useState({
     user_id: "",
@@ -41,8 +44,9 @@ export default function PermissionTable() {
     fetchUsers();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const resetForm = () => {
     setForm({
@@ -61,7 +65,10 @@ export default function PermissionTable() {
     const payload = { ...form };
 
     if (editingId) {
-      const { error } = await supabase.from("permissions").update(payload).eq("id", editingId);
+      const { error } = await supabase
+        .from("permissions")
+        .update(payload)
+        .eq("id", editingId);
       if (!error) {
         setSuccessMessage("✅ Berhasil mengedit izin!");
         setShowEditModal(false);
@@ -70,7 +77,9 @@ export default function PermissionTable() {
         setTimeout(() => setSuccessMessage(""), 3000);
       }
     } else {
-      const { error } = await supabase.from("permissions").insert({ ...payload, status: "pending" });
+      const { error } = await supabase
+        .from("permissions")
+        .insert({ ...payload, status: "pending" });
       if (!error) {
         setSuccessMessage("✅ Berhasil menambahkan izin!");
         resetForm();
@@ -103,7 +112,10 @@ export default function PermissionTable() {
   const handleDeleteConfirm = async () => {
     if (!selectedIdToDelete) return;
     setLoading(true);
-    const { error } = await supabase.from("permissions").delete().eq("id", selectedIdToDelete);
+    const { error } = await supabase
+      .from("permissions")
+      .delete()
+      .eq("id", selectedIdToDelete);
     if (!error) {
       setSuccessMessage("✅ Data berhasil dihapus!");
       fetchData();
@@ -113,6 +125,18 @@ export default function PermissionTable() {
     setShowConfirmModal(false);
     setSelectedIdToDelete(null);
   };
+  const filteredData = data.filter((item) => {
+    const nama = item.users?.name?.toLowerCase() || "";
+    const alasan = item.reason.toLowerCase();
+    const jenis = item.type.toLowerCase();
+    const keyword = searchTerm.toLowerCase();
+
+    return (
+      nama.includes(keyword) ||
+      alasan.includes(keyword) ||
+      jenis.includes(keyword)
+    );
+  });
 
   return (
     <div className="max-w-6xl mx-auto p-6 border border-white/20 rounded-xl shadow-lg">
@@ -128,8 +152,12 @@ export default function PermissionTable() {
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-            <p className="text-red-600 font-semibold text-lg mb-2">🗑️ Konfirmasi Hapus</p>
-            <p className="text-sm text-gray-300 mb-4">Yakin ingin menghapus data ini?</p>
+            <p className="text-red-600 font-semibold text-lg mb-2">
+              🗑️ Konfirmasi Hapus
+            </p>
+            <p className="text-sm text-gray-300 mb-4">
+              Yakin ingin menghapus data ini?
+            </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={handleDeleteConfirm}
@@ -232,19 +260,34 @@ export default function PermissionTable() {
       )}
 
       {/* Tombol Tambah */}
-      <button
-        onClick={() => {
-          setShowForm((prev) => !prev);
-          resetForm();
-        }}
-        className="mb-6 bg-blue-600 text-white font-semibold px-4 py-2 rounded"
-      >
-        {showForm ? "Tutup Form" : "Tambah Izin"}
-      </button>
+<div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+  <button
+    onClick={() => {
+      setShowForm((prev) => !prev);
+      resetForm();
+    }}
+    className="bg-blue-600 text-white font-semibold px-4 py-2 rounded w-fit"
+  >
+    {showForm ? "Tutup Form" : "Tambah Izin"}
+  </button>
+
+  <input
+    type="text"
+    placeholder="🔍 Cari nama, jenis, atau alasan..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="w-full md:w-1/3 px-4 py-2 rounded bg-white/10 text-white border border-white/20"
+  />
+</div>
+
+
 
       {/* Form Tambah (bukan modal) */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10"
+        >
           {/* ...gunakan isi form dari atas, sama... */}
           <select
             name="user_id"
@@ -326,9 +369,12 @@ export default function PermissionTable() {
             </tr>
           </thead>
           <tbody>
-            {data?.map((item) => (
+            {filteredData.map((item) => (
+              // ... isi baris tabel tetap sama
               <tr key={item.id} className="text-white rounded-xl shadow-sm">
-                <td className="px-4 py-3 rounded-l-xl">{item.users?.name || "-"}</td>
+                <td className="px-4 py-3 rounded-l-xl">
+                  {item.users?.name || "-"}
+                </td>
                 <td className="px-4 py-3">{item.start_date}</td>
                 <td className="px-4 py-3">{item.end_date}</td>
                 <td className="px-4 py-3 capitalize">{item.type}</td>
