@@ -15,8 +15,10 @@ import Link from "next/link";
 import { Toaster } from "react-hot-toast";
 
 export default function ProtectedLayout({
+  modal,
   children,
 }: {
+  modal: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -61,6 +63,9 @@ export default function ProtectedLayout({
             </div>
           </div>
         </nav>
+
+        {/* MODAL */}
+        <div>{modal}</div>
 
         {/* CONTENT */}
         <div className="flex-1 flex w-full flex-col gap-20 max-w-7xl p-5">

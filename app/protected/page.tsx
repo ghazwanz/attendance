@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { QrCode } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { createClient } from '@/lib/supabase/client';
 
 // Simulasi data user (nanti bisa kamu ambil dari Supabase)
 const userMock = {
@@ -12,14 +13,28 @@ const userMock = {
 };
 
 export default function ProtectedPage() {
+  const [userId, setUserId] = useState<string|undefined>(userMock.id)
+  useEffect(() => {
+    const supabase = createClient();
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('User:', user);
+      if (!user) {
+        // Redirect ke halaman login jika user tidak ada
+        window.location.href = '/auth/login';
+      }
+      setUserId(user?.id);
+    }
+    checkAuth()
+  }, [])
   const [showScanner, setShowScanner] = useState(false);
-
-  const qrData = JSON.stringify(userMock); // data yang akan diubah jadi QR
+  console.log('User ID:', userId);
+  const qrData = JSON.stringify({user_id:userId}); // data yang akan diubah jadi QR
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 dark:from-slate-900 dark:to-slate-800 px-6">
       <div className="max-w-xl w-full bg-white dark:bg-slate-900 shadow-2xl rounded-2xl p-8 space-y-8">
-        
+
         {/* Judul */}
         <div className="text-center space-y-1">
           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">

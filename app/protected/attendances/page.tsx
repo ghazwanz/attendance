@@ -80,14 +80,14 @@ export default function Page() {
                 </tr>
               </thead>
               <tbody>
-                {data.length === 0 ? (
+                {data?.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
                       🚫 Tidak ada absensi.
                     </td>
                   </tr>
                 ) : (
-                  data.map((item, i) => (
+                  data?.map((item, i) => (
                     <tr
                       key={item.id}
                       className={`transition duration-150 ${i % 2 === 0
