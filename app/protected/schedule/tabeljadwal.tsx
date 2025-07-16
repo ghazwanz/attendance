@@ -59,7 +59,7 @@ export default function Tabeljadwal() {
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map((schedule, index) => (
+                        {data?.map((schedule, index) => (
                             <tr
                                 key={schedule.id}
                                 className={`${index % 2 === 0 ? 'bg-white dark:bg-inherit' : 'bg-gray-50 dark:bg-gray-900'} border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
