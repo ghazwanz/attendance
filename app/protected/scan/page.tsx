@@ -38,7 +38,7 @@ export default function AttendancePage() {
           users(
             name
           )
-        `)
+        `).limit(10).order('created_at', { ascending: false });
       console.log(data, error)
       if (error) throw error;
       setRecentAttendance(data || []);
@@ -118,7 +118,7 @@ export default function AttendancePage() {
                     </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${record.status.toLowerCase() === 'hadir'
                       ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                      : 'bg-red-100 text-red-800'
                       }`}>
                       {record.status}
                     </span>
