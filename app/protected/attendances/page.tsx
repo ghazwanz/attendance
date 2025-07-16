@@ -8,11 +8,12 @@ import UpdateForm from "./UpdateForm";
 export default function Page() {
   const supabase = createClient();
   const [data, setData] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState(""); // 🆕 Untuk search
   const [selected, setSelected] = useState<any | null>(null);
   const [checkoutItem, setCheckoutItem] = useState<any | null>(null);
   const [deleteItem, setDeleteItem] = useState<any | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null); // 🆕
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const fetchData = async () => {
     const { data, error } = await supabase
@@ -29,6 +30,10 @@ export default function Page() {
     setSuccessMessage(message);
     setTimeout(() => setSuccessMessage(null), 3000);
   };
+
+  const filteredData = data.filter((item) =>
+    item.users?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen py-10 px-4 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
@@ -49,6 +54,17 @@ export default function Page() {
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Kelola data kehadiran harian secara efisien dan akurat.
           </p>
+
+          {/* 🔍 Input Search */}
+          <div className="mt-6 max-w-md mx-auto">
+            <input
+              type="text"
+              placeholder="🔍 Cari nama karyawan..."
+              className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Form Absensi */}
@@ -80,14 +96,14 @@ export default function Page() {
                 </tr>
               </thead>
               <tbody>
-                {data?.length === 0 ? (
+                {filteredData.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
                       🚫 Tidak ada absensi.
                     </td>
                   </tr>
                 ) : (
-                  data?.map((item, i) => (
+                  filteredData.map((item, i) => (
                     <tr
                       key={item.id}
                       className={`transition duration-150 ${i % 2 === 0
@@ -128,7 +144,7 @@ export default function Page() {
                           <button
                             onClick={() => {
                               setCheckoutItem(item);
-                              setCheckoutError(null); // reset error saat buka modal
+                              setCheckoutError(null);
                             }}
                             className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                           >
