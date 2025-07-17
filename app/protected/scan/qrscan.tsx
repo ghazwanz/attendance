@@ -31,7 +31,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
     setSuccess(null);
 
     const config = {
-      fps: 20,
+      fps: 30,
       qrbox: { width: 250, height: 250 },
       aspectRatio: 1.0,
       disableFlip: false,
@@ -66,24 +66,69 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
 
         if (userError || !user) throw new Error('User tidak ditemukan di database');
 
-        const status = new Date().getHours() < 8 ? 'HADIR' : 'TERLAMBAT';
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-        const { error: attendanceError } = await supabase
+        const { data: existingAttendance, error: fetchError } = await supabase
           .from('attendances')
-          .insert({
-            user_id: data.user_id,
-            date: new Date().toISOString(),
-            check_in: new Date().toISOString(),
-            check_out: null,
-            notes: '',
-            created_at: new Date().toISOString(),
-            status: status,
-          });
+          .select('*')
+          .eq('user_id', data.user_id)
+          .eq('date', today)
+          .limit(1);
 
-        if (attendanceError) throw new Error(`Gagal menyimpan absensi: ${attendanceError.message}`);
+        if (fetchError) throw new Error('Gagal mengecek data absensi');
 
-        setSuccess(`Absensi berhasil untuk ${user.name}`);
-        toast.success(`✅ Absensi berhasil untuk ${user.name}`, { id: 'scan-process' });
+        if (!existingAttendance || existingAttendance.length === 0) {
+          // Check-in
+          const status = new Date().getHours() < 8 ? 'HADIR' : 'TERLAMBAT';
+
+          const { error: insertError } = await supabase
+            .from('attendances')
+            .insert({
+              user_id: data.user_id,
+              date: new Date().toISOString(),
+              check_in: new Date().toISOString(),
+              check_out: null,
+              notes: '',
+              created_at: new Date().toISOString(),
+              status: status,
+            });
+
+          if (insertError) throw new Error(`Gagal menyimpan absensi: ${insertError.message}`);
+
+          setSuccess(`Check-in berhasil untuk ${user.name}`);
+          toast.success(`✅ Check-in berhasil untuk ${user.name}`, { id: 'scan-process' });
+        } else {
+          const record = existingAttendance[0];
+
+          if (record.check_out) {
+            setError(`User ${user.name} sudah melakukan check-in dan check-out hari ini`);
+            toast.error(`❌ ${user.name} sudah absen penuh hari ini`, { id: 'scan-process' });
+          } else {
+            // Hitung selisih jam
+            const checkInTime = new Date(record.check_in);
+            const now = new Date();
+
+            const diffInMs = now.getTime() - checkInTime.getTime();
+            const diffInHours = diffInMs / (1000 * 60 * 60);
+
+            if (diffInHours < 8) {
+              const remaining = (8 - diffInHours).toFixed(2);
+              setError(`Belum bisa check-out, sisa waktu kerja ${remaining} jam`);
+              toast.error(`❌ Belum bisa check-out. Minimal 8 jam kerja`, { id: 'scan-process' });
+            } else {
+              const { error: updateError } = await supabase
+                .from('attendances')
+                .update({ check_out: now.toISOString() })
+                .eq('id', record.id);
+
+              if (updateError) throw new Error(`Gagal melakukan check-out: ${updateError.message}`);
+
+              setSuccess(`Check-out berhasil untuk ${user.name}`);
+              toast.success(`✅ Check-out berhasil untuk ${user.name}`, { id: 'scan-process' });
+            }
+          }
+        }
+
         onScanSuccess?.(data.user_id);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses scan';
@@ -150,7 +195,6 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
         )}
       </div>
 
-      {/* Status Message Optional */}
       {error && (
         <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
           <p className="text-sm font-medium">Error: {error}</p>
