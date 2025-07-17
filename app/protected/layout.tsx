@@ -118,7 +118,7 @@ export default function ProtectedLayout({
         <div>{modal}</div>
 
         {/* CONTENT */}
-        <div className="flex-1 flex w-full flex-col gap-20 max-w-7xl p-5">
+        <div className="flex-1 flex w-full flex-col gap-20 max-w-7xl sm:p-5 p-4">
           {children}
           <Toaster position="top-center" reverseOrder={false} />
         </div>
