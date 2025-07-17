@@ -16,11 +16,14 @@ export default function Page() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const fetchData = async () => {
-    const { data, error } = await supabase
-      .from("attendances")
-      .select("*, users(name)");
-    if (!error) setData(data || []);
-  };
+  const { data, error } = await supabase
+    .from("attendances")
+    .select("*, users(name)")
+    .order("date", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (!error) setData(data || []);
+};
 
   useEffect(() => {
     fetchData();
