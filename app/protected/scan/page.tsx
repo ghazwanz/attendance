@@ -36,7 +36,7 @@ export default function AttendancePage() {
           users(
             name
           )
-        `).limit(10).order('created_at', { ascending: false });
+        `).limit(6).order('created_at', { ascending: false });
       console.log(data, error)
       if (error) throw error;
       setRecentAttendance(data || []);
