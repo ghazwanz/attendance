@@ -2,42 +2,31 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeResult } from 'html5-qrcode';
-import { QrCode } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
-import toast from 'react-hot-toast';
 import { createClient } from '@/lib/supabase/client';
+import toast from 'react-hot-toast';
 
-const userMock = {
-  id: 'user_id',
-  name: 'Budi',
-  role: 'employee'
-};
+interface QRScannerProps {
+  onScanSuccess?: (userId: string) => void;
+  onScanError?: (error: string) => void;
+}
 
-export default function ProtectedPage() {
-  const [userId, setUserId] = useState<string | undefined>(userMock.id);
-  const [showScanner, setShowScanner] = useState(false);
-  const [scanning, setScanning] = useState(false);
+const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => {
+  const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const supabase = createClient();
-  const qrData = JSON.stringify({ user_id: userId });
 
   useEffect(() => {
-    const supabase = createClient();
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) window.location.href = '/auth/login';
-      setUserId(user?.id);
-    };
-    checkAuth();
     return () => {
-      if (scannerRef.current) scannerRef.current.clear().catch(console.error);
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.error);
+      }
     };
   }, []);
 
   const startScanning = () => {
-    setScanning(true);
+    setIsScanning(true);
     setError(null);
     setSuccess(null);
 
@@ -47,34 +36,38 @@ export default function ProtectedPage() {
       aspectRatio: 1.0,
       disableFlip: false,
       supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-      experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true,
+      },
       videoConstraints: {
         facingMode: 'environment',
         width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
+        height: { ideal: 720 },
+      },
     };
 
     scannerRef.current = new Html5QrcodeScanner('qr-reader', config, false);
 
-    scannerRef.current.render(async (decodedText, decodedResult) => {
+    const onScanSuccessHandler = async (decodedText: any, decodedResult: Html5QrcodeResult) => {
       try {
         toast.loading('Memproses QR Code...', { id: 'scan-process' });
+
         const data = JSON.parse(decodedText);
         if (!data?.user_id) throw new Error('QR tidak valid, user_id tidak ditemukan');
 
         await scannerRef.current?.clear();
-        setScanning(false);
+        setIsScanning(false);
 
         const { data: user, error: userError } = await supabase
           .from('users')
-          .select('id, name, role')
+          .select('id, name, role') // tambahkan field izin jika tersedia
           .eq('id', data.user_id)
           .single();
 
         if (userError || !user) throw new Error('User tidak ditemukan di database');
 
         const today = new Date().toISOString().split('T')[0];
+
         const { data: existingAttendance, error: fetchError } = await supabase
           .from('attendances')
           .select('*')
@@ -85,20 +78,27 @@ export default function ProtectedPage() {
         if (fetchError) throw new Error('Gagal mengecek data absensi');
 
         if (!existingAttendance || existingAttendance.length === 0) {
+          // Penentuan status absensi
           let status = 'HADIR';
           const nowHour = new Date().getHours();
-          if (user.role === 'IZIN') status = 'IZIN';
-          else status = nowHour < 8 ? 'HADIR' : 'TERLAMBAT';
 
-          const { error: insertError } = await supabase.from('attendances').insert({
-            user_id: data.user_id,
-            date: new Date().toISOString(),
-            check_in: new Date().toISOString(),
-            check_out: null,
-            notes: '',
-            created_at: new Date().toISOString(),
-            status
-          });
+          if (user.role === 'IZIN') {
+            status = 'IZIN';
+          } else {
+            status = nowHour < 8 ? 'HADIR' : 'TERLAMBAT';
+          }
+
+          const { error: insertError } = await supabase
+            .from('attendances')
+            .insert({
+              user_id: data.user_id,
+              date: new Date().toISOString(),
+              check_in: new Date().toISOString(),
+              check_out: null,
+              notes: '',
+              created_at: new Date().toISOString(),
+              status: status,
+            });
 
           if (insertError) throw new Error(`Gagal menyimpan absensi: ${insertError.message}`);
 
@@ -106,22 +106,20 @@ export default function ProtectedPage() {
           toast.success(`✅ Check-in berhasil untuk ${user.name}`, { id: 'scan-process' });
         } else {
           const record = existingAttendance[0];
+
           if (record.check_out) {
             setError(`User ${user.name} sudah melakukan check-in dan check-out hari ini`);
             toast.error(`❌ ${user.name} sudah absen penuh hari ini`, { id: 'scan-process' });
           } else {
-            if (user.role === 'IZIN') {
-              setError(`User ${user.name} sedang izin, tidak perlu check-out`);
-              toast.error(`❌ ${user.name} sedang dalam status izin`, { id: 'scan-process' });
-              return;
-            }
-
             const checkInTime = new Date(record.check_in);
             const now = new Date();
-            const diffInHours = (now.getTime() - checkInTime.getTime()) / 36e5;
+
+            const diffInMs = now.getTime() - checkInTime.getTime();
+            const diffInHours = diffInMs / (1000 * 60 * 60);
 
             if (diffInHours < 8) {
-              setError(`Belum bisa check-out, sisa waktu kerja ${(8 - diffInHours).toFixed(2)} jam`);
+              const remaining = (8 - diffInHours).toFixed(2);
+              setError(`Belum bisa check-out, sisa waktu kerja ${remaining} jam`);
               toast.error(`❌ Belum bisa check-out. Minimal 8 jam kerja`, { id: 'scan-process' });
             } else {
               const { error: updateError } = await supabase
@@ -136,58 +134,101 @@ export default function ProtectedPage() {
             }
           }
         }
+
+        onScanSuccess?.(data.user_id);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses scan';
         setError(message);
-        setScanning(false);
+        setIsScanning(false);
         toast.error(`❌ ${message}`, { id: 'scan-process' });
+        onScanError?.(message);
       }
-    }, (err) => {
-      if (!err.includes('No MultiFormat Readers')) console.warn('Scan warning:', err);
-    });
+    };
+
+    const onScanFailure = (error: string) => {
+      if (
+        !error.includes('No MultiFormat Readers') &&
+        !error.includes('NotFoundException') &&
+        !error.includes('No QR code found')
+      ) {
+        console.warn('QR scan warning:', error);
+      }
+    };
+
+    scannerRef.current.render(onScanSuccessHandler, onScanFailure);
+  };
+
+  const stopScanning = async () => {
+    if (scannerRef.current) {
+      await scannerRef.current.clear();
+      setIsScanning(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 dark:from-slate-900 dark:to-slate-800 px-4 py-10">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl rounded-2xl p-6 space-y-6">
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">🏠 Beranda Absensi</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">Klik tombol di bawah ini untuk menampilkan QR kamu atau scan kehadiran.</p>
-        </div>
+    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">QR Code Attendance Scanner</h2>
 
-        <div className="grid grid-cols-1 gap-4">
-          <button onClick={() => setShowScanner(true)} className="flex items-center gap-2 justify-center w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-            <QrCode size={18} /> Tampilkan QR Saya
-          </button>
-          <button onClick={startScanning} disabled={scanning} className="flex items-center gap-2 justify-center w-full py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold">
-            <QrCode size={18} /> Scan Kehadiran
-          </button>
-        </div>
+      <div className="mb-6">
+        <div id="qr-reader" className={`${isScanning ? 'block' : 'hidden'}`}></div>
+        {!isScanning && (
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <div className="text-gray-500 mb-4">
+              <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                />
+              </svg>
+            </div>
+            <p className="text-gray-600">Klik "Start Scanning" untuk memulai</p>
+          </div>
+        )}
       </div>
 
-      {/* MODAL QR */}
-      {showScanner && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-xs relative">
-            <button onClick={() => setShowScanner(false)} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-lg">✖</button>
-            <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">📷 QR Anda</h2>
-            <div className="text-center text-sm text-gray-600 dark:text-gray-300 mb-4">Tunjukkan QR ini ke scanner</div>
-            <div className="flex justify-center">
-              <QRCodeSVG value={qrData} size={200} />
-            </div>
-          </div>
+      <div className="flex gap-4 justify-center">
+        {!isScanning ? (
+          <button
+            onClick={startScanning}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+          >
+            Start Scanning
+          </button>
+        ) : (
+          <button
+            onClick={stopScanning}
+            className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+          >
+            Stop Scanning
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <p className="text-sm font-medium">Error: {error}</p>
         </div>
       )}
 
-      {/* QR SCANNER */}
-      {scanning && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-lg w-full max-w-lg relative">
-            <button onClick={() => scannerRef.current?.clear().then(() => setScanning(false))} className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-lg">✖</button>
-            <div id="qr-reader" className="w-full"></div>
-          </div>
+      {success && (
+        <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+          <p className="text-sm font-medium">Success: {success}</p>
         </div>
       )}
+
+      <div className="mt-6 text-sm text-gray-600">
+        <h3 className="font-medium mb-2">Petunjuk:</h3>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Izinkan akses kamera jika diminta</li>
+          <li>Pastikan QR code berada dalam kotak scan</li>
+          <li>Gunakan pencahayaan yang baik</li>
+          <li>QR code harus mengandung user_id</li>
+        </ul>
+      </div>
     </div>
   );
-}
+};
+
+export default QRScanner;
