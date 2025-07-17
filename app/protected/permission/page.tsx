@@ -335,7 +335,7 @@ export default function PermissionTable() {
             value={form.user_id}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
+            className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border to-black text-black dark:text-white"
           >
             <option value="">Pilih User</option>
             {currentUser?.role === "admin"
