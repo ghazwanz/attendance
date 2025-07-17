@@ -31,7 +31,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
     setSuccess(null);
 
     const config = {
-      fps: 20,
+      fps: 30,
       qrbox: { width: 250, height: 250 },
       aspectRatio: 1.0,
       disableFlip: false,
@@ -72,8 +72,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
           .from('attendances')
           .select('*')
           .eq('user_id', data.user_id)
-          .like('date', `${today}%`)
-          .order('created_at', { ascending: false })
+          .eq('date', today)
           .limit(1);
 
         if (fetchError) throw new Error('Gagal mengecek data absensi');
