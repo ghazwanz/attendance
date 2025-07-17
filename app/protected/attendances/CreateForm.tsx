@@ -87,10 +87,6 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
       setHasCheckedIn(true);
       setShowSuccess(true);
 
-      // ✅ Putar suara sukses
-      const audio = new Audio("/sounds/success.mp3");
-      audio.play();
-
       setTimeout(() => {
         setShowSuccess(false);
         setIsFinished(true);
