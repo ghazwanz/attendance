@@ -222,3 +222,4 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
 };
 
 export default QRScanner;
+  
