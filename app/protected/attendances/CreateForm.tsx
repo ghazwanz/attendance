@@ -5,17 +5,16 @@ import { createClient } from "@/lib/supabase/client";
 export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
   const supabase = createClient();
 
-  const [form, setForm] = useState({
-    status: "HADIR",
-  });
-
+  const [form, setForm] = useState({ status: "HADIR" });
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [attendanceId, setAttendanceId] = useState<number | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isFinished, setIsFinished] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false); // ✅ Tambahkan state error
 
   const today = new Date().toISOString().split("T")[0];
+  const allowedIP = "125.166.12.91"; // Ganti dengan IP kantor kamu
 
   useEffect(() => {
     const init = async () => {
@@ -36,15 +35,10 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
 
       if (data) {
         setAttendanceId(data.id);
-
-        // ✅ Sembunyikan form jika sudah check-in
         if (data.check_in) {
           setIsFinished(true);
         }
-
-        setForm({
-          status: data.status || "HADIR",
-        });
+        setForm({ status: data.status || "HADIR" });
       }
     };
 
@@ -52,57 +46,80 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
   }, [supabase, today]);
 
   const handleCheckIn = async (status: string) => {
-    const now = new Date();
-    const nowISO = now.toISOString();
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const ipData = await res.json();
+      const currentIP = ipData.ip;
 
-    const batasMasuk = new Date();
-    batasMasuk.setHours(8, 0, 0, 0); // jam 08:00:00
+      if (currentIP !== allowedIP) {
+        setShowError(true); // ✅ Tampilkan notifikasi error
+        setTimeout(() => setShowError(false), 3000);
+        return;
+      }
 
-    let finalStatus = status;
-    if (status === "HADIR" && now > batasMasuk) {
-      finalStatus = "TERLAMBAT";
-    }
+      const now = new Date();
+      const nowISO = now.toISOString();
 
-    setForm({ status: finalStatus });
+      const batasMasuk = new Date();
+      batasMasuk.setHours(8, 0, 0, 0); // jam 08:00:00
 
-    const { error, data } = await supabase
-      .from("attendances")
-      .insert([
-        {
-          user_id: userId,
-          date: today,
-          check_in: nowISO,
-          check_out: null,
-          notes: null,
-          status: finalStatus,
-        },
-      ])
-      .select()
-      .single();
+      let finalStatus = status;
+      if (status === "HADIR" && now > batasMasuk) {
+        finalStatus = "TERLAMBAT";
+      }
 
-    if (error) {
-      alert("❌ Gagal absen masuk: " + error.message);
-    } else {
-      setAttendanceId(data.id);
-      setHasCheckedIn(true);
-      setShowSuccess(true);
+      setForm({ status: finalStatus });
 
-      setTimeout(() => {
-        setShowSuccess(false);
-        setIsFinished(true);
-      }, 2000);
+      const { error, data } = await supabase
+        .from("attendances")
+        .insert([
+          {
+            user_id: userId,
+            date: today,
+            check_in: nowISO,
+            check_out: null,
+            notes: null,
+            status: finalStatus,
+          },
+        ])
+        .select()
+        .single();
 
-      onRefresh();
+      if (error) {
+        alert("❌ Gagal absen masuk: " + error.message);
+      } else {
+        setAttendanceId(data.id);
+        setHasCheckedIn(true);
+        setShowSuccess(true);
+
+        setTimeout(() => {
+          setShowSuccess(false);
+          setIsFinished(true);
+        }, 2000);
+
+        onRefresh();
+      }
+    } catch (error) {
+      alert("Gagal memeriksa IP.");
     }
   };
 
   return (
     <>
-      {/* ✅ Pop-up Notifikasi */}
+      {/* ✅ Pop-up Notifikasi Sukses */}
       {showSuccess && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
             ✅ Absensi berhasil disimpan!
+          </div>
+        </div>
+      )}
+
+      {/* ❌ Pop-up Notifikasi Gagal */}
+      {showError && (
+        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
+            ❌ Absensi hanya bisa dilakukan di jaringan kantor!
           </div>
         </div>
       )}
