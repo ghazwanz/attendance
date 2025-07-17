@@ -60,7 +60,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
 
         const { data: user, error: userError } = await supabase
           .from('users')
-          .select('id, name, role') // tambahkan field izin jika tersedia
+          .select('id, name, role, izin') // ✅ tambah field izin
           .eq('id', data.user_id)
           .single();
 
@@ -78,11 +78,11 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
         if (fetchError) throw new Error('Gagal mengecek data absensi');
 
         if (!existingAttendance || existingAttendance.length === 0) {
-          // Penentuan status absensi
+          // ✅ Penentuan status absensi berdasarkan izin atau jam
           let status = 'HADIR';
           const nowHour = new Date().getHours();
 
-          if (user.role === 'IZIN') {
+          if (user.izin === true) {
             status = 'IZIN';
           } else {
             status = nowHour < 8 ? 'HADIR' : 'TERLAMBAT';
