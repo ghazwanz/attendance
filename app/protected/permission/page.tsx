@@ -11,7 +11,9 @@ export default function PermissionTable() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedIdToDelete, setSelectedIdToDelete] = useState<string | null>(null);
+  const [selectedIdToDelete, setSelectedIdToDelete] = useState<string | null>(
+    null
+  );
   const [data, setData] = useState<Permission[]>([]);
   const [form, setForm] = useState({
     user_id: "",
@@ -151,7 +153,9 @@ export default function PermissionTable() {
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md text-black dark:text-white">
-            <p className="text-red-600 font-semibold text-lg mb-2">🗑️ Konfirmasi Hapus</p>
+            <p className="text-red-600 font-semibold text-lg mb-2">
+              🗑️ Konfirmasi Hapus
+            </p>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
               Yakin ingin menghapus data ini?
             </p>
@@ -184,7 +188,7 @@ export default function PermissionTable() {
                 value={form.user_id}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+                className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
               >
                 <option value="">Pilih User</option>
                 {users.map((u) => (
@@ -198,7 +202,7 @@ export default function PermissionTable() {
                 name="type"
                 value={form.type}
                 onChange={handleChange}
-                className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+                className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
               >
                 <option value="izin">Izin</option>
                 <option value="cuti">Cuti</option>
@@ -210,7 +214,7 @@ export default function PermissionTable() {
                 name="start_date"
                 value={form.start_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+                className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
                 required
               />
 
@@ -219,7 +223,7 @@ export default function PermissionTable() {
                 name="end_date"
                 value={form.end_date}
                 onChange={handleChange}
-                className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+               className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
                 required
               />
 
@@ -229,7 +233,7 @@ export default function PermissionTable() {
                 value={form.reason}
                 onChange={handleChange}
                 placeholder="Alasan"
-                className="w-full px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+               className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
                 required
               />
 
@@ -273,7 +277,7 @@ export default function PermissionTable() {
           placeholder="🔍 Cari nama, jenis, atau alasan..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full md:w-1/3 px-4 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+          className="mb-4 px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
         />
       </div>
 
@@ -288,11 +292,11 @@ export default function PermissionTable() {
             value={form.user_id}
             onChange={handleChange}
             required
-            className="px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+            className="px-3 py-2 rounded border border-black bg-white/10 dark:text-white"
           >
             <option value="">Pilih Nama User</option>
             {users.map((user) => (
-              <option key={user.id} value={user.id}>
+              <option key={user.id} value={user.id} className="text-black">
                 {user.name}
               </option>
             ))}
@@ -302,11 +306,17 @@ export default function PermissionTable() {
             name="type"
             value={form.type}
             onChange={handleChange}
-            className="px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+            className="px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
           >
-            <option value="izin">Izin</option>
-            <option value="cuti">Cuti</option>
-            <option value="sakit">Sakit</option>
+            <option className="text-black" value="izin">
+              Izin
+            </option>
+            <option className="text-black" value="cuti">
+              Cuti
+            </option>
+            <option className="text-black" value="sakit">
+              Sakit
+            </option>
           </select>
 
           <input
@@ -315,7 +325,7 @@ export default function PermissionTable() {
             value={form.start_date}
             onChange={handleChange}
             required
-            className="px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+            className="px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
           />
 
           <input
@@ -324,7 +334,7 @@ export default function PermissionTable() {
             value={form.end_date}
             onChange={handleChange}
             required
-            className="px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white"
+            className="px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
           />
 
           <input
@@ -334,7 +344,7 @@ export default function PermissionTable() {
             value={form.reason}
             onChange={handleChange}
             required
-            className="px-3 py-2 rounded bg-white/10 border border-white/20 text-black dark:text-white col-span-2"
+            className="px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white col-span-2"
           />
 
           <button
