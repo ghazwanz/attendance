@@ -31,13 +31,23 @@ export default function PermissionTable() {
     if (!error && data) setUsers(data);
   };
 
-  const fetchData = async () => {
-    const { data, error } = await supabase
-      .from("permissions")
-      .select("*, users(name)")
-      .order("created_at", { ascending: false });
-    if (!error) setData(data);
-  };
+const fetchData = async () => {
+  if (!currentUser) return;
+
+  const query = supabase
+    .from("permissions")
+    .select("*, users(name)")
+    .order("created_at", { ascending: false });
+
+  // Jika bukan admin, filter berdasarkan user_id
+  if (currentUser.role !== "admin") {
+    query.eq("user_id", currentUser.id);
+  }
+
+  const { data, error } = await query;
+  if (!error && data) setData(data);
+};
+
 
   const [currentUser, setCurrentUser] = useState<{
     id: string;
@@ -60,11 +70,20 @@ export default function PermissionTable() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
+useEffect(() => {
+  const init = async () => {
+    await fetchCurrentUser();
+  };
+  init();
+}, []);
+
+useEffect(() => {
+  if (currentUser) {
     fetchUsers();
-    fetchCurrentUser(); // tambahkan ini
-  }, []);
+    fetchData();
+  }
+}, [currentUser]);
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
