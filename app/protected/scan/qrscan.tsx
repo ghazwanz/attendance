@@ -4,11 +4,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeResult } from 'html5-qrcode';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
+import { type } from 'os';
 
 interface QRScannerProps {
   onScanSuccess?: (userId: string) => void;
   onScanError?: (error: string) => void;
 }
+export type qrData = {
+  user_id: string;
+  status: "HADIR" | "IZIN";
+};
 
 const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => {
   const [isScanning, setIsScanning] = useState(false);
@@ -52,7 +57,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
       try {
         toast.loading('Memproses QR Code...', { id: 'scan-process' });
 
-        const data = JSON.parse(decodedText);
+        const data:qrData = JSON.parse(decodedText);
         if (!data?.user_id) throw new Error('QR tidak valid, user_id tidak ditemukan');
 
         await scannerRef.current?.clear();
@@ -60,7 +65,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
 
         const { data: user, error: userError } = await supabase
           .from('users')
-          .select('id, name, role, izin') // ✅ tambah field izin
+          .select('id, name, role') // ✅ tambah field izin
           .eq('id', data.user_id)
           .single();
 
@@ -82,7 +87,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
           let status = 'HADIR';
           const nowHour = new Date().getHours();
 
-          if (user.izin === true) {
+          if (data.status == 'IZIN') {
             status = 'IZIN';
           } else {
             status = nowHour < 8 ? 'HADIR' : 'TERLAMBAT';
@@ -93,7 +98,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
             .insert({
               user_id: data.user_id,
               date: new Date().toISOString(),
-              check_in: new Date().toISOString(),
+              check_in: status=='IZIN'? null : new Date().toISOString(),
               check_out: null,
               notes: '',
               created_at: new Date().toISOString(),
@@ -102,8 +107,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
 
           if (insertError) throw new Error(`Gagal menyimpan absensi: ${insertError.message}`);
 
-          setSuccess(`Check-in berhasil untuk ${user.name}`);
-          toast.success(`✅ Check-in berhasil untuk ${user.name}`, { id: 'scan-process' });
+          setSuccess(status=='IZIN'?`Izin berhasil untuk ${user.name}` : `Check-in berhasil untuk ${user.name}`);
+          toast.success(status=='IZIN'?`✅ Izin berhasil untuk ${user.name}` : `✅ Check-in berhasil untuk ${user.name}`, { id: 'scan-process' });
         } else {
           const record = existingAttendance[0];
 
