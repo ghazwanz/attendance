@@ -34,7 +34,8 @@ export default function ProtectedPage() {
     setShowScanner(true);
   };
 
-  const qrData = JSON.stringify({ user_id: userId, status });
+  const qrData = JSON.stringify({ user_id: userId, status:status });
+  {console.log('QR Data:', qrData)}
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 dark:from-slate-900 dark:to-slate-800 px-4 sm:px-6 py-10">
@@ -70,7 +71,8 @@ export default function ProtectedPage() {
       </div>
 
       {/* MODAL QR */}
-      {showScanner && status && (
+      {
+      showScanner && status && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl w-full max-w-xs sm:max-w-md relative">
             <button
@@ -83,7 +85,6 @@ export default function ProtectedPage() {
             <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-3 sm:mb-4 flex items-center gap-2">
               📷 QR Anda ({status})
             </h2>
-
             <div className="text-center text-sm text-gray-600 dark:text-gray-300 mb-4">
               Tunjukkan QR ini ke scanner untuk absensi {status.toLowerCase()}.
             </div>

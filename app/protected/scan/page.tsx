@@ -36,7 +36,7 @@ export default function AttendancePage() {
           users(
             name
           )
-        `).limit(10).order('created_at', { ascending: false });
+        `).limit(6).order('created_at', { ascending: false });
       console.log(data, error)
       if (error) throw error;
       setRecentAttendance(data || []);
@@ -113,10 +113,12 @@ export default function AttendancePage() {
                   >
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{record.users?.name || 'Pengguna Tidak Diketahui'}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{formatTimestamp(record.check_in)}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{record.status.toLowerCase()==='izin'?formatTimestamp(record.created_at):formatTimestamp(record.check_in)}</p>
                     </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${record.status.toLowerCase() === 'hadir'
                       ? 'bg-green-100 text-green-800'
+                      : record.status.toLowerCase() === 'izin'
+                      ? 'bg-yellow-100 text-yellow-800'
                       : 'bg-red-100 text-red-800'
                       }`}>
                       {record.status}
