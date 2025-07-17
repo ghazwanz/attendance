@@ -36,9 +36,9 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
 
       if (data) {
         setAttendanceId(data.id);
-        setHasCheckedIn(!!data.check_in && !data.check_out);
 
-        if (data.check_in && data.check_out) {
+        // ✅ Sembunyikan form jika sudah check-in
+        if (data.check_in) {
           setIsFinished(true);
         }
 
@@ -55,11 +55,9 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
     const now = new Date();
     const nowISO = now.toISOString();
 
-    // Batas waktu masuk: 08:00
     const batasMasuk = new Date();
     batasMasuk.setHours(8, 0, 0, 0); // jam 08:00:00
 
-    // Cek keterlambatan jika status HADIR
     let finalStatus = status;
     if (status === "HADIR" && now > batasMasuk) {
       finalStatus = "TERLAMBAT";
@@ -87,17 +85,20 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
     } else {
       setAttendanceId(data.id);
       setHasCheckedIn(true);
-      setIsFinished(true);
       setShowSuccess(true);
 
-      setTimeout(() => setShowSuccess(false), 2000);
+      setTimeout(() => {
+        setShowSuccess(false);
+        setIsFinished(true);
+      }, 2000);
+
       onRefresh();
     }
   };
 
   return (
     <>
-      {/* ✅ Pop-up Notifikasi Disamakan */}
+      {/* ✅ Pop-up Notifikasi */}
       {showSuccess && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
@@ -106,7 +107,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
         </div>
       )}
 
-      {/* Jika sudah selesai absen */}
+      {/* ✅ Jika absensi sudah selesai */}
       {isFinished ? (
         <div className="p-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-md text-center">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
@@ -127,7 +128,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               📌 Pilih Status Kehadiran
             </label>
-            <div className="flex gap-3">
+            <div className="sm:flex-row flex gap-3 flex-col">
               <button
                 type="button"
                 onClick={() => handleCheckIn("HADIR")}
