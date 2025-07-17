@@ -13,6 +13,9 @@ const userMock = {
 
 export default function ProtectedPage() {
   const [userId, setUserId] = useState<string | undefined>(userMock.id);
+  const [showScanner, setShowScanner] = useState(false);
+  const [status, setStatus] = useState<"HADIR" | "IZIN" | null>(null);
+
   useEffect(() => {
     const supabase = createClient();
     const checkAuth = async () => {
@@ -26,8 +29,12 @@ export default function ProtectedPage() {
     checkAuth();
   }, []);
 
-  const [showScanner, setShowScanner] = useState(false);
-  const qrData = JSON.stringify({ user_id: userId });
+  const handleShowQR = (statusType: "HADIR" | "IZIN") => {
+    setStatus(statusType);
+    setShowScanner(true);
+  };
+
+  const qrData = JSON.stringify({ user_id: userId, status });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 dark:from-slate-900 dark:to-slate-800 px-4 sm:px-6 py-10">
@@ -39,24 +46,31 @@ export default function ProtectedPage() {
             🏠 Beranda Absensi
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Klik tombol di bawah ini untuk menampilkan QR kamu.
+            Pilih jenis kehadiran untuk menampilkan QR.
           </p>
         </div>
 
-        {/* Tombol QR */}
-        <div className="grid grid-cols-1">
+        {/* Dua Tombol QR */}
+        <div className="grid grid-cols-1 gap-3">
           <button
-            onClick={() => setShowScanner(true)}
-            className="flex items-center gap-3 justify-center w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition text-sm sm:text-base"
+            onClick={() => handleShowQR("HADIR")}
+            className="flex items-center gap-3 justify-center w-full py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition text-sm sm:text-base"
           >
             <QrCode size={18} />
-            Tampilkan QR Saya
+            Tampilkan QR Scan HADIR
+          </button>
+          <button
+            onClick={() => handleShowQR("IZIN")}
+            className="flex items-center gap-3 justify-center w-full py-3 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-semibold transition text-sm sm:text-base"
+          >
+            <QrCode size={18} />
+            Tampilkan QR Scan IZIN
           </button>
         </div>
       </div>
 
       {/* MODAL QR */}
-      {showScanner && (
+      {showScanner && status && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl w-full max-w-xs sm:max-w-md relative">
             <button
@@ -67,11 +81,11 @@ export default function ProtectedPage() {
             </button>
 
             <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-3 sm:mb-4 flex items-center gap-2">
-              📷 QR Anda
+              📷 QR Anda ({status})
             </h2>
 
             <div className="text-center text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Tunjukkan QR ini ke scanner
+              Tunjukkan QR ini ke scanner untuk absensi {status.toLowerCase()}.
             </div>
 
             <div className="flex justify-center">
