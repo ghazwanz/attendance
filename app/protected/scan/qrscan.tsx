@@ -37,16 +37,16 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
       disableFlip: false,
       supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
       experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
+        useBarCodeDetectorIfSupported: true,
       },
       videoConstraints: {
         facingMode: 'environment',
         width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
+        height: { ideal: 720 },
+      },
     };
 
-    scannerRef.current = new Html5QrcodeScanner("qr-reader", config, false);
+    scannerRef.current = new Html5QrcodeScanner('qr-reader', config, false);
 
     const onScanSuccessHandler = async (decodedText: any, decodedResult: Html5QrcodeResult) => {
       try {
@@ -60,13 +60,13 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
 
         const { data: user, error: userError } = await supabase
           .from('users')
-          .select('id, name, role')
+          .select('id, name, role') // tambahkan field izin jika tersedia
           .eq('id', data.user_id)
           .single();
 
         if (userError || !user) throw new Error('User tidak ditemukan di database');
 
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
 
         const { data: existingAttendance, error: fetchError } = await supabase
           .from('attendances')
@@ -78,8 +78,15 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
         if (fetchError) throw new Error('Gagal mengecek data absensi');
 
         if (!existingAttendance || existingAttendance.length === 0) {
-          // Check-in
-          const status = new Date().getHours() < 8 ? 'HADIR' : 'TERLAMBAT';
+          // Penentuan status absensi
+          let status = 'HADIR';
+          const nowHour = new Date().getHours();
+
+          if (user.role === 'IZIN') {
+            status = 'IZIN';
+          } else {
+            status = nowHour < 8 ? 'HADIR' : 'TERLAMBAT';
+          }
 
           const { error: insertError } = await supabase
             .from('attendances')
@@ -104,7 +111,6 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
             setError(`User ${user.name} sudah melakukan check-in dan check-out hari ini`);
             toast.error(`❌ ${user.name} sudah absen penuh hari ini`, { id: 'scan-process' });
           } else {
-            // Hitung selisih jam
             const checkInTime = new Date(record.check_in);
             const now = new Date();
 
@@ -169,7 +175,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
             <div className="text-gray-500 mb-4">
               <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                />
               </svg>
             </div>
             <p className="text-gray-600">Klik "Start Scanning" untuk memulai</p>
@@ -221,4 +232,3 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
 };
 
 export default QRScanner;
-  

@@ -113,22 +113,6 @@ export default function ProtectedLayout({
 
           </div>
         </nav>
-        {/* Script to auto uncheck nav-toggle on resize */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-      function handleResize() {
-        const checkbox = document.getElementById('nav-toggle');
-        if (window.innerWidth >= 1024 && checkbox?.checked) {
-          checkbox.checked = false;
-        }
-      }
-      window.addEventListener('resize', handleResize);
-      // Optional: run on load
-      handleResize();
-    `,
-          }}
-        ></script>
 
         {/* MODAL */}
         <div>{modal}</div>
@@ -154,29 +138,6 @@ export default function ProtectedLayout({
           </p>
         </footer>
       </div>
-      {/* FOOTER */}
-<footer className="...">
-  ...
-</footer>
-
-{/* 👇 Auto-close nav toggle saat resize */}
-        {/* Script to auto uncheck nav-toggle on resize */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-      function handleResize() {
-        const checkbox = document.getElementById('nav-toggle');
-        if (window.innerWidth >= 1024 && checkbox?.checked) {
-          checkbox.checked = false;
-        }
-      }
-      window.addEventListener('resize', handleResize);
-      // Optional: run on load
-      handleResize();
-    `,
-          }}
-        ></script>
-
     </main>
   );
 }
