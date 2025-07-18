@@ -6,15 +6,17 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
   const supabase = createClient();
 
   const [form, setForm] = useState({ status: "HADIR" });
-  const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [attendanceId, setAttendanceId] = useState<number | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [isFinished, setIsFinished] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showError, setShowError] = useState(false); // ✅ Tambahkan state error
+  const [showError, setShowError] = useState(false);
+
+  const [showIzinModal, setShowIzinModal] = useState(false);
+  const [izinReason, setIzinReason] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
-  const allowedIP = "125.166.12.91"; // Ganti dengan IP kantor kamu
+  const allowedIP = "125.166.12.91";
 
   useEffect(() => {
     const init = async () => {
@@ -35,24 +37,22 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
 
       if (data) {
         setAttendanceId(data.id);
-        if (data.check_in) {
-          setIsFinished(true);
-        }
         setForm({ status: data.status || "HADIR" });
+        setIsFinished(true);
       }
     };
 
     init();
   }, [supabase, today]);
 
-  const handleCheckIn = async (status: string) => {
+  const handleCheckIn = async (status: string, notes: string | null = null) => {
     try {
       const res = await fetch("https://api.ipify.org?format=json");
       const ipData = await res.json();
       const currentIP = ipData.ip;
 
-      if (currentIP !== allowedIP) {
-        setShowError(true); // ✅ Tampilkan notifikasi error
+      if (currentIP !== allowedIP && status !== "IZIN") {
+        setShowError(true);
         setTimeout(() => setShowError(false), 3000);
         return;
       }
@@ -61,7 +61,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
       const nowISO = now.toISOString();
 
       const batasMasuk = new Date();
-      batasMasuk.setHours(8, 0, 0, 0); // jam 08:00:00
+      batasMasuk.setHours(8, 0, 0, 0);
 
       let finalStatus = status;
       if (status === "HADIR" && now > batasMasuk) {
@@ -76,9 +76,9 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
           {
             user_id: userId,
             date: today,
-            check_in: nowISO,
+            check_in: status === "IZIN" ? null : nowISO,
             check_out: null,
-            notes: null,
+            notes: notes,
             status: finalStatus,
           },
         ])
@@ -89,7 +89,6 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
         alert("❌ Gagal absen masuk: " + error.message);
       } else {
         setAttendanceId(data.id);
-        setHasCheckedIn(true);
         setShowSuccess(true);
 
         setTimeout(() => {
@@ -106,7 +105,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
 
   return (
     <>
-      {/* ✅ Pop-up Notifikasi Sukses */}
+      {/* ✅ Notifikasi */}
       {showSuccess && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
@@ -115,7 +114,6 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
         </div>
       )}
 
-      {/* ❌ Pop-up Notifikasi Gagal */}
       {showError && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
@@ -124,7 +122,42 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
         </div>
       )}
 
-      {/* ✅ Jika absensi sudah selesai */}
+      {/* ✅ Modal IZIN */}
+      {showIzinModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-md space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+              📄 Masukkan Alasan Izin
+            </h3>
+            <textarea
+              rows={3}
+              placeholder="Contoh: Sakit demam atau ada keperluan keluarga"
+              className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:text-white"
+              value={izinReason}
+              onChange={(e) => setIzinReason(e.target.value)}
+            ></textarea>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowIzinModal(false)}
+                className="px-4 py-2 rounded-lg text-sm bg-gray-300 hover:bg-gray-400 text-black"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  handleCheckIn("IZIN", izinReason);
+                  setShowIzinModal(false);
+                }}
+                className="px-4 py-2 rounded-lg text-sm bg-yellow-500 hover:bg-yellow-600 text-white"
+              >
+                Kirim Izin
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Form Utama */}
       {isFinished ? (
         <div className="p-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-md text-center">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
@@ -140,7 +173,6 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
             📥 Absensi Masuk
           </h2>
 
-          {/* Tombol Pilih Status Kehadiran */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               📌 Pilih Status Kehadiran
@@ -155,7 +187,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
               </button>
               <button
                 type="button"
-                onClick={() => handleCheckIn("IZIN")}
+                onClick={() => setShowIzinModal(true)}
                 className="flex-1 py-2 rounded-lg font-semibold text-white transition-all bg-yellow-500 hover:bg-yellow-600"
               >
                 📄 IZIN
