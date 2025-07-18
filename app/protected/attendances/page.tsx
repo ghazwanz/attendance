@@ -17,12 +17,30 @@ export default function Page() {
 
 
   const fetchData = async () => {
-    const { data, error } = await supabase
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+
+    let query = supabase
       .from("attendances")
-      .select("*, users(name)")
+      .select("*, users(name, role)")
       .order("date", { ascending: false })
       .order("created_at", { ascending: false });
 
+    // Tunggu ambil user role dari tabel `users`
+    const { data: userInfo } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    const userRole = userInfo?.role;
+
+    // Filter data hanya untuk user biasa
+    if (userRole !== "admin") {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query;
     if (!error) setData(data || []);
   };
 

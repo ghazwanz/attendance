@@ -27,19 +27,44 @@ const Page = () => {
       const { data: authUser } = await supabase.auth.getUser();
       if (!authUser?.user) return redirect('/auth/login');
 
-      const { data: currentUser, error } = await supabase
+      const { data: currentUserData, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', authUser.user.id)
         .single();
+
+      if (error || !currentUserData) return redirect('/auth/login');
+
+      // 🔁 Ambil email dari auth.users
+      const { data: authUserData } = await supabase.auth.getUser();
+
+      const currentUser: User = {
+        ...currentUserData,
+        email: authUserData?.user?.email ?? '', // tambahkan email
+        password: '', // dummy password
+      };
+
 
       if (error || !currentUser) return redirect('/auth/login');
 
       setUserData(currentUser);
 
       if (currentUser.role === 'admin') {
-        const { data: allUsers } = await supabase.from('users').select('*');
-        setUsers(allUsers ?? []);
+        const { data: allUsersRaw } = await supabase.from('users').select('*');
+
+        const { data: allAuthUsers } = await supabase.auth.admin.listUsers();
+
+        const mergedUsers: User[] = (allUsersRaw ?? []).map((user) => {
+          const matchingAuth = allAuthUsers?.users.find((u) => u.id === user.id);
+          return {
+            ...user,
+            email: matchingAuth?.email ?? '',
+            password: '', // password tetap disembunyikan
+          };
+        });
+
+        setUsers(mergedUsers);
+
       } else {
         setUsers([currentUser]);
       }
