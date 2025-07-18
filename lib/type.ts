@@ -1,9 +1,11 @@
 export type User = {
-    id: string;
-    name: string;
-    role: "admin" | "employee";
-    created_at: string; // ISO 8601 format
-}
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  role: "admin" | "employee";
+  created_at: string; // ISO 8601 format
+};
 
 export type Schedule = {
     id?: string;
