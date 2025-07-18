@@ -110,7 +110,7 @@ export default function ProtectedPage() {
     <div className="min-h-screen flex flex-col gap-12 items-center justify-start bg-gradient-to-br from-blue-100 to-blue-300 dark:from-slate-900 dark:to-slate-800 px-4 sm:px-6 py-10">
       <div className="flex items-stretch flex-col justify-start w-full gap-5">
         <h1 className="text-2xl">Dashboard</h1>
-        <div className="flex gap-5 items-stretch">
+        <div className="grid lg:grid-cols-5 sm:grid-cols-3 grid-cols-2 gap-5 items-stretch">
           <div className="flex flex-col gap-2 w-full text-white justify-center p-4 bg-sky-500 dark:bg-blue-800 rounded shadow-lg">
             <h2 className="text-xl font-medium">Jumlah Absensi</h2>
             <span className="ml-2 text-lg">{countAbsensi}</span>
