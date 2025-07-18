@@ -45,10 +45,11 @@ export function SignUpForm({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/protected`,
+          // emailRedirectTo: `${window.location.origin}/protected`,
           data: {
-        name: name
-          }
+            role: "employee",
+            name: name,
+          },
         },
       });
       if (error) throw error;

@@ -67,7 +67,7 @@ export default function AttendancePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-slate-900 py-10">
+    <div className="min-h-screen py-10">
       <div className="w-full mx-auto">
 
         {/* Header */}
