@@ -8,51 +8,65 @@ type EditUserModalProps = {
   user: User;
   onClose: () => void;
   onUpdated: () => void;
+  updateUserAction: (formData: FormData) => void;
 };
 
-const EditUserModal = ({ user, onClose, onUpdated }: EditUserModalProps) => {
+const EditUserModal = ({ user, onClose, onUpdated, updateUserAction }: EditUserModalProps) => {
   const supabase = createClient();
 
-  const [name, setName] = useState(user.name ?? '');
-  const [role, setRole] = useState(user.role ?? 'employee');
+  const [name, setName] = useState('');
+  const [role, setRole] = useState<'admin' | 'employee'>('employee');
   const [email, setEmail] = useState('Memuat...');
+  const [loading, setLoading] = useState(false);
+
+  // Password hanya placeholder
   const [password] = useState(() => {
     const random = Math.random().toString(36).slice(-8);
     return `•••••••${random}`;
   });
 
-  const [loading, setLoading] = useState(false);
-
   useEffect(() => {
-    const fetchEmail = async () => {
+    const fetchUserFromAuth = async () => {
       const { data, error } = await supabase.auth.admin.getUserById(user.id);
-      if (data?.user?.email) {
-        setEmail(data.user.email);
-      } else {
-        // Email tidak ditemukan di Auth, gunakan email palsu
-        const fakeEmail = `user_${user.id.slice(0, 5)}@example.com`;
-        setEmail(fakeEmail);
+      const authUser = data?.user;
+
+      // fallback email
+      const fallbackEmail = `user_${user.id.slice(0, 5)}@example.com`;
+
+      if (!authUser || error) {
+        setEmail(fallbackEmail);
+        setName(user.name || '');
+        return;
       }
+
+      const authName = authUser.user_metadata?.name;
+      const authRole = authUser.user_metadata?.role;
+
+      setEmail(authUser.email || fallbackEmail);
+      setName(authName || user.name || '');
+      setRole(authRole || 'employee');
     };
 
-    fetchEmail();
-  }, [supabase, user.id]);
+    fetchUserFromAuth();
+  }, [supabase, user.id, user.name]);
+
 
   const handleSubmit = async () => {
     setLoading(true);
 
-    const { error: userTableError } = await supabase
-      .from('users')
-      .update({ name, role })
-      .eq('id', user.id);
+    const formData = new FormData();
+    formData.append('id', user.id);
+    formData.append('name', name);
+    formData.append('role', role);
 
-    setLoading(false);
-
-    if (!userTableError) {
+    try {
+      updateUserAction(formData);
       onUpdated();
-    } else {
-      console.error('User Table Error:', userTableError);
-      alert(userTableError?.message ?? 'Gagal memperbarui data user');
+    } catch (err) {
+      console.error('Update failed:', err);
+      alert('Gagal memperbarui data user');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,7 +75,6 @@ const EditUserModal = ({ user, onClose, onUpdated }: EditUserModalProps) => {
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-lg">
         <h2 className="text-lg font-semibold mb-4">Edit Pengguna</h2>
 
-        {/* Nama */}
         <div className="mb-3">
           <label className="block text-sm font-medium mb-1">Nama</label>
           <input
@@ -72,7 +85,6 @@ const EditUserModal = ({ user, onClose, onUpdated }: EditUserModalProps) => {
           />
         </div>
 
-        {/* Email */}
         <div className="mb-3">
           <label className="block text-sm font-medium mb-1">Email (disembunyikan)</label>
           <input
@@ -83,7 +95,6 @@ const EditUserModal = ({ user, onClose, onUpdated }: EditUserModalProps) => {
           />
         </div>
 
-        {/* Password */}
         <div className="mb-3">
           <label className="block text-sm font-medium mb-1">Password (disembunyikan)</label>
           <input
@@ -94,7 +105,6 @@ const EditUserModal = ({ user, onClose, onUpdated }: EditUserModalProps) => {
           />
         </div>
 
-        {/* Role */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-1">Role</label>
           <select
@@ -107,7 +117,6 @@ const EditUserModal = ({ user, onClose, onUpdated }: EditUserModalProps) => {
           </select>
         </div>
 
-        {/* Tombol */}
         <div className="flex justify-end">
           <button
             onClick={handleSubmit}

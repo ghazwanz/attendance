@@ -1,6 +1,5 @@
 // app/users/page.tsx
 import { redirect } from 'next/navigation';
-// import { createClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import UsersTable from './UsersTable';
@@ -10,10 +9,9 @@ import { createClient, createAdmin } from '@/lib/supabase/server';
 // Server Actions
 async function createUser(formData: FormData) {
   'use server';
-  
+
   const supabase = await createAdmin();
-  
-  // Get current user to check permissions
+
   const { data: { user: authUser } } = await supabase.auth.getUser();
   if (!authUser) {
     redirect('/auth/login');
@@ -35,9 +33,8 @@ async function createUser(formData: FormData) {
   const role = formData.get('role') as string;
 
   try {
-    // Create auth user
     const { error: authError } = await supabase.auth.admin.createUser({
-      email:email,
+      email: email,
       password,
       email_confirm: true,
       user_metadata: { name, role }
@@ -47,7 +44,7 @@ async function createUser(formData: FormData) {
 
     revalidatePath('/users');
     return { success: true };
-  } catch (error : Error | any) {
+  } catch (error: Error | any) {
     console.error('Error creating user:', error);
     return { success: false, error: error.message };
   }
@@ -55,9 +52,9 @@ async function createUser(formData: FormData) {
 
 async function updateUser(formData: FormData) {
   'use server';
-  
+
   const supabase = await createClient();
-  
+  const supabaseAdmin = await createAdmin();
   const { data: { user: authUser } } = await supabase.auth.getUser();
   if (!authUser) {
     redirect('/auth/login');
@@ -78,6 +75,12 @@ async function updateUser(formData: FormData) {
   const role = formData.get('role') as string;
 
   try {
+    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+      user_metadata: {
+        name,
+        role,
+      },
+    });
     const { error } = await supabase
       .from('users')
       .update({ name, role })
@@ -87,7 +90,7 @@ async function updateUser(formData: FormData) {
 
     revalidatePath('/users');
     return { success: true };
-  } catch (error : Error | any) {
+  } catch (error: Error | any) {
     console.error('Error updating user:', error);
     return { success: false, error: error.message };
   }
@@ -95,9 +98,9 @@ async function updateUser(formData: FormData) {
 
 async function deleteUser(formData: FormData) {
   'use server';
-  
+
   const supabase = await createAdmin();
-  
+
   const { data: { user: authUser } } = await supabase.auth.getUser();
   if (!authUser) {
     redirect('/auth/login');
@@ -116,7 +119,6 @@ async function deleteUser(formData: FormData) {
   const userId = formData.get('userId') as string;
 
   try {
-    // Delete auth user
     const { error: authError } = await supabase.auth.admin.deleteUser(userId);
     if (authError) console.warn('Auth user deletion failed:', authError);
 
@@ -134,16 +136,15 @@ export default async function UsersPage({
 }: {
   searchParams: { search?: string };
 }) {
-  const supabase = await createClient();
-  
-  // Get current user
-  const { data } = await supabase.auth.getUser();
+  const supabaseClient = await createClient();
+  const supabaseAdmin = await createAdmin();
+
+  const { data } = await supabaseClient.auth.getUser();
   if (!data.user) {
     redirect('/auth/login');
   }
 
-  // Get user data and all users
-  const { data: currentUser } = await supabase
+  const { data: currentUser } = await supabaseClient
     .from('users')
     .select('*')
     .eq('id', data.user.id)
@@ -153,25 +154,35 @@ export default async function UsersPage({
     redirect('/auth/login');
   }
 
-  // Fetch users based on role
   let users: User[] = [];
   if (currentUser.role === 'admin') {
-    const { data: allUsers } = await supabase
+    const { data: allAuthUsers, error } = await supabaseAdmin.auth.admin.listUsers();
+    const { data: userTableData } = await supabaseAdmin
       .from('users')
-      .select('*')
-      .order('created_at', { ascending: false });
-    users = allUsers || [];
+      .select('id, name, role');
+
+    if (!error && allAuthUsers?.users) {
+      users = allAuthUsers.users.map((user) => {
+        const fallbackUser = userTableData?.find((u) => u.id === user.id);
+        return {
+          id: user.id,
+          name: user.user_metadata?.name || fallbackUser?.name || '',
+          email: user.email || '',
+          role: user.user_metadata?.role || fallbackUser?.role || '',
+          created_at: user.created_at,
+        };
+      });
+    }
   } else {
     users = [currentUser];
   }
 
-  // Filter users based on search
-  const { search } = await searchParams;
+  const { search } = searchParams;
   const filteredUsers = search?.toLowerCase()
-    ? users.filter(user => 
-        user.name?.toLowerCase().includes(search) ||
-        user.role?.toLowerCase().includes(search)
-      )
+    ? users.filter(user =>
+      user.name?.toLowerCase().includes(search) ||
+      user.role?.toLowerCase().includes(search)
+    )
     : users;
 
   return (

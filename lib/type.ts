@@ -2,7 +2,6 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  password: string;
   role: "admin" | "employee";
   created_at: string; // ISO 8601 format
 };
