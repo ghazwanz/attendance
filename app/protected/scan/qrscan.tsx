@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeResult } from 'html5-qrcode';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
-import { type } from 'os';
 
 interface QRScannerProps {
   onScanSuccess?: (userId: string) => void;
@@ -12,7 +11,7 @@ interface QRScannerProps {
 }
 export type qrData = {
   user_id: string;
-  status: "HADIR" | "IZIN";
+  status: 'HADIR' | 'IZIN';
 };
 
 const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => {
@@ -57,7 +56,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
       try {
         toast.loading('Memproses QR Code...', { id: 'scan-process' });
 
-        const data:qrData = JSON.parse(decodedText);
+        const data: qrData = JSON.parse(decodedText);
         if (!data?.user_id) throw new Error('QR tidak valid, user_id tidak ditemukan');
 
         await scannerRef.current?.clear();
@@ -65,7 +64,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
 
         const { data: user, error: userError } = await supabase
           .from('users')
-          .select('id, name, role') // ✅ tambah field izin
+          .select('id, name, role')
           .eq('id', data.user_id)
           .single();
 
@@ -83,34 +82,41 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
         if (fetchError) throw new Error('Gagal mengecek data absensi');
 
         if (!existingAttendance || existingAttendance.length === 0) {
-          // ✅ Penentuan status absensi berdasarkan izin atau jam
           let status = 'HADIR';
           const nowHour = new Date().getHours();
 
-          if (data.status == 'IZIN') {
+          if (data.status === 'IZIN') {
             status = 'IZIN';
           } else {
             status = nowHour < 8 ? 'HADIR' : 'TERLAMBAT';
           }
 
-          const { error: insertError } = await supabase
-            .from('attendances')
-            .insert({
-              user_id: data.user_id,
-              date: new Date().toISOString(),
-              check_in: status=='IZIN'? null : new Date().toISOString(),
-              check_out: null,
-              notes: '',
-              created_at: new Date().toISOString(),
-              status: status,
-            });
+          const { error: insertError } = await supabase.from('attendances').insert({
+            user_id: data.user_id,
+            date: new Date().toISOString(),
+            check_in: status === 'IZIN' ? null : new Date().toISOString(),
+            check_out: null,
+            notes: '',
+            created_at: new Date().toISOString(),
+            status: status,
+          });
 
           if (insertError) throw new Error(`Gagal menyimpan absensi: ${insertError.message}`);
 
-          setSuccess(status=='IZIN'?`Izin berhasil untuk ${user.name}` : `Check-in berhasil untuk ${user.name}`);
-          toast.success(status=='IZIN'?`✅ Izin berhasil untuk ${user.name}` : `✅ Check-in berhasil untuk ${user.name}`, { id: 'scan-process' });
+          setSuccess(status === 'IZIN' ? `Izin berhasil untuk ${user.name}` : `Check-in berhasil untuk ${user.name}`);
+          toast.success(status === 'IZIN' ? `✅ Izin berhasil untuk ${user.name}` : `✅ Check-in berhasil untuk ${user.name}`, {
+            id: 'scan-process',
+          });
+
+          if (status === 'IZIN') return;
         } else {
           const record = existingAttendance[0];
+
+          if (record.status === 'IZIN') {
+            setError(`${user.name} sedang Izin hari ini. Tidak ada proses absen.`);
+            toast.error(`⚠️ ${user.name} Izin hari ini`, { id: 'scan-process' });
+            return;
+          }
 
           if (record.check_out) {
             setError(`User ${user.name} sudah melakukan check-in dan check-out hari ini`);
@@ -118,7 +124,6 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
           } else {
             const checkInTime = new Date(record.check_in);
             const now = new Date();
-
             const diffInMs = now.getTime() - checkInTime.getTime();
             const diffInHours = diffInMs / (1000 * 60 * 60);
 
