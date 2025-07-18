@@ -15,15 +15,34 @@ export default function Page() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  const fetchData = async () => {
-  const { data, error } = await supabase
-    .from("attendances")
-    .select("*, users(name)")
-    .order("date", { ascending: false })
-    .order("created_at", { ascending: false });
 
-  if (!error) setData(data || []);
-};
+  const fetchData = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+
+    let query = supabase
+      .from("attendances")
+      .select("*, users(name, role)")
+      .order("date", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    // Tunggu ambil user role dari tabel `users`
+    const { data: userInfo } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    const userRole = userInfo?.role;
+
+    // Filter data hanya untuk user biasa
+    if (userRole !== "admin") {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query;
+    if (!error) setData(data || []);
+  };
 
   useEffect(() => {
     fetchData();
@@ -39,8 +58,8 @@ export default function Page() {
   );
 
   return (
-    <div className="min-h-screen py-10 px-4 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
-      <div className="max-w-6xl mx-auto space-y-10">
+    <div className="min-h-screen py-10 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
+      <div className="w-full space-y-10">
 
         {/* Notifikasi Berhasil */}
         {successMessage && (
@@ -110,8 +129,8 @@ export default function Page() {
                     <tr
                       key={item.id}
                       className={`transition duration-150 ${i % 2 === 0
-                          ? "bg-white dark:bg-slate-800"
-                          : "bg-blue-50 dark:bg-slate-700"
+                        ? "bg-white dark:bg-slate-800"
+                        : "bg-blue-50 dark:bg-slate-700"
                         } hover:bg-gray-100 dark:hover:bg-slate-600`}
                     >
                       <td className="py-2 px-4">{i + 1}</td>
@@ -142,30 +161,45 @@ export default function Page() {
                           {item.status}
                         </span>
                       </td>
-                      <td className="py-2 px-4 space-x-2 flex flex-wrap gap-2">
-                        {!item.check_out && (
-                          <button
-                            onClick={() => {
-                              setCheckoutItem(item);
-                              setCheckoutError(null);
-                            }}
-                            className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                          >
-                            🕒 Pulang
-                          </button>
-                        )}
-                        <button
-                          onClick={() => setSelected(item)}
-                          className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                        >
-                          ✏️ Edit
-                        </button>
-                        <button
-                          onClick={() => setDeleteItem(item)}
-                          className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                        >
-                          🗑 Delete
-                        </button>
+                      <td className="py-2 px-4">
+                        <div className="flex flex-wrap gap-2">
+                          {item.status === "IZIN" ? (
+                            <button
+                              onClick={() => setDeleteItem(item)}
+                              className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                            >
+                              🗑 Delete
+                            </button>
+                          ) : (
+                            <>
+                              {!item.check_out && (
+                                <button
+                                  onClick={() => {
+                                    setCheckoutItem(item);
+                                    setCheckoutError(null);
+                                  }}
+                                  className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                >
+                                  🕒 Pulang
+                                </button>
+                              )}
+
+                              <button
+                                onClick={() => setSelected(item)}
+                                className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                              >
+                                ✏️ Edit
+                              </button>
+
+                              <button
+                                onClick={() => setDeleteItem(item)}
+                                className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                              >
+                                🗑 Delete
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
