@@ -16,7 +16,7 @@ export function Hero() {
       <p className="text-3xl lg:text-4xl !leading-tight mx-auto max-w-xl text-center">
         Selamat Datang di Sistem Absensi{" "}
         <a
-          href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
+          href="https://mahative.com"
           target="_blank"
           className="font-bold hover:underline"
           rel="noreferrer"
@@ -26,7 +26,7 @@ export function Hero() {
         {""}
         tive{" "}
         <a
-          href="https://nextjs.org/"
+          href="https://mahative.com"
           target="_blank"
           className="font-bold hover:underline"
           rel="noreferrer"
