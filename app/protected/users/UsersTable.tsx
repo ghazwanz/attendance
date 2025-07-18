@@ -5,6 +5,7 @@ import { LucidePencil, Plus, Trash2, LucideSearch } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "@/lib/type";
+import {useDebouncedCallback} from "use-debounce";
 
 interface UsersTableProps {
   users: User[];
@@ -40,8 +41,7 @@ export default function UsersTable({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
+  const handlerSearch = useDebouncedCallback((term:string)=>{
     const params = new URLSearchParams(searchParams);
     if (term) {
       params.set("search", term);
@@ -49,6 +49,11 @@ export default function UsersTable({
       params.delete("search");
     }
     router.push(`./users?${params.toString()}`);
+  },300)
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    handlerSearch(term);
   };
 
   const handleCreateUser = async (formData: FormData) => {
