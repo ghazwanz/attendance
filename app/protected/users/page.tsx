@@ -1,9 +1,7 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { LucidePencil, Plus, Trash2, LucideSearch } from 'lucide-react';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import EditUserModal from './EditUserModal';
 import DeleteUserModal from './DeleteUserModal';
@@ -11,8 +9,6 @@ import { User } from '@/lib/type';
 import AddUser from './AddUser';
 
 const Page = () => {
-  const supabase = createClient();
-
   const [userData, setUserData] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -20,54 +16,16 @@ const Page = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(''); // 🔍 state pencarian
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: authUser } = await supabase.auth.getUser();
-      if (!authUser?.user) return redirect('/auth/login');
+      const res = await fetch('/api/fetch-users');
+      if (!res.ok) return redirect('/auth/login');
 
-      const { data: currentUserData, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.user.id)
-        .single();
-
-      if (error || !currentUserData) return redirect('/auth/login');
-
-      // 🔁 Ambil email dari auth.users
-      const { data: authUserData } = await supabase.auth.getUser();
-
-      const currentUser: User = {
-        ...currentUserData,
-        email: authUserData?.user?.email ?? '', // tambahkan email
-        password: '', // dummy password
-      };
-
-
-      if (error || !currentUser) return redirect('/auth/login');
-
+      const { currentUser, mergedUsers } = await res.json();
       setUserData(currentUser);
-
-      if (currentUser.role === 'admin') {
-        const { data: allUsersRaw } = await supabase.from('users').select('*');
-
-        const { data: allAuthUsers } = await supabase.auth.admin.listUsers();
-
-        const mergedUsers: User[] = (allUsersRaw ?? []).map((user) => {
-          const matchingAuth = allAuthUsers?.users.find((u) => u.id === user.id);
-          return {
-            ...user,
-            email: matchingAuth?.email ?? '',
-            password: '', // password tetap disembunyikan
-          };
-        });
-
-        setUsers(mergedUsers);
-
-      } else {
-        setUsers([currentUser]);
-      }
+      setUsers(currentUser.role === 'admin' ? mergedUsers : [currentUser]);
     };
 
     fetchData();
@@ -84,10 +42,9 @@ const Page = () => {
   };
 
   const handleUserUpdated = async () => {
-    if (userData?.role === 'admin') {
-      const { data } = await supabase.from('users').select('*');
-      setUsers(data ?? []);
-    }
+    const res = await fetch('/api/fetch-users');
+    const { currentUser, mergedUsers } = await res.json();
+    setUsers(currentUser.role === 'admin' ? mergedUsers : [currentUser]);
     setEditModalOpen(false);
   };
 
@@ -96,7 +53,6 @@ const Page = () => {
     setDeleteModalOpen(false);
   };
 
-  // Memoised hasil filter agar lebih efisien
   const filteredUsers = useMemo(() => {
     if (!searchTerm.trim()) return users;
     const term = searchTerm.toLowerCase();
@@ -107,14 +63,12 @@ const Page = () => {
 
   return (
     <div className="rounded-2xl shadow-lg dark:shadow-white/20 p-8">
-      {/* Header */}
       <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold">📋 Tabel User</h2>
           <p className="text-gray-500 mt-1">Data pengguna yang terdaftar di sistem</p>
         </div>
 
-        {/* Search Bar */}
         <div className="flex-1 min-w-[220px] max-w-[320px] mx-auto">
           <div className="relative">
             <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -139,7 +93,6 @@ const Page = () => {
         )}
       </div>
 
-      {/* Tabel */}
       <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
         <table className="min-w-full text-sm">
           <thead className="bg-inherit text-xs uppercase tracking-wide">
@@ -164,13 +117,19 @@ const Page = () => {
               filteredUsers.map((user, index) => (
                 <tr
                   key={user.id}
-                  className={`${index % 2 === 0 ? 'bg-white dark:bg-inherit' : 'bg-gray-50 dark:bg-gray-900'} border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
+                  className={`${
+                    index % 2 === 0 ? 'bg-white dark:bg-inherit' : 'bg-gray-50 dark:bg-gray-900'
+                  } border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
                 >
                   <td className="px-6 py-4 font-medium">{index + 1}</td>
                   <td className="px-6 py-4">{user.name}</td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full ${user.role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}
+                      className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                        user.role === 'admin'
+                          ? 'bg-red-100 text-red-600'
+                          : 'bg-blue-100 text-blue-600'
+                      }`}
                     >
                       {user.role}
                     </span>
@@ -203,7 +162,6 @@ const Page = () => {
         </table>
       </div>
 
-      {/* Modal Edit */}
       {editModalOpen && selectedUser && (
         <EditUserModal
           user={selectedUser}
@@ -212,7 +170,6 @@ const Page = () => {
         />
       )}
 
-      {/* Modal Delete */}
       {deleteModalOpen && userToDelete && (
         <DeleteUserModal
           user={userToDelete}
@@ -221,7 +178,6 @@ const Page = () => {
         />
       )}
 
-      {/* Modal Create */}
       {createModalOpen && (
         <AddUser onClose={() => setCreateModalOpen(false)} onDeleted={handleUserDeleted} />
       )}
