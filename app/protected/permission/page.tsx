@@ -31,18 +31,59 @@ export default function PermissionTable() {
     if (!error && data) setUsers(data);
   };
 
-  const fetchData = async () => {
-    const { data, error } = await supabase
-      .from("permissions")
-      .select("*, users(name)")
-      .order("created_at", { ascending: false });
-    if (!error) setData(data);
+const fetchData = async () => {
+  if (!currentUser) return;
+
+  const query = supabase
+    .from("permissions")
+    .select("*, users(name)")
+    .order("created_at", { ascending: false });
+
+  // Jika bukan admin, filter berdasarkan user_id
+  if (currentUser.role !== "admin") {
+    query.eq("user_id", currentUser.id);
+  }
+
+  const { data, error } = await query;
+  if (!error && data) setData(data);
+};
+
+
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    role: string;
+  } | null>(null);
+
+  const fetchCurrentUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data: profile } = await supabase
+        .from("users")
+        .select("id, role")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) setCurrentUser(profile);
+    }
   };
 
-  useEffect(() => {
-    fetchData();
+useEffect(() => {
+  const init = async () => {
+    await fetchCurrentUser();
+  };
+  init();
+}, []);
+
+useEffect(() => {
+  if (currentUser) {
     fetchUsers();
-  }, []);
+    fetchData();
+  }
+}, [currentUser]);
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -105,6 +146,10 @@ export default function PermissionTable() {
   };
 
   const confirmDelete = (id: string) => {
+    if (currentUser?.role !== "admin") {
+      alert("❌ Anda tidak memiliki izin untuk menghapus data.");
+      return;
+    }
     setSelectedIdToDelete(id);
     setShowConfirmModal(true);
   };
@@ -140,7 +185,7 @@ export default function PermissionTable() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-6 border border-white/20 rounded-xl shadow-lg text-black dark:text-white">
+    <div className="w-full max-w-screen-xl mx-auto px-6 py-6 border border-white/20 rounded-xl shadow-lg text-black dark:text-white">
       <h1 className="text-3xl font-bold mb-4">📋 Tabel Izin</h1>
 
       {successMessage && (
@@ -188,14 +233,31 @@ export default function PermissionTable() {
                 value={form.user_id}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
+                className="px-3 py-2 rounded border border-black bg-white/10 dark:text-white"
               >
-                <option value="">Pilih User</option>
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name}
-                  </option>
-                ))}
+                <option value="">Pilih Nama User</option>
+
+                {currentUser?.role === "admin"
+                  ? users.map((user) => (
+                      <option
+                        key={user.id}
+                        value={user.id}
+                        className="text-black"
+                      >
+                        {user.name}
+                      </option>
+                    ))
+                  : users
+                      .filter((user) => user.id === currentUser?.id)
+                      .map((user) => (
+                        <option
+                          key={user.id}
+                          value={user.id}
+                          className="text-black"
+                        >
+                          {user.name}
+                        </option>
+                      ))}
               </select>
 
               <select
@@ -223,7 +285,7 @@ export default function PermissionTable() {
                 name="end_date"
                 value={form.end_date}
                 onChange={handleChange}
-               className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
+                className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
                 required
               />
 
@@ -233,7 +295,7 @@ export default function PermissionTable() {
                 value={form.reason}
                 onChange={handleChange}
                 placeholder="Alasan"
-               className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
+                className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
                 required
               />
 
@@ -292,14 +354,22 @@ export default function PermissionTable() {
             value={form.user_id}
             onChange={handleChange}
             required
-            className="px-3 py-2 rounded border border-black bg-white/10 dark:text-white"
+            className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border to-black text-black dark:text-white"
           >
-            <option value="">Pilih Nama User</option>
-            {users.map((user) => (
-              <option key={user.id} value={user.id} className="text-black">
-                {user.name}
-              </option>
-            ))}
+            <option value="">Pilih User</option>
+            {currentUser?.role === "admin"
+              ? users.map((u) => (
+                  <option key={u.id} value={u.id} className="text-black">
+                    {u.name}
+                  </option>
+                ))
+              : users
+                  .filter((u) => u.id === currentUser?.id)
+                  .map((u) => (
+                    <option key={u.id} value={u.id} className="text-black">
+                      {u.name}
+                    </option>
+                  ))}
           </select>
 
           <select
@@ -358,8 +428,8 @@ export default function PermissionTable() {
       )}
 
       {/* Tabel */}
-      <div className="overflow-x-auto max-w-full p-2">
-        <table className="min-w-[700px] text-sm text-left border-separate border-spacing-y-2">
+      <div className="overflow-x-auto w-full p-2">
+        <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
             <tr className="bg-blue-600 text-white uppercase tracking-wider">
               <th className="px-4 py-3 rounded-l-xl">Nama</th>
@@ -401,20 +471,23 @@ export default function PermissionTable() {
                     timeStyle: "short",
                   })}
                 </td>
-                <td className="px-4 py-3 rounded-r-xl flex gap-2">
+                <td className="px-4 py-3 flex gap-2">
                   <button
                     onClick={() => handleEdit(item)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-xs"
                   >
                     ✏️ Edit
                   </button>
-                  <button
-                    onClick={() => confirmDelete(item.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs"
-                    disabled={loading}
-                  >
-                    🗑️ Hapus
-                  </button>
+
+                  {currentUser?.role === "admin" && (
+                    <button
+                      onClick={() => confirmDelete(item.id)}
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs"
+                      disabled={loading}
+                    >
+                      🗑️ Hapus
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
