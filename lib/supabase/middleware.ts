@@ -57,6 +57,16 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // ✅ Jika sudah login dan mencoba akses halaman login/signup, redirect ke halaman protected
+  if (
+    user &&
+    (request.nextUrl.pathname.startsWith("/auth"))
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/protected"; // Ganti ke halaman yang kamu anggap sebagai protected page
+    return NextResponse.redirect(url);
+  }
+
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:
