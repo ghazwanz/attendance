@@ -39,9 +39,9 @@ export default function Page() {
   );
 
   return (
-    <div className="min-h-screen py-10 px-4 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
-      <div className="max-w-6xl mx-auto space-y-10">
-
+    <div className="min-h-screen py-10 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
+     <div className="w-full space-y-10">
+      
         {/* Notifikasi Berhasil */}
         {successMessage && (
           <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
