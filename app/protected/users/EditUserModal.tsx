@@ -15,8 +15,7 @@ const EditUserModal = ({ user, onClose, onUpdated }: EditUserModalProps) => {
 
   const [name, setName] = useState(user.name ?? '');
   const [role, setRole] = useState(user.role ?? 'employee');
-
-  const [email, setEmail] = useState(user.email ?? 'Memuat...');
+  const [email, setEmail] = useState('Memuat...');
   const [password] = useState(() => {
     const random = Math.random().toString(36).slice(-8);
     return `•••••••${random}`;
@@ -24,21 +23,20 @@ const EditUserModal = ({ user, onClose, onUpdated }: EditUserModalProps) => {
 
   const [loading, setLoading] = useState(false);
 
-  // Ambil email dari Supabase Auth jika tidak tersedia
   useEffect(() => {
     const fetchEmail = async () => {
-      if (!user.email) {
-        const { data, error } = await supabase.auth.admin.getUserById(user.id);
-        if (data?.user?.email) {
-          setEmail(data.user.email);
-        } else {
-          setEmail('********');
-        }
+      const { data, error } = await supabase.auth.admin.getUserById(user.id);
+      if (data?.user?.email) {
+        setEmail(data.user.email);
+      } else {
+        // Email tidak ditemukan di Auth, gunakan email palsu
+        const fakeEmail = `user_${user.id.slice(0, 5)}@example.com`;
+        setEmail(fakeEmail);
       }
     };
 
     fetchEmail();
-  }, [supabase, user]);
+  }, [supabase, user.id]);
 
   const handleSubmit = async () => {
     setLoading(true);
