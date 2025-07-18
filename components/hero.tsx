@@ -34,7 +34,7 @@ export function Hero() {
           Studio
         </a>
       </p>
-      <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
+      <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
     </div>
   );
 }
