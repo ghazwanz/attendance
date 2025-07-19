@@ -148,7 +148,7 @@ export default function ProtectedPage() {
       <div className="flex lg:flex-row gap-5 items-stretch w-full flex-col">
         <div className="bg-white w-full dark:bg-slate-800 shadow-md rounded-xl p-6">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-            Riwayat Kehadiran Terbaru
+            Riwayat Absensi Terbaru
           </h2>
           {recentAttendance?.length === 0 ? (
             <p className="text-gray-500 dark:text-gray-400 text-center py-10">

@@ -73,14 +73,18 @@ async function updateUser(formData: FormData) {
   const userId = formData.get('userId') as string;
   const name = formData.get('name') as string;
   const role = formData.get('role') as string;
+  const email = formData.get('email') as string;
 
   try {
-    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+      email: email,
+      email_confirm: true,
       user_metadata: {
         name,
         role,
       },
     });
+    if (updateError) throw updateError;
     const { error } = await supabase
       .from('users')
       .update({ name, role })
@@ -177,7 +181,7 @@ export default async function UsersPage({
     users = [currentUser];
   }
 
-  const { search } = searchParams;
+  const { search } = await searchParams;
   const filteredUsers = search?.toLowerCase()
     ? users.filter(user =>
       user.name?.toLowerCase().includes(search) ||

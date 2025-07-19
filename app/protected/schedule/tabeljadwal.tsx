@@ -12,18 +12,18 @@ export default function Tabeljadwal() {
     const [showDelete, setShowDelete] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const [selectedItem, setSelectedItem] = useState<Schedule | null>(null);
-    const supabase =  createClient();
+    const supabase = createClient();
+
     const fetchData = async () => {
         const { data, error } = await supabase
           .from("schedules")
-          .select("*");
+          .select("*").order("day", { ascending: true });
         if (!error) setData(data || []);
       };
     
       useEffect(() => {
         fetchData();
-      }, []);
-
+    }, []);
 
     const handleDelete = async (item: Schedule) => {
         const { error } = await supabase.from('schedules').delete().eq('id', item.id);
