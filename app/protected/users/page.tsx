@@ -138,7 +138,7 @@ async function deleteUser(formData: FormData) {
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: { search?: string };
+  searchParams: Promise<{ search?: string }>;
 }) {
   const supabaseClient = await createClient();
   const supabaseAdmin = await createAdmin();
@@ -181,6 +181,7 @@ export default async function UsersPage({
     users = [currentUser];
   }
 
+  // Await the searchParams promise
   const { search } = await searchParams;
   const filteredUsers = search?.toLowerCase()
     ? users.filter(user =>
