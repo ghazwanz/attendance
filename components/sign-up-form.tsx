@@ -52,7 +52,6 @@ export function SignUpForm({
           },
         },
       });
-      if (error) throw error;
       router.push("/protected");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
