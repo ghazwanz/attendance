@@ -16,7 +16,7 @@ export default function Tabeljadwal() {
     const fetchData = async () => {
         const { data, error } = await supabase
           .from("schedules")
-          .select("*");
+          .select("*").order("day", { ascending: true });
         if (!error) setData(data || []);
       };
     

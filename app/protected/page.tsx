@@ -109,7 +109,7 @@ export default function ProtectedPage() {
   return (
     <div className="min-h-screen flex flex-col gap-12 items-center justify-start bg-gradient-to-br from-blue-100 to-blue-300 dark:from-slate-900 dark:to-slate-800 px-4 sm:px-6 py-10">
       <div className="flex items-stretch flex-col justify-start w-full gap-5">
-        <h1 className="text-2xl">Dashboard</h1>
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
         <div className="grid lg:grid-cols-5 sm:grid-cols-3 grid-cols-2 gap-5 items-stretch">
           <div className="flex flex-col gap-2 w-full text-white justify-center p-4 bg-sky-500 dark:bg-blue-800 rounded shadow-lg">
             <h2 className="text-xl font-medium">Jumlah Absensi</h2>
@@ -136,7 +136,7 @@ export default function ProtectedPage() {
       <div className="flex lg:flex-row gap-5 items-stretch w-full flex-col">
         <div className="bg-white w-full dark:bg-slate-800 shadow-md rounded-xl p-6">
           <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-            Riwayat Kehadiran Terbaru
+            Riwayat Absensi Terbaru
           </h2>
 
           {recentAttendance?.length === 0 ? (
