@@ -178,6 +178,7 @@ export default async function UsersPage({
       });
     }
   } else {
+    currentUser.email = data.user.email || '';
     users = [currentUser];
   }
 

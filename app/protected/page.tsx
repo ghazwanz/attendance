@@ -224,17 +224,17 @@ export default function ProtectedPage() {
 
       {showScanner && status && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-white dark:bg-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl w-full max-w-xs sm:max-w-md relative">
+          <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xl w-full max-w-xs sm:max-w-md relative">
             <button
               onClick={() => setShowScanner(false)}
               className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-lg"
             >
               ✖
             </button>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-3 sm:mb-4 flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
               📷 QR Anda ({status})
             </h2>
-            <div className="text-center text-sm text-gray-600 dark:text-gray-300 mb-4">
+            <div className="text-center text-sm text-gray-600 mb-4">
               Tunjukkan QR ini ke scanner untuk absensi {status.toLowerCase()}.
             </div>
             <div className="flex justify-center">

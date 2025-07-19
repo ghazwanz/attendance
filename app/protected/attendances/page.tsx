@@ -1,5 +1,5 @@
 // ... (import tetap sama)
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -17,67 +17,67 @@ export default function Page() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const fetchData = async () => {
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData?.user?.id;
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
 
-  let query = supabase
-    .from("attendances")
-    .select("*, users(name, role)")
-    .order("date", { ascending: false })
-    .order("created_at", { ascending: false });
+    let query = supabase
+      .from("attendances")
+      .select("*, users(name, role)")
+      .order("date", { ascending: false })
+      .order("created_at", { ascending: false });
 
-  const { data: userInfo } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", userId)
-    .single();
+    const { data: userInfo } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", userId)
+      .single();
 
-  const userRole = userInfo?.role;
-
-  if (userRole !== "admin") {
-    query = query.eq("user_id", userId);
-  }
-
-  const { data, error } = await query;
-  if (!error) {
-    setData(data || []);
+    const userRole = userInfo?.role;
 
     if (userRole !== "admin") {
-      const today = new Date().toISOString().split("T")[0];
-      const now = new Date();
-      const batasJam16 = new Date();
-      batasJam16.setHours(10, 0, 0, 0);
+      query = query.eq("user_id", userId);
+    }
 
-      // 🔴 Jika belum check-in hari ini setelah jam 16:00, ubah status jadi TANPA KETERANGAN
-      const belumCheckIn = (data || []).find((item) => {
-        const tanggal = item.date?.split("T")[0];
-        return tanggal === today && !item.check_in && item.status === "HADIR";
-      });
+    const { data, error } = await query;
+    if (!error) {
+      setData(data || []);
 
-      if (belumCheckIn && now >= batasJam16) {
-        await supabase
-          .from("attendances")
-          .update({ status: "TANPA KETERANGAN" })
-          .eq("id", belumCheckIn.id);
-        fetchData(); // refresh setelah update
-        return;
-      }
+      if (userRole !== "admin") {
+        const today = new Date().toISOString().split("T")[0];
+        const now = new Date();
+        const batasJam16 = new Date();
+        batasJam16.setHours(10, 0, 0, 0);
 
-      // 🟡 Jika sudah check-in tapi belum check-out setelah jam 08:30 pagi
-      const absensiHariIni = (data || []).find((item) => {
-        const tanggal = item.date?.split("T")[0];
-        return tanggal === today && item.check_in && !item.check_out;
-      });
+        // 🔴 Jika belum check-in hari ini setelah jam 16:00, ubah status jadi TANPA KETERANGAN
+        const belumCheckIn = (data || []).find((item) => {
+          const tanggal = item.date?.split("T")[0];
+          return tanggal === today && !item.check_in && item.status === "HADIR";
+        });
 
-      const batasPulang = new Date();
-      batasPulang.setHours(16, 0, 0, 0);
+        if (belumCheckIn && now >= batasJam16) {
+          await supabase
+            .from("attendances")
+            .update({ status: "TANPA KETERANGAN" })
+            .eq("id", belumCheckIn.id);
+          fetchData(); // refresh setelah update
+          return;
+        }
 
-      if (absensiHariIni && now >= batasPulang) {
-        setCheckoutItem(absensiHariIni);
+        // 🟡 Jika sudah check-in tapi belum check-out setelah jam 08:30 pagi
+        const absensiHariIni = (data || []).find((item) => {
+          const tanggal = item.date?.split("T")[0];
+          return tanggal === today && item.check_in && !item.check_out;
+        });
+
+        const batasPulang = new Date();
+        batasPulang.setHours(16, 0, 0, 0);
+
+        if (absensiHariIni && now >= batasPulang) {
+          setCheckoutItem(absensiHariIni);
+        }
       }
     }
-  }
-};
+  };
 
   useEffect(() => {
     fetchData();
@@ -95,7 +95,6 @@ export default function Page() {
   return (
     <div className="min-h-screen py-10 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
       <div className="w-full space-y-10">
-
         {/* Notifikasi Berhasil */}
         {successMessage && (
           <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
@@ -107,7 +106,7 @@ export default function Page() {
 
         {/* Judul Halaman */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-1">📊 Absensi Karyawan</h1>
+          <h1 className="text-3xl font-bold mb-1">📊 Absensi Team</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Kelola data kehadiran harian secara efisien dan akurat.
           </p>
@@ -116,7 +115,7 @@ export default function Page() {
           <div className="mt-6 max-w-md mx-auto">
             <input
               type="text"
-              placeholder="🔍 Cari nama karyawan..."
+              placeholder="🔍 Cari nama Team..."
               className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -155,7 +154,10 @@ export default function Page() {
               <tbody>
                 {filteredData.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <td
+                      colSpan={8}
+                      className="text-center py-8 text-gray-500 dark:text-gray-400"
+                    >
                       🚫 Tidak ada absensi.
                     </td>
                   </tr>
@@ -163,48 +165,70 @@ export default function Page() {
                   filteredData.map((item, i) => (
                     <tr
                       key={item.id}
-                      className={`transition duration-150 ${i % 2 === 0
-                        ? "bg-white dark:bg-slate-800"
-                        : "bg-blue-50 dark:bg-slate-700"
-                        } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                      className={`transition duration-150 ${
+                        i % 2 === 0
+                          ? "bg-white dark:bg-slate-800"
+                          : "bg-blue-50 dark:bg-slate-700"
+                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
                     >
                       <td className="py-2 px-4">{i + 1}</td>
-                      <td className="py-2 px-4 uppercase">{item.users?.name || "Tanpa Nama"}</td>
+                      <td className="py-2 px-4 uppercase">
+                        {item.users?.name || "Tanpa Nama"}
+                      </td>
                       <td className="py-2 px-4">{item.date}</td>
                       <td className="py-2 px-4">
                         <span className="text-yellow-400 font-mono text-sm">
                           {item.check_in
-                            ? new Date(item.check_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
+                            ? new Date(item.check_in).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })
                             : "-"}
                         </span>
                       </td>
                       <td className="py-2 px-4">
                         <span className="text-blue-400 font-mono text-sm">
                           {item.check_out
-                            ? new Date(item.check_out).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
+                            ? new Date(item.check_out).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              })
                             : "-"}
                         </span>
                       </td>
                       <td className="py-2 px-4">{item.notes || "-"}</td>
                       <td className="py-2 px-4">
-                        <span className={`text-sm font-semibold ${item.status === "HADIR"
-                          ? "text-green-400"
-                          : item.status === "IZIN"
-                            ? "text-yellow-400"
-                            : "text-red-400"
-                          }`}>
+                        <span
+                          className={`text-sm font-semibold ${
+                            item.status === "HADIR"
+                              ? "text-green-400"
+                              : item.status === "IZIN"
+                              ? "text-yellow-400"
+                              : "text-red-400"
+                          }`}
+                        >
                           {item.status}
                         </span>
                       </td>
                       <td className="py-2 px-4">
                         <div className="flex flex-wrap gap-2">
-                          {item.status === "IZIN" ? (
-                            <button
-                              onClick={() => setDeleteItem(item)}
-                              className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                            >
-                              🗑 Delete
-                            </button>
+                          {item.status == "IZIN" ? (
+                            <>
+                              <button
+                                onClick={() => setDeleteItem(item)}
+                                className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                              >
+                                🗑 Delete
+                              </button>
+                              <button
+                                onClick={() => setSelected(item)}
+                                className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                              >
+                                ✏️ Edit
+                              </button>
+                            </>
                           ) : (
                             <>
                               {!item.check_out && (
@@ -282,9 +306,22 @@ export default function Page() {
               </h2>
 
               <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 mb-4">
-                <p><strong>👤 Nama:</strong> {checkoutItem.users?.name || "Tanpa Nama"}</p>
-                <p><strong>📅 Tanggal:</strong> {checkoutItem.date}</p>
-                <p><strong>⏰ Check-in:</strong> {checkoutItem.check_in ? new Date(checkoutItem.check_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-"}</p>
+                <p>
+                  <strong>👤 Nama:</strong>{" "}
+                  {checkoutItem.users?.name || "Tanpa Nama"}
+                </p>
+                <p>
+                  <strong>📅 Tanggal:</strong> {checkoutItem.date}
+                </p>
+                <p>
+                  <strong>⏰ Check-in:</strong>{" "}
+                  {checkoutItem.check_in
+                    ? new Date(checkoutItem.check_in).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "-"}
+                </p>
               </div>
 
               <div className="mb-4">
@@ -321,7 +358,9 @@ export default function Page() {
                     batasPulang.setHours(16, 0, 0, 0);
 
                     if (now < batasPulang) {
-                      setCheckoutError("⛔ Belum waktunya pulang. Absensi pulang hanya bisa dilakukan setelah jam 16:00.");
+                      setCheckoutError(
+                        "⛔ Belum waktunya pulang. Absensi pulang hanya bisa dilakukan setelah jam 16:00."
+                      );
                       return;
                     }
 
@@ -382,7 +421,9 @@ export default function Page() {
                       .delete()
                       .eq("id", deleteItem.id);
                     if (!error) {
-                      setData((prev) => prev.filter((d) => d.id !== deleteItem.id));
+                      setData((prev) =>
+                        prev.filter((d) => d.id !== deleteItem.id)
+                      );
                       showSuccessToast("Data absensi berhasil dihapus!");
                       setDeleteItem(null);
                     }
