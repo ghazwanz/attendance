@@ -15,12 +15,13 @@ import { hasEnvVars } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { Toaster } from "react-hot-toast";
+import { DeployButton } from "@/components/deploy-button";
 
 export default function ProtectedLayout({
-  modal,
+  // modal,
   children,
 }: {
-  modal: React.ReactNode;
+  // modal: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -115,7 +116,7 @@ export default function ProtectedLayout({
         </nav>
 
         {/* MODAL */}
-        <div>{modal}</div>
+        {/* <div>{modal}</div> */}
 
         {/* CONTENT */}
         <div className="flex-1 flex w-full flex-col gap-20 max-w-7xl sm:p-5 p-4">
@@ -136,6 +137,7 @@ export default function ProtectedLayout({
               Supabase
             </a>
           </p>
+          <DeployButton/>
         </footer>
       </div>
     </main>
