@@ -124,7 +124,7 @@ export default function ProtectedLayout({
         </div>
 
         {/* FOOTER */}
-        <footer className="w-full flex items-center justify-center border-t border-gray-200 dark:border-white/10 mx-auto text-center text-xs gap-8 py-16">
+        <footer className="w-full flex items-center justify-center border-t border-gray-200 dark:border-white/10 mx-auto text-center text-xs gap-8 py-4">
           <p>
             Powered by{" "}
             <a

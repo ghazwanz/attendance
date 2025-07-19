@@ -5,7 +5,7 @@ import { LucidePencil, Plus, Trash2, LucideSearch } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "@/lib/type";
-import {useDebouncedCallback} from "use-debounce";
+import { useDebouncedCallback } from "use-debounce";
 
 interface UsersTableProps {
   users: User[];
@@ -41,7 +41,7 @@ export default function UsersTable({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const handlerSearch = useDebouncedCallback((term:string)=>{
+  const handlerSearch = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams);
     if (term) {
       params.set("search", term);
@@ -49,7 +49,7 @@ export default function UsersTable({
       params.delete("search");
     }
     router.push(`./users?${params.toString()}`);
-  },300)
+  }, 300);
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -148,6 +148,7 @@ export default function UsersTable({
             <tr>
               <th className="px-6 py-4 text-left">No</th>
               <th className="px-6 py-4 text-left">Nama</th>
+              <th className="px-6 py-4 text-left">Email</th>
               <th className="px-6 py-4 text-left">Role</th>
               <th className="px-6 py-4 text-left">Tanggal Buat</th>
               {currentUser?.role === "admin" && (
@@ -174,6 +175,7 @@ export default function UsersTable({
                 >
                   <td className="px-6 py-4 font-medium">{index + 1}</td>
                   <td className="px-6 py-4">{user.name}</td>
+                  <td className="px-6 py-4">{user.email}</td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -353,6 +355,16 @@ function EditUserModal({
               type="text"
               name="name"
               defaultValue={user.name}
+              required
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Nama</label>
+            <input
+              type="email"
+              name="email"
+              defaultValue={user.email}
               required
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
