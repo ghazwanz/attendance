@@ -46,7 +46,7 @@ export default function Page() {
       const today = new Date().toISOString().split("T")[0];
       const now = new Date();
       const batasJam16 = new Date();
-      batasJam16.setHours(16, 0, 0, 0);
+      batasJam16.setHours(10, 0, 0, 0);
 
       // 🔴 Jika belum check-in hari ini setelah jam 16:00, ubah status jadi TANPA KETERANGAN
       const belumCheckIn = (data || []).find((item) => {
@@ -70,7 +70,7 @@ export default function Page() {
       });
 
       const batasPulang = new Date();
-      batasPulang.setHours(8, 30, 0, 0);
+      batasPulang.setHours(16, 0, 0, 0);
 
       if (absensiHariIni && now >= batasPulang) {
         setCheckoutItem(absensiHariIni);

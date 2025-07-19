@@ -147,7 +147,7 @@ export default function ProtectedPage() {
 
       <div className="flex lg:flex-row gap-5 items-stretch w-full flex-col">
         <div className="bg-white w-full dark:bg-slate-800 shadow-md rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+          <h2 className="text-lg font-semibold text-center text-gray-800 dark:text-white mb-4">
             Riwayat Absensi Terbaru
           </h2>
           {recentAttendance?.length === 0 ? (
@@ -156,23 +156,39 @@ export default function ProtectedPage() {
             </p>
           ) : (
             <div className="space-y-4">
-              {recentAttendance.map((record) => (
-                <div key={record.id} className="flex justify-between items-center bg-gray-50 dark:bg-slate-700 px-4 py-3 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{record.users?.name || 'Pengguna Tidak Diketahui'}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{record.status.toLowerCase() === 'izin' ? formatTimestamp(record.created_at) : formatTimestamp(record.check_in)}</p>
+             {recentAttendance.map((record) => {
+              const statusColor: Record<string, string> = {
+                hadir: 'bg-green-100 text-green-700',
+                izin: 'bg-yellow-100 text-yellow-700',
+                'tanpa keterangan': 'bg-red-100 text-red-700',
+                terlambat: 'bg-orange-100 text-orange-700',
+              };
+
+              const statusLabel:string = record.status.toLowerCase();
+              const timeLabel =
+                statusLabel === 'izin'
+                  ? formatTimestamp(record.created_at)
+                  : formatTimestamp(record.check_in || record.created_at);
+
+              return (
+                <div
+                  key={record.id}
+                  className="flex items-center justify-between border border-gray-200 dark:border-slate-600 rounded-lg px-4 py-3 bg-white dark:bg-slate-700 shadow-sm"
+                >
+                  <div className="flex flex-col">
+                    <p className="font-semibold text-gray-800 dark:text-white">
+                      {record.users?.name || 'Tidak Diketahui'}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{timeLabel}</p>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    record.status.toLowerCase() === 'hadir'
-                      ? 'bg-green-100 text-green-800'
-                      : record.status.toLowerCase() === 'izin'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span
+                    className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${statusColor[statusLabel] || 'bg-gray-100 text-gray-600'}`}
+                  >
                     {record.status}
                   </span>
                 </div>
-              ))}
+              );
+            })}
             </div>
           )}
         </div>
