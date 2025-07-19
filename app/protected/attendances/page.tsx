@@ -1,3 +1,4 @@
+// ... (import tetap sama)
 'use client';
 
 import React, { useState, useEffect } from "react";
@@ -8,13 +9,12 @@ import UpdateForm from "./UpdateForm";
 export default function Page() {
   const supabase = createClient();
   const [data, setData] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState(""); // 🆕 Untuk search
+  const [searchTerm, setSearchTerm] = useState("");
   const [selected, setSelected] = useState<any | null>(null);
   const [checkoutItem, setCheckoutItem] = useState<any | null>(null);
   const [deleteItem, setDeleteItem] = useState<any | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-
 
   const fetchData = async () => {
     const { data: userData } = await supabase.auth.getUser();
@@ -26,7 +26,6 @@ export default function Page() {
       .order("date", { ascending: false })
       .order("created_at", { ascending: false });
 
-    // Tunggu ambil user role dari tabel `users`
     const { data: userInfo } = await supabase
       .from("users")
       .select("role")
@@ -35,13 +34,31 @@ export default function Page() {
 
     const userRole = userInfo?.role;
 
-    // Filter data hanya untuk user biasa
     if (userRole !== "admin") {
       query = query.eq("user_id", userId);
     }
 
     const { data, error } = await query;
-    if (!error) setData(data || []);
+    if (!error) {
+      setData(data || []);
+
+      // ⏰ Tambahan: Deteksi jika user belum checkout hari ini setelah jam 16:00
+      if (userRole !== "admin") {
+        const today = new Date().toISOString().split("T")[0];
+        const absensiHariIni = (data || []).find((item) => {
+          const tanggal = item.date?.split("T")[0];
+          return tanggal === today && item.check_in && !item.check_out;
+        });
+
+        const now = new Date();
+        const batasPulang = new Date();
+        batasPulang.setHours(8, 30, 0, 0);
+
+        if (absensiHariIni && now >= batasPulang) {
+          setCheckoutItem(absensiHariIni);
+        }
+      }
+    }
   };
 
   useEffect(() => {
