@@ -17,49 +17,67 @@ export default function Page() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const fetchData = async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData?.user?.id;
 
-    let query = supabase
-      .from("attendances")
-      .select("*, users(name, role)")
-      .order("date", { ascending: false })
-      .order("created_at", { ascending: false });
+  let query = supabase
+    .from("attendances")
+    .select("*, users(name, role)")
+    .order("date", { ascending: false })
+    .order("created_at", { ascending: false });
 
-    const { data: userInfo } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
+  const { data: userInfo } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", userId)
+    .single();
 
-    const userRole = userInfo?.role;
+  const userRole = userInfo?.role;
+
+  if (userRole !== "admin") {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query;
+  if (!error) {
+    setData(data || []);
 
     if (userRole !== "admin") {
-      query = query.eq("user_id", userId);
-    }
+      const today = new Date().toISOString().split("T")[0];
+      const now = new Date();
+      const batasJam16 = new Date();
+      batasJam16.setHours(16, 0, 0, 0);
 
-    const { data, error } = await query;
-    if (!error) {
-      setData(data || []);
+      // 🔴 Jika belum check-in hari ini setelah jam 16:00, ubah status jadi TANPA KETERANGAN
+      const belumCheckIn = (data || []).find((item) => {
+        const tanggal = item.date?.split("T")[0];
+        return tanggal === today && !item.check_in && item.status === "HADIR";
+      });
 
-      // ⏰ Tambahan: Deteksi jika user belum checkout hari ini setelah jam 16:00
-      if (userRole !== "admin") {
-        const today = new Date().toISOString().split("T")[0];
-        const absensiHariIni = (data || []).find((item) => {
-          const tanggal = item.date?.split("T")[0];
-          return tanggal === today && item.check_in && !item.check_out;
-        });
+      if (belumCheckIn && now >= batasJam16) {
+        await supabase
+          .from("attendances")
+          .update({ status: "TANPA KETERANGAN" })
+          .eq("id", belumCheckIn.id);
+        fetchData(); // refresh setelah update
+        return;
+      }
 
-        const now = new Date();
-        const batasPulang = new Date();
-        batasPulang.setHours(8, 30, 0, 0);
+      // 🟡 Jika sudah check-in tapi belum check-out setelah jam 08:30 pagi
+      const absensiHariIni = (data || []).find((item) => {
+        const tanggal = item.date?.split("T")[0];
+        return tanggal === today && item.check_in && !item.check_out;
+      });
 
-        if (absensiHariIni && now >= batasPulang) {
-          setCheckoutItem(absensiHariIni);
-        }
+      const batasPulang = new Date();
+      batasPulang.setHours(8, 30, 0, 0);
+
+      if (absensiHariIni && now >= batasPulang) {
+        setCheckoutItem(absensiHariIni);
       }
     }
-  };
+  }
+};
 
   useEffect(() => {
     fetchData();
