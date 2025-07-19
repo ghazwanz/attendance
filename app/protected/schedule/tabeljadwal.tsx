@@ -12,18 +12,33 @@ export default function Tabeljadwal() {
     const [showDelete, setShowDelete] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const [selectedItem, setSelectedItem] = useState<Schedule | null>(null);
-    const supabase =  createClient();
+    const supabase = createClient();
+
     const fetchData = async () => {
         const { data, error } = await supabase
-          .from("schedules")
-          .select("*");
-        if (!error) setData(data || []);
-      };
-    
-      useEffect(() => {
-        fetchData();
-      }, []);
+            .from("schedules")
+            .select("*");
 
+        if (!error && data) {
+            const dayOrder = ['Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+            const filteredData = data.filter(item =>
+                dayOrder.includes(item.day.charAt(0).toUpperCase() + item.day.slice(1).toLowerCase())
+            );
+
+            const sortedData = filteredData.sort((a, b) => {
+                const indexA = dayOrder.indexOf(a.day.charAt(0).toUpperCase() + a.day.slice(1).toLowerCase());
+                const indexB = dayOrder.indexOf(b.day.charAt(0).toUpperCase() + b.day.slice(1).toLowerCase());
+                return indexA - indexB;
+            });
+
+            setData(sortedData);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const handleDelete = async (item: Schedule) => {
         const { error } = await supabase.from('schedules').delete().eq('id', item.id);
