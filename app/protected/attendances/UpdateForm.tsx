@@ -21,28 +21,37 @@ export default function UpdateForm({
   });
 
   const [showToast, setShowToast] = useState(false);
+  const [timeError, setTimeError] = useState<string | null>(null);
 
   const handleUpdate = async (e: any) => {
     e.preventDefault();
+
+    setTimeError(null);
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     const checkInTime = form.check_in
-      ? new Date(`${form.date}T${form.check_in}:00`).toISOString()
+      ? new Date(`${form.date}T${form.check_in}:00`)
       : null;
 
     const checkOutTime = form.check_out
-      ? new Date(`${form.date}T${form.check_out}:00`).toISOString()
+      ? new Date(`${form.date}T${form.check_out}:00`)
       : null;
+
+    // ✅ Validasi waktu check-out harus lebih besar dari check-in
+    if (checkInTime && checkOutTime && checkOutTime < checkInTime) {
+      setTimeError("❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!");
+      return;
+    }
 
     const { error } = await supabase
       .from("attendances")
       .update({
         date: form.date,
-        check_in: checkInTime,
-        check_out: checkOutTime,
+        check_in: checkInTime?.toISOString() || null,
+        check_out: checkOutTime?.toISOString() || null,
         notes: form?.notes,
         status: form.status,
       })
@@ -143,6 +152,12 @@ export default function UpdateForm({
             <option value="IZIN">IZIN</option>
             <option value="ALPA">ALPA</option>
           </select>
+          {/* ❌ Notifikasi error waktu */}
+          {timeError && (
+            <p className="text-[#ff4d4f] text-sm mt-4 font-semibold">
+              {timeError}
+            </p>
+          )}
         </div>
 
         {/* Tombol Simpan */}
