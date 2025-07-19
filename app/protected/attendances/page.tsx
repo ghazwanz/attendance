@@ -217,16 +217,16 @@ export default function Page() {
                           {item.status == "IZIN" ? (
                             <>
                               <button
-                                onClick={() => setDeleteItem(item)}
-                                className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                              >
-                                🗑 Delete
-                              </button>
-                              <button
                                 onClick={() => setSelected(item)}
                                 className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                               >
                                 ✏️ Edit
+                              </button>
+                              <button
+                                onClick={() => setDeleteItem(item)}
+                                className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                              >
+                                🗑 Delete
                               </button>
                             </>
                           ) : (
