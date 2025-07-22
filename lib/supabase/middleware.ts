@@ -60,7 +60,7 @@ export async function updateSession(request: NextRequest) {
   // ✅ Jika sudah login dan mencoba akses halaman login/signup, redirect ke halaman protected
   if (
     user &&
-    (request.nextUrl.pathname.startsWith("/auth"))
+    (request.nextUrl.pathname.startsWith("/auth/login") || request.nextUrl.pathname.startsWith("/auth/sign-up"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/protected"; // Ganti ke halaman yang kamu anggap sebagai protected page
