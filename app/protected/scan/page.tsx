@@ -113,7 +113,7 @@ export default function AttendancePage() {
                   >
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{record.users?.name || 'Pengguna Tidak Diketahui'}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{record.status.toLowerCase()==='izin'?formatTimestamp(record.created_at):formatTimestamp(record.check_in)}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{record.status.toLowerCase()==='hadir'?formatTimestamp(record.check_in):formatTimestamp(record.created_at)}</p>
                     </div>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${record.status.toLowerCase() === 'hadir'
                       ? 'bg-green-100 text-green-800'

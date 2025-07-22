@@ -1,6 +1,4 @@
 import Image from "next/image";
-import { NextLogo } from "./next-logo";
-import { SupabaseLogo } from "./supabase-logo";
 
 export function Hero() {
   return (
@@ -9,7 +7,7 @@ export function Hero() {
         src="/logo1.png"
         width={150}
         height={150}
-        className="dark:invert-0 invert"
+        className="dark:invert-0 invert pointer-events-none select-none"
         alt="Logo"
       />
       <h1 className="sr-only">Supabase and Next.js Starter Template</h1>
