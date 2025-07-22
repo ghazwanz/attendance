@@ -9,18 +9,31 @@ interface QRScannerProps {
   onScanSuccess?: (userId: string) => void;
   onScanError?: (error: string) => void;
 }
+
 export type qrData = {
   user_id: string;
   status: 'HADIR' | 'IZIN';
 };
 
+const allowedIPs = ['125.166.1.71']; // Ganti dengan IP yang diizinkan
+
 const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [userIP, setUserIP] = useState<string | null>(null);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const supabase = createClient();
 
+  // Ambil IP publik pengguna
+  useEffect(() => {
+    fetch('https://api.ipify.org?format=json')
+      .then((res) => res.json())
+      .then((data) => setUserIP(data.ip))
+      .catch(() => setUserIP(null));
+  }, []);
+
+  // Bersihkan scanner saat komponen dibongkar
   useEffect(() => {
     return () => {
       if (scannerRef.current) {
@@ -30,6 +43,15 @@ const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => 
   }, []);
 
   const startScanning = () => {
+    if (!userIP || !allowedIPs.includes(userIP)) {
+      const ipMsg = userIP
+        ? `IP ${userIP} tidak diizinkan untuk menggunakan scanner`
+        : 'Gagal mendapatkan IP pengguna';
+      toast.error(`❌ ${ipMsg}`);
+      setError(ipMsg);
+      return;
+    }
+
     setIsScanning(true);
     setError(null);
     setSuccess(null);
