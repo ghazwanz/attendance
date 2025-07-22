@@ -16,7 +16,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
   const [izinReason, setIzinReason] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
-  const allowedIP = "125.166.12.91";
+  const allowedIP = ["125.166.12.91","125.166.1.71"];
 
   useEffect(() => {
     const init = async () => {
@@ -50,8 +50,9 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
       const res = await fetch("https://api.ipify.org?format=json");
       const ipData = await res.json();
       const currentIP = ipData.ip;
+      console.log("Current IP:", currentIP);
 
-      if (currentIP !== allowedIP && status !== "IZIN") {
+      if (currentIP !== allowedIP[0] && status !== "IZIN" && currentIP !== allowedIP[1]) {
         setShowError(true);
         setTimeout(() => setShowError(false), 3000);
         return;
