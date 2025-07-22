@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { AuthButton } from '@/components/auth-button';
+import AuthButton from "@/components/auth-button";
 import { Hero } from '@/components/hero';
 import { EnvVarWarning } from '@/components/env-var-warning';
 import { ThemeSwitcher } from '@/components/theme-switcher';
@@ -57,7 +57,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ u
                 </span>
               </div>
             </Link>
-            {!hasEnvVars ? <EnvVarWarning /> : <AuthButton size="sm" />}
+            {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
           </div>
         </nav>
 

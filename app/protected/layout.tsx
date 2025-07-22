@@ -9,7 +9,7 @@ import {
   QrCode,
 } from "lucide-react";
 import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button";
+import AuthButton from "@/components/auth-button"; // ✅ diperbaiki di sini
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import Image from "next/image";
@@ -18,27 +18,19 @@ import { Toaster } from "react-hot-toast";
 import { DeployButton } from "@/components/deploy-button";
 
 export default function ProtectedLayout({
-  // modal,
   children,
 }: {
-  // modal: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <main className="min-h-screen flex flex-col items-center bg-white text-black dark:bg-[#0f172a] dark:text-white transition-colors duration-300">
       <div className="flex-1 w-full flex flex-col items-center">
-
         {/* NAVBAR */}
         <nav className="w-full bg-white dark:bg-[#0f172a] shadow-md sticky top-0 z-50 transition-colors duration-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
-
-            {/* ✅ Checkbox Toggle */}
             <input type="checkbox" id="nav-toggle" className="peer hidden" />
 
-            {/* 🔝 Navbar row */}
             <div className="flex justify-between items-center h-16 relative">
-
-              {/* ✅ Logo */}
               <Link href={"/protected"}>
                 <div className="flex items-center gap-3">
                   <Image src="/logo1.png" width={32} height={32} className="dark:invert-0 invert" alt="Logo" />
@@ -48,14 +40,12 @@ export default function ProtectedLayout({
                 </div>
               </Link>
 
-              {/* 🍔 Hamburger (mobile only) */}
               <label htmlFor="nav-toggle" className="lg:hidden cursor-pointer text-gray-700 dark:text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </label>
 
-              {/* ✅ Menu Desktop — POSISI TENGAH */}
               <div className="hidden lg:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                 <div className="flex items-center gap-6 text-sm">
                   <Link href="/protected/" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
@@ -79,14 +69,12 @@ export default function ProtectedLayout({
                 </div>
               </div>
 
-              {/* ✅ Kanan */}
               <div className="hidden lg:flex items-center gap-1">
                 <ThemeSwitcher />
                 {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
               </div>
             </div>
 
-            {/* 📱 Dropdown Mobile Menu */}
             <div className="peer-checked:flex hidden flex-col gap-4 py-4 lg:hidden text-sm border-t border-gray-200 dark:border-slate-700">
               <Link href="/protected/" className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition">
                 <Home size={16} /> Home
@@ -111,20 +99,14 @@ export default function ProtectedLayout({
                 {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
               </div>
             </div>
-
           </div>
         </nav>
 
-        {/* MODAL */}
-        {/* <div>{modal}</div> */}
-
-        {/* CONTENT */}
         <div className="flex-1 flex w-full flex-col gap-20 max-w-7xl sm:p-5 p-4">
           {children}
           <Toaster position="top-center" reverseOrder={false} />
         </div>
 
-        {/* FOOTER */}
         <footer className="w-full flex items-center justify-center border-t border-gray-200 dark:border-white/10 mx-auto text-center text-xs gap-8 py-4">
           <p>
             Powered by{" "}
@@ -137,7 +119,7 @@ export default function ProtectedLayout({
               Supabase
             </a>
           </p>
-          <DeployButton/>
+          <DeployButton />
         </footer>
       </div>
     </main>
