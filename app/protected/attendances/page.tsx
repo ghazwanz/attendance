@@ -8,6 +8,7 @@ import UpdateForm from "./UpdateForm";
 
 export default function Page() {
   const supabase = createClient();
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [data, setData] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selected, setSelected] = useState<any | null>(null);
@@ -32,9 +33,10 @@ export default function Page() {
       .eq("id", userId)
       .single();
 
-    const userRole = userInfo?.role;
+    const role = userInfo?.role;
+    setUserRole(role);
 
-    if (userRole !== "admin") {
+    if (role !== "admin") {
       query = query.eq("user_id", userId);
     }
 
@@ -216,18 +218,33 @@ export default function Page() {
                         <div className="flex flex-wrap gap-2">
                           {item.status == "IZIN" ? (
                             <>
-                              <button
-                                onClick={() => setSelected(item)}
-                                className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                              >
-                                ✏️ Edit
-                              </button>
-                              <button
-                                onClick={() => setDeleteItem(item)}
-                                className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                              >
-                                🗑 Delete
-                              </button>
+                              {userRole === "admin" ||
+                              item.date?.split("T")[0] ===
+                                new Date().toISOString().split("T")[0] ? (
+                                <button
+                                  onClick={() => setSelected(item)}
+                                  className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                >
+                                  ✏️ Edit
+                                </button>
+                              ) : (
+                                <button
+                                  disabled
+                                  className="inline-flex items-center gap-1 bg-gray-400 text-white px-3 py-1 rounded-full text-xs font-semibold shadow cursor-not-allowed"
+                                  title="❌ Hanya bisa edit absensi hari ini"
+                                >
+                                  ✏️ Edit
+                                </button>
+                              )}
+
+                              {userRole === "admin" && (
+                                <button
+                                  onClick={() => setDeleteItem(item)}
+                                  className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                >
+                                  🗑 Delete
+                                </button>
+                              )}
                             </>
                           ) : (
                             <>
@@ -414,24 +431,26 @@ export default function Page() {
                 >
                   Batal
                 </button>
-                <button
-                  onClick={async () => {
-                    const { error } = await supabase
-                      .from("attendances")
-                      .delete()
-                      .eq("id", deleteItem.id);
-                    if (!error) {
-                      setData((prev) =>
-                        prev.filter((d) => d.id !== deleteItem.id)
-                      );
-                      showSuccessToast("Data absensi berhasil dihapus!");
-                      setDeleteItem(null);
-                    }
-                  }}
-                  className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white font-semibold shadow"
-                >
-                  ✅ Ya, Hapus
-                </button>
+                {userRole === "admin" && (
+                  <button
+                    onClick={async () => {
+                      const { error } = await supabase
+                        .from("attendances")
+                        .delete()
+                        .eq("id", deleteItem.id);
+                      if (!error) {
+                        setData((prev) =>
+                          prev.filter((d) => d.id !== deleteItem.id)
+                        );
+                        showSuccessToast("Data absensi berhasil dihapus!");
+                        setDeleteItem(null);
+                      }
+                    }}
+                    className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-700 text-white font-semibold shadow"
+                  >
+                    ✅ Ya, Hapus
+                  </button>
+                )}
               </div>
             </div>
           </div>
