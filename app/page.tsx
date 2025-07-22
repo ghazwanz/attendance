@@ -8,30 +8,34 @@ import { Hero } from '@/components/hero';
 import { EnvVarWarning } from '@/components/env-var-warning';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { hasEnvVars } from '@/lib/utils';
-const QRCode = require('qrcode');
+import { QRCodeSVG } from "qrcode.react";
 
 interface User {
   id: string;
   name: string;
 }
 
-export default async function Home({ searchParams }: { searchParams: { user_id?: string; status?: string } }) {
- const supabase = await createClient();
-const { data: { user } } = await supabase.auth.getUser();
+export default async function Home({ searchParams }: { searchParams: Promise<{ user_id?: string; status?: string }> }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { user_id, status } = await searchParams;
 
 
   if (user) redirect('/protected');
 
   const { data: users } = await supabase.from('users').select('id, name').order('name', { ascending: true });
 
-  const selectedUser = users?.find((u) => u.id === searchParams.user_id) ?? null;
-  const status = searchParams.status === 'HADIR' || searchParams.status === 'IZIN' ? searchParams.status : null;
+  // const selectedUser = users?.find((u) => u.id === searchParams.user_id) ?? null;
 
-  const qrData = selectedUser && status
-    ? JSON.stringify({ user_id: selectedUser.id, status })
+  const qrData = user_id && status
+    ? JSON.stringify({ user_id: user_id, status:status })
     : null;
 
-  const qrImage = qrData ? await QRCode.toDataURL(qrData) : null;
+  const encryptedQRData = qrData ? btoa(qrData) : null;
+  console.log(encryptedQRData)
+  const decryptedQRData = encryptedQRData ? atob(encryptedQRData) : null;
+  console.log(decryptedQRData);
+  // const qrImage = qrData ? await QRCodeSVG.toDataURL(qrData) : null;
 
   return (
     <main className="min-h-screen flex flex-col items-center">
@@ -71,9 +75,9 @@ const { data: { user } } = await supabase.auth.getUser();
               <select
                 name="user_id"
                 className="w-full p-2 border rounded bg-white dark:bg-gray-900 dark:text-white"
-                defaultValue={searchParams.user_id ?? ''}
+                defaultValue={user_id ?? ''}
               >
-                <option value="">-- Pilih Nama --</option>
+                <option value="" disabled>-- Pilih Nama --</option>
                 {users?.map((user) => (
                   <option key={user.id} value={user.id}>
                     {user.name}
@@ -101,12 +105,9 @@ const { data: { user } } = await supabase.auth.getUser();
               </div>
             </form>
 
-            {qrImage && selectedUser && (
+            {qrData && user_id && (
               <div className="mt-6 text-center space-y-2">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  QR untuk <strong>{selectedUser.name}</strong> - {status}
-                </p>
-                <img src={qrImage} alt="QR Code" width={200} height={200} />
+                <QRCodeSVG value={qrData} width={200} height={200} />
               </div>
             )}
           </div>
