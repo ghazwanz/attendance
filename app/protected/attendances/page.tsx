@@ -7,6 +7,19 @@ import CreateForm from "./CreateForm";
 import UpdateForm from "./UpdateForm";
 
 export default function Page() {
+  // State untuk daftar user
+  const [userList, setUserList] = useState<{id: string, name: string}[]>([]);
+  // State untuk modal tambah absen
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({
+    user_id: "",
+    date: "",
+    check_in: "",
+    check_out: "",
+    notes: "",
+    status: "HADIR",
+  });
+  const [addLoading, setAddLoading] = useState(false);
   const supabase = createClient();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [data, setData] = useState<any[]>([]);
@@ -36,6 +49,11 @@ export default function Page() {
     const role = userInfo?.role;
     setUserRole(role);
 
+    // Ambil semua user untuk dropdown
+    const { data: allUsers } = await supabase
+      .from("users")
+      .select("id, name");
+    setUserList(allUsers || []);
     if (role !== "admin") {
       query = query.eq("user_id", userId);
     }
@@ -134,6 +152,17 @@ export default function Page() {
               showSuccessToast("Absensi masuk berhasil disimpan!");
             }}
           />
+          {/* Tombol Tambah Absen khusus admin di bawah form */}
+          {userRole === "admin" && (
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="bg-blue-700 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow font-semibold"
+              >
+                Tambah Absen
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Tabel Kehadiran */}
@@ -141,6 +170,138 @@ export default function Page() {
           <h2 className="text-xl font-semibold mb-4">📋 Tabel Kehadiran</h2>
           <div className="overflow-x-auto rounded-md">
             <table className="min-w-full text-sm border-separate border-spacing-y-2">
+        {/* Modal Tambah Absen */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg max-w-md w-full relative">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="absolute top-2 right-2 text-sm text-gray-400 hover:text-red-500"
+              >
+                ✖
+              </button>
+              <h2 className="text-lg font-bold mb-4 text-center">Tambah Absen</h2>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setAddLoading(true);
+                  // Validasi
+                  if (!addForm.user_id || !addForm.date) {
+                    alert("Nama dan Tanggal wajib diisi!");
+                    setAddLoading(false);
+                    return;
+                  }
+                  const { error } = await supabase.from("attendances").insert({
+                    user_id: addForm.user_id,
+                    date: addForm.date,
+                    check_in: addForm.check_in ? new Date(`${addForm.date}T${addForm.check_in}`).toISOString() : null,
+                    check_out: addForm.check_out ? new Date(`${addForm.date}T${addForm.check_out}`).toISOString() : null,
+                    notes: addForm.notes,
+                    status: addForm.status,
+                  });
+                  if (!error) {
+                    setShowAddModal(false);
+                    setAddForm({ user_id: "", date: "", check_in: "", check_out: "", notes: "", status: "HADIR" });
+                    fetchData();
+                    showSuccessToast("Data absen berhasil ditambahkan!");
+                  } else {
+                    alert("Gagal menambah data absen!");
+                  }
+                  setAddLoading(false);
+                }}
+                className="space-y-4"
+              >
+                {/* Nama User */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Nama</label>
+                  <select
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                    value={addForm.user_id}
+                    onChange={(e) => setAddForm({ ...addForm, user_id: e.target.value })}
+                    required
+                  >
+                    <option value="">Pilih Nama</option>
+                    {userList.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* Tanggal */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tanggal</label>
+                  <input
+                    type="date"
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                    value={addForm.date}
+                    onChange={(e) => setAddForm({ ...addForm, date: e.target.value })}
+                    required
+                  />
+                </div>
+                {/* Check-in */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Check-in</label>
+                  <input
+                    type="time"
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                    value={addForm.check_in}
+                    onChange={(e) => setAddForm({ ...addForm, check_in: e.target.value })}
+                  />
+                </div>
+                {/* Check-out */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Check-out</label>
+                  <input
+                    type="time"
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                    value={addForm.check_out}
+                    onChange={(e) => setAddForm({ ...addForm, check_out: e.target.value })}
+                  />
+                </div>
+                {/* Keterangan */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Keterangan</label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                    value={addForm.notes}
+                    onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
+                  />
+                </div>
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <select
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                    value={addForm.status}
+                    onChange={(e) => setAddForm({ ...addForm, status: e.target.value })}
+                  >
+                    <option value="HADIR">HADIR</option>
+                    <option value="IZIN">IZIN</option>
+                    <option value="TANPA KETERANGAN">TANPA KETERANGAN</option>
+                  </select>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="px-4 py-2 text-sm rounded-md bg-gray-300 dark:bg-slate-600 hover:bg-gray-400 dark:hover:bg-slate-500 text-black dark:text-white"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white font-semibold shadow"
+                    disabled={addLoading}
+                  >
+                    ✅ Simpan
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
               <thead>
                 <tr className="bg-blue-600 text-white text-xs uppercase">
                   <th className="py-3 px-4 rounded-tl-lg">No</th>
