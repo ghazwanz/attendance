@@ -86,47 +86,32 @@ export default function UpdateForm({
         <h2 className="text-lg font-semibold mb-2">✏️ Perbarui Absensi</h2>
 
         {/* Tanggal */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            📅 Tanggal
-          </label>
-          <input
-            type="date"
-            value={form.date}
-            onChange={(e) => setForm({ ...form, date: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <input
+          type="date"
+          value={form.date}
+          disabled
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-white cursor-not-allowed"
+        />
 
         {/* Check In */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            🕐 Waktu Masuk
-          </label>
-          <input
-            type="time"
-            value={form.check_in}
-            onChange={(e) => setForm({ ...form, check_in: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <input
+          type="time"
+          value={form.check_in}
+          disabled
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-white cursor-not-allowed"
+        />
 
         {/* Check Out */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            🕔 Waktu Pulang
-          </label>
-          <input
-            type="time"
-            value={form.check_out}
-            onChange={(e) => setForm({ ...form, check_out: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <input
+          type="time"
+          value={form.check_out}
+          disabled
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-white cursor-not-allowed"
+        />
 
         {/* Keterangan */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
             📝 Keterangan
           </label>
           <input
