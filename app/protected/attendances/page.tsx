@@ -579,15 +579,8 @@ export default function Page() {
                       value={selected.status}
                       onChange={e => setSelected({ ...selected, status: e.target.value })}
                     >
-                      {selected.status === "HADIR" ? (
-                        <option value="IZIN">IZIN</option>
-                      ) : (
-                        <>
-                          <option value="HADIR">HADIR</option>
-                          <option value="IZIN">IZIN</option>
-                          <option value="TANPA KETERANGAN">TANPA KETERANGAN</option>
-                        </>
-                      )}
+                      <option value="HADIR">HADIR</option>
+                      <option value="IZIN">IZIN</option>
                     </select>
                   </div>
                   <div className="flex justify-end gap-2 mt-4">

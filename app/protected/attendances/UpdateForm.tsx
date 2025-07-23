@@ -13,10 +13,24 @@ export default function UpdateForm({
   const [form, setForm] = useState({
     ...attendance,
     check_in: attendance.check_in
-      ? new Date(attendance.check_in).toTimeString().slice(0, 5)
+      ? (() => {
+          try {
+            const d = new Date(attendance.check_in);
+            return d.toISOString().slice(11, 16);
+          } catch {
+            return "";
+          }
+        })()
       : "",
     check_out: attendance.check_out
-      ? new Date(attendance.check_out).toTimeString().slice(0, 5)
+      ? (() => {
+          try {
+            const d = new Date(attendance.check_out);
+            return d.toISOString().slice(11, 16);
+          } catch {
+            return "";
+          }
+        })()
       : "",
   });
 
