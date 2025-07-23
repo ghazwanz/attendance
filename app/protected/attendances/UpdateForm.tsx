@@ -13,10 +13,24 @@ export default function UpdateForm({
   const [form, setForm] = useState({
     ...attendance,
     check_in: attendance.check_in
-      ? new Date(attendance.check_in).toTimeString().slice(0, 5)
+      ? (() => {
+          try {
+            const d = new Date(attendance.check_in);
+            return d.toISOString().slice(11, 16);
+          } catch {
+            return "";
+          }
+        })()
       : "",
     check_out: attendance.check_out
-      ? new Date(attendance.check_out).toTimeString().slice(0, 5)
+      ? (() => {
+          try {
+            const d = new Date(attendance.check_out);
+            return d.toISOString().slice(11, 16);
+          } catch {
+            return "";
+          }
+        })()
       : "",
   });
 
@@ -90,7 +104,8 @@ export default function UpdateForm({
           type="date"
           value={form.date}
           disabled
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-white cursor-not-allowed"
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 cursor-not-allowed"
+          style={{ color: '#000', backgroundColor: '#fff' }}
         />
 
         {/* Check In */}
@@ -98,7 +113,8 @@ export default function UpdateForm({
           type="time"
           value={form.check_in}
           disabled
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-white cursor-not-allowed"
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 cursor-not-allowed"
+          style={{ color: '#000', backgroundColor: '#fff' }}
         />
 
         {/* Check Out */}
@@ -106,7 +122,8 @@ export default function UpdateForm({
           type="time"
           value={form.check_out}
           disabled
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-white cursor-not-allowed"
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 cursor-not-allowed"
+          style={{ color: '#000', backgroundColor: '#fff' }}
         />
 
         {/* Keterangan */}
@@ -135,7 +152,6 @@ export default function UpdateForm({
           >
             <option value="HADIR">HADIR</option>
             <option value="IZIN">IZIN</option>
-            <option value="ALPA">ALPA</option>
           </select>
           {/* ❌ Notifikasi error waktu */}
           {timeError && (

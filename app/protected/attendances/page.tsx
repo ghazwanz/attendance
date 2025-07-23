@@ -247,6 +247,16 @@ export default function Page() {
                       onChange={(e) => setAddForm({ ...addForm, check_in: e.target.value })}
                     />
                   </div>
+                  {/* Check-out */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Check-out</label>
+                    <input
+                      type="time"
+                      className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                      value={addForm.check_out}
+                      onChange={(e) => setAddForm({ ...addForm, check_out: e.target.value })}
+                    />
+                  </div>
                   {/* Keterangan */}
                   <div>
                     <label className="block text-sm font-medium mb-1">Keterangan</label>
@@ -569,15 +579,8 @@ export default function Page() {
                       value={selected.status}
                       onChange={e => setSelected({ ...selected, status: e.target.value })}
                     >
-                      {selected.status === "HADIR" ? (
-                        <option value="IZIN">IZIN</option>
-                      ) : (
-                        <>
-                          <option value="HADIR">HADIR</option>
-                          <option value="IZIN">IZIN</option>
-                          <option value="TANPA KETERANGAN">TANPA KETERANGAN</option>
-                        </>
-                      )}
+                      <option value="HADIR">HADIR</option>
+                      <option value="IZIN">IZIN</option>
                     </select>
                   </div>
                   <div className="flex justify-end gap-2 mt-4">

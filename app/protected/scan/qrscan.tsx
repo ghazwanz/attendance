@@ -145,8 +145,7 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
 
   return (
     <div className="p-6 max-w-lg mx-auto rounded-2xl shadow-2xl bg-white text-gray-900 dark:bg-[#1c2431] dark:text-white transition-colors duration-300">
-      <h2 className="text-2xl font-bold text-center mb-6">📷 QR Absensi Pegawai</h2>
-
+    
       <div className="mb-4 text-center">
         <label className="block mb-2 font-medium text-sm">Pilih Kamera</label>
         <select

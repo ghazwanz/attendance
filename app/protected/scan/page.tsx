@@ -85,7 +85,7 @@ export default function AttendancePage() {
           
           {/* QR Scanner */}
           <div className="bg-white dark:bg-slate-800 shadow-md rounded-xl p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">QR Scanner</h2>
+            <h2 className="text-2xl font-bold text-center mb-6">📷 QR Scanner</h2>
             <QRScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
           </div>
 
