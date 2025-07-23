@@ -368,22 +368,23 @@ export default function Page() {
                         <div className="flex flex-wrap gap-2">
                           {item.status == "IZIN" ? (
                             <>
-                              {userRole === "admin" || (userRole !== "admin" && item.date?.split("T")[0] === new Date().toISOString().split("T")[0]) ? (
-                                <button
-                                  onClick={() => setSelected(item)}
-                                  className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                                >
-                                  ✏️ Edit
-                                </button>
-                              ) : (
-                                <button
-                                  disabled
-                                  className="inline-flex items-center gap-1 bg-gray-400 text-white px-3 py-1 rounded-full text-xs font-semibold shadow cursor-not-allowed"
-                                  title="❌ Hanya bisa edit absensi hari ini"
-                                >
-                                  ✏️ Edit
-                                </button>
-                              )}
+                              {userRole === "admin"
+                                ? (
+                                  <button
+                                    onClick={() => setSelected(item)}
+                                    className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                  >
+                                    ✏️ Edit
+                                  </button>
+                                )
+                                : (item.date?.split("T")[0] === new Date().toISOString().split("T")[0] && (
+                                  <button
+                                    onClick={() => setSelected(item)}
+                                    className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                  >
+                                    ✏️ Edit
+                                  </button>
+                                ))}
 
                               {userRole === "admin" && (
                                 <button
@@ -396,7 +397,7 @@ export default function Page() {
                             </>
                           ) : (
                             <>
-                              {!item.check_out && (
+                              {!item.check_out && userRole !== "admin" && (
                                 <button
                                   onClick={() => {
                                     setCheckoutItem(item);
@@ -408,22 +409,23 @@ export default function Page() {
                                 </button>
                               )}
 
-                              {(userRole === "admin" || (userRole !== "admin" && item.date?.split("T")[0] === new Date().toISOString().split("T")[0])) ? (
-                                <button
-                                  onClick={() => setSelected(item)}
-                                  className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                                >
-                                  ✏️ Edit
-                                </button>
-                              ) : (
-                                <button
-                                  disabled
-                                  className="inline-flex items-center gap-1 bg-gray-400 text-white px-3 py-1 rounded-full text-xs font-semibold shadow cursor-not-allowed"
-                                  title="❌ Hanya bisa edit absensi hari ini"
-                                >
-                                  ✏️ Edit
-                                </button>
-                              )}
+                              {userRole === "admin"
+                                ? (
+                                  <button
+                                    onClick={() => setSelected(item)}
+                                    className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                  >
+                                    ✏️ Edit
+                                  </button>
+                                )
+                                : (item.date?.split("T")[0] === new Date().toISOString().split("T")[0] && (
+                                  <button
+                                    onClick={() => setSelected(item)}
+                                    className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                  >
+                                    ✏️ Edit
+                                  </button>
+                                ))}
 
                               {userRole === "admin" && (
                                 <button
@@ -511,7 +513,7 @@ export default function Page() {
                     <label className="block text-sm font-medium mb-1">Tanggal</label>
                     <input
                       type="date"
-                      className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                      className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 !bg-white !text-black"
                       value={selected.date?.split("T")[0] || ""}
                       onChange={e => setSelected({ ...selected, date: e.target.value })}
                       required
@@ -521,7 +523,7 @@ export default function Page() {
                     <label className="block text-sm font-medium mb-1">Check-in</label>
                     <input
                       type="time"
-                      className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                      className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 !bg-white !text-black"
                       value={
                         selected.check_in
                           ? (typeof selected.check_in === "string" && selected.check_in.length <= 5)
@@ -536,7 +538,7 @@ export default function Page() {
                     <label className="block text-sm font-medium mb-1">Check-out</label>
                     <input
                       type="time"
-                      className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                      className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 !bg-white !text-black"
                       value={
                         selected.check_out
                           ? (typeof selected.check_out === "string" && selected.check_out.length <= 5)
@@ -567,9 +569,15 @@ export default function Page() {
                       value={selected.status}
                       onChange={e => setSelected({ ...selected, status: e.target.value })}
                     >
-                      <option value="HADIR">HADIR</option>
-                      <option value="IZIN">IZIN</option>
-                      <option value="TANPA KETERANGAN">TANPA KETERANGAN</option>
+                      {selected.status === "HADIR" ? (
+                        <option value="IZIN">IZIN</option>
+                      ) : (
+                        <>
+                          <option value="HADIR">HADIR</option>
+                          <option value="IZIN">IZIN</option>
+                          <option value="TANPA KETERANGAN">TANPA KETERANGAN</option>
+                        </>
+                      )}
                     </select>
                   </div>
                   <div className="flex justify-end gap-2 mt-4">
