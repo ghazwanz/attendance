@@ -247,6 +247,16 @@ export default function Page() {
                       onChange={(e) => setAddForm({ ...addForm, check_in: e.target.value })}
                     />
                   </div>
+                  {/* Check-out */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Check-out</label>
+                    <input
+                      type="time"
+                      className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                      value={addForm.check_out}
+                      onChange={(e) => setAddForm({ ...addForm, check_out: e.target.value })}
+                    />
+                  </div>
                   {/* Keterangan */}
                   <div>
                     <label className="block text-sm font-medium mb-1">Keterangan</label>
