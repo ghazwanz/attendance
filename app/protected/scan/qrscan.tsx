@@ -6,7 +6,10 @@ import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 import { Camera, CameraOff } from 'lucide-react';
 
-export default function QRScanner() {
+export default function QRScanner({ onScanError, onScanSuccess }: {
+  onScanError?: (error: string) => void
+  onScanSuccess: (userId: string) => void;
+}) {
   const supabase = createClient();
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
@@ -23,7 +26,7 @@ export default function QRScanner() {
     html5QrCodeRef.current = html5QrCode;
 
     const config: Html5QrcodeCameraScanConfig = {
-      fps: 10,
+      fps: 30,
       qrbox: { width: 250, height: 250 },
     };
 
@@ -157,21 +160,19 @@ export default function QRScanner() {
       <div className="flex justify-center mb-4 space-x-2">
         <button
           onClick={() => switchCamera('environment')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-l-full text-sm font-medium transition shadow ${
-            facingMode === 'environment'
+          className={`flex items-center gap-2 px-4 py-2 rounded-l-full text-sm font-medium transition shadow ${facingMode === 'environment'
               ? 'bg-teal-600 text-white'
               : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
+            }`}
         >
           <Camera className="w-4 h-4" /> Depan
         </button>
         <button
           onClick={() => switchCamera('user')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-r-full text-sm font-medium transition shadow ${
-            facingMode === 'user'
+          className={`flex items-center gap-2 px-4 py-2 rounded-r-full text-sm font-medium transition shadow ${facingMode === 'user'
               ? 'bg-teal-600 text-white'
               : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
-          }`}
+            }`}
         >
           <CameraOff className="w-4 h-4" /> Belakang
         </button>
