@@ -368,9 +368,7 @@ export default function Page() {
                         <div className="flex flex-wrap gap-2">
                           {item.status == "IZIN" ? (
                             <>
-                              {userRole === "admin" ||
-                              item.date?.split("T")[0] ===
-                                new Date().toISOString().split("T")[0] ? (
+                              {userRole === "admin" || (userRole !== "admin" && item.date?.split("T")[0] === new Date().toISOString().split("T")[0]) ? (
                                 <button
                                   onClick={() => setSelected(item)}
                                   className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
@@ -410,19 +408,31 @@ export default function Page() {
                                 </button>
                               )}
 
-                              <button
-                                onClick={() => setSelected(item)}
-                                className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                              >
-                                ✏️ Edit
-                              </button>
+                              {(userRole === "admin" || (userRole !== "admin" && item.date?.split("T")[0] === new Date().toISOString().split("T")[0])) ? (
+                                <button
+                                  onClick={() => setSelected(item)}
+                                  className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                >
+                                  ✏️ Edit
+                                </button>
+                              ) : (
+                                <button
+                                  disabled
+                                  className="inline-flex items-center gap-1 bg-gray-400 text-white px-3 py-1 rounded-full text-xs font-semibold shadow cursor-not-allowed"
+                                  title="❌ Hanya bisa edit absensi hari ini"
+                                >
+                                  ✏️ Edit
+                                </button>
+                              )}
 
-                              <button
-                                onClick={() => setDeleteItem(item)}
-                                className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                              >
-                                🗑 Delete
-                              </button>
+                              {userRole === "admin" && (
+                                <button
+                                  onClick={() => setDeleteItem(item)}
+                                  className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                >
+                                  🗑 Delete
+                                </button>
+                              )}
                             </>
                           )}
                         </div>
