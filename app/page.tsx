@@ -7,6 +7,7 @@ import { EnvVarWarning } from '@/components/env-var-warning';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { hasEnvVars } from '@/lib/utils';
 import { QRForm } from '@/components/QRForm';
+import { AuthButton } from '@/components/auth-button';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -22,7 +23,7 @@ export default async function Home() {
         {/* NAVBAR */}
         <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
           <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
-            <Link href="/protected">
+            <Link href="/">
               <div className="flex items-center gap-3">
                 <Image
                   src="/logo1.png"
@@ -36,29 +37,51 @@ export default async function Home() {
                 </span>
               </div>
             </Link>
+
             {!hasEnvVars ? (
               <EnvVarWarning />
             ) : (
-              <div className="space-x-2 flex">
-                <Link
-                  href="/login"
-                  className="px-6 py-2.5 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-6 py-2.5 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition"
-                >
-                  Sign Up
-                </Link>
-                 <Link
-                  href="/scan"
-                  className="px-6 py-2.5 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition"
-                >
-                  Scan
-                </Link>
-              </div>
+              <>
+                {/* Desktop */}
+                <div className="hidden md:flex space-x-4 items-center">
+                  <Link
+                    href="/scan"
+                    className="font-medium text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-300 dark:text-white transition"
+                  >
+                    Scan
+                  </Link>
+                  <AuthButton/>
+                </div>
+
+                {/* Mobile */}
+                <div className="md:hidden">
+                  <details className="relative">
+                    <summary className="cursor-pointer list-none px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 dark:text-white">
+                      ☰
+                    </summary>
+                    <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-neutral-800 shadow-lg rounded-lg z-50 overflow-hidden flex flex-col">
+                      <Link
+                        href="/auth/login"
+                        className="px-4 py-2 text-sm text-neutral-900 dark:text-white hover:bg-blue-600 hover:text-white transition"
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        href="/auth/sign-up"
+                        className="px-4 py-2 text-sm text-neutral-900 dark:text-white hover:bg-emerald-600 hover:text-white transition"
+                      >
+                        Sign Up
+                      </Link>
+                      <Link
+                        href="/scan"
+                        className="px-4 py-2 text-sm text-neutral-900 dark:text-white hover:bg-emerald-600 hover:text-white transition"
+                      >
+                        Scan
+                      </Link>
+                    </div>
+                  </details>
+                </div>
+              </>
             )}
           </div>
         </nav>
