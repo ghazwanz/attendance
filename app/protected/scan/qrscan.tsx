@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
-import { Camera, CameraOff } from 'lucide-react';
 
 export default function QRScanner({ onScanError, onScanSuccess }: {
   onScanError?: (error: string) => void
@@ -13,6 +12,7 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
   const supabase = createClient();
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [isScanning, setIsScanning] = useState(false);
   const [showIzinForm, setShowIzinForm] = useState(false);
@@ -30,68 +30,71 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
       qrbox: { width: 250, height: 250 },
     };
 
-    await html5QrCode.start(
-      { facingMode },
-      config,
-      async (decodedText) => {
-        toast.dismiss();
-        toast.loading('⏳ Memproses scan...', { id: 'scan-process' });
+    try {
+      await html5QrCode.start(
+        { facingMode },
+        config,
+        async (decodedText) => {
+          toast.dismiss();
+          toast.loading('⏳ Memproses scan...', { id: 'scan-process' });
 
-        try {
-          const data = JSON.parse(decodedText);
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('name')
-            .eq('id', data.user_id)
-            .single();
+          try {
+            const data = JSON.parse(decodedText);
+            const { data: userData, error } = await supabase
+              .from('users')
+              .select('name')
+              .eq('id', data.user_id)
+              .single();
 
-          if (error || !userData) throw new Error('User tidak ditemukan');
+            if (error || !userData) throw new Error('User tidak ditemukan');
 
-          if (data.status === 'IZIN') {
-            izinDataRef.current = { user_id: data.user_id, name: userData.name };
-            setShowIzinForm(true);
-            toast.dismiss('scan-process');
+            if (data.status === 'IZIN') {
+              izinDataRef.current = { user_id: data.user_id, name: userData.name };
+              setShowIzinForm(true);
+              toast.dismiss('scan-process');
+              await stopScan();
+              return;
+            }
+
+            const { error: insertError } = await supabase.from('attendances').insert({
+              user_id: data.user_id,
+              date: new Date().toISOString(),
+              check_in: new Date().toISOString(),
+              check_out: null,
+              notes: '',
+              created_at: new Date().toISOString(),
+              status: data.status || 'HADIR',
+            });
+
+            if (insertError) throw new Error('Gagal menyimpan data absensi');
+
+            toast.success(`✅ Berhasil scan untuk ${userData.name}`, {
+              id: 'scan-process',
+              style: {
+                background: '#16a34a',
+                color: '#fff',
+              },
+            });
+
             await stopScan();
-            return;
+          } catch (err) {
+            toast.error(`❌ ${(err as Error).message}`, {
+              id: 'scan-process',
+              style: {
+                background: '#dc2626',
+                color: '#fff',
+              },
+            });
           }
-
-          const { error: insertError } = await supabase.from('attendances').insert({
-            user_id: data.user_id,
-            date: new Date().toISOString(),
-            check_in: new Date().toISOString(),
-            check_out: null,
-            notes: '',
-            created_at: new Date().toISOString(),
-            status: data.status || 'HADIR',
-          });
-
-          if (insertError) throw new Error('Gagal menyimpan data absensi');
-
-          toast.success(`✅ Berhasil scan untuk ${userData.name}`, {
-            id: 'scan-process',
-            style: {
-              background: '#16a34a', // hijau
-              color: '#fff',
-            },
-          });
-
-          await stopScan();
-        } catch (err) {
-          toast.error(`❌ ${(err as Error).message}`, {
-            id: 'scan-process',
-            style: {
-              background: '#dc2626', // merah
-              color: '#fff',
-            },
-          });
+        },
+        (errorMessage) => {
+          console.warn(errorMessage);
         }
-      },
-      (errorMessage) => {
-        console.warn(errorMessage);
-      }
-    );
-
-    setIsScanning(true);
+      );
+      setIsScanning(true);
+    } catch (err) {
+      toast.error('❌ Gagal memulai kamera');
+    }
   };
 
   const stopScan = async () => {
@@ -101,12 +104,6 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
       html5QrCodeRef.current = null;
       setIsScanning(false);
     }
-  };
-
-  const switchCamera = async (mode: 'user' | 'environment') => {
-    if (isScanning) await stopScan();
-    setFacingMode(mode);
-    setTimeout(() => startScan(), 300);
   };
 
   const handleIzinSubmit = async () => {
@@ -146,36 +143,20 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
     }
   };
 
-  useEffect(() => {
-    startScan();
-    return () => {
-      stopScan();
-    };
-  }, []);
-
   return (
     <div className="p-6 max-w-lg mx-auto rounded-2xl shadow-2xl bg-white text-gray-900 dark:bg-[#1c2431] dark:text-white transition-colors duration-300">
       <h2 className="text-2xl font-bold text-center mb-6">📷 QR Absensi Pegawai</h2>
 
-      <div className="flex justify-center mb-4 space-x-2">
-        <button
-          onClick={() => switchCamera('environment')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-l-full text-sm font-medium transition shadow ${facingMode === 'environment'
-              ? 'bg-teal-600 text-white'
-              : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
+      <div className="mb-4 text-center">
+        <label className="block mb-2 font-medium text-sm">Pilih Kamera</label>
+        <select
+          value={facingMode}
+          onChange={(e) => setFacingMode(e.target.value as 'user' | 'environment')}
+          className="w-48 px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-800 dark:text-white"
         >
-          <Camera className="w-4 h-4" /> Depan
-        </button>
-        <button
-          onClick={() => switchCamera('user')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-r-full text-sm font-medium transition shadow ${facingMode === 'user'
-              ? 'bg-teal-600 text-white'
-              : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'
-            }`}
-        >
-          <CameraOff className="w-4 h-4" /> Belakang
-        </button>
+          <option value="environment">Belakang</option>
+          <option value="user">Depan</option>
+        </select>
       </div>
 
       <div
@@ -185,6 +166,23 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
         style={{ minHeight: 200 }}
       >
         <p className="text-gray-600 dark:text-gray-300">Izinkan kamera dan arahkan QR</p>
+      </div>
+
+      <div className="flex justify-center mt-4 space-x-4">
+        <button
+          onClick={startScan}
+          disabled={isScanning}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+        >
+          Mulai
+        </button>
+        <button
+          onClick={stopScan}
+          disabled={!isScanning}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+        >
+          Stop
+        </button>
       </div>
 
       {showIzinForm && (
