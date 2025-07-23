@@ -67,10 +67,23 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
 
           if (insertError) throw new Error('Gagal menyimpan data absensi');
 
-          toast.success(`✅ Berhasil scan untuk ${userData.name}`, { id: 'scan-process' });
+          toast.success(`✅ Berhasil scan untuk ${userData.name}`, {
+            id: 'scan-process',
+            style: {
+              background: '#16a34a', // hijau
+              color: '#fff',
+            },
+          });
+
           await stopScan();
         } catch (err) {
-          toast.error(`❌ ${(err as Error).message}`, { id: 'scan-process' });
+          toast.error(`❌ ${(err as Error).message}`, {
+            id: 'scan-process',
+            style: {
+              background: '#dc2626', // merah
+              color: '#fff',
+            },
+          });
         }
       },
       (errorMessage) => {
@@ -98,7 +111,9 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
 
   const handleIzinSubmit = async () => {
     if (!izinReason.trim() || !izinDataRef.current) {
-      toast.error('Mohon isi alasan izin');
+      toast.error('Mohon isi alasan izin', {
+        style: { background: '#dc2626', color: '#fff' },
+      });
       return;
     }
 
@@ -117,12 +132,17 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
 
       if (insertError) throw new Error('Gagal menyimpan izin');
 
-      toast.success(`✅ Izin berhasil untuk ${name}`);
+      toast.success(`✅ Izin berhasil untuk ${name}`, {
+        style: { background: '#16a34a', color: '#fff' },
+      });
+
       setShowIzinForm(false);
       setIzinReason('');
       izinDataRef.current = null;
     } catch (err) {
-      toast.error(`❌ ${(err as Error).message}`);
+      toast.error(`❌ ${(err as Error).message}`, {
+        style: { background: '#dc2626', color: '#fff' },
+      });
     }
   };
 
@@ -167,15 +187,19 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
         <p className="text-gray-600 dark:text-gray-300">Izinkan kamera dan arahkan QR</p>
       </div>
 
-      {/* Form IZIN */}
       {showIzinForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
           <div className="bg-white dark:bg-[#1e293b] border border-teal-600 rounded-xl p-6 w-full max-w-md text-gray-900 dark:text-white shadow-xl animate-fade-in">
             <h2 className="text-xl font-bold mb-2 flex items-center gap-2">📝 Keterangan Izin</h2>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Silakan isi alasan izin Anda dengan jelas.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              Silakan isi alasan izin Anda dengan jelas.
+            </p>
 
             <div className="mb-4">
-              <label htmlFor="izinReason" className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1">
+              <label
+                htmlFor="izinReason"
+                className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1"
+              >
                 Alasan Izin
               </label>
               <textarea
