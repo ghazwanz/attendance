@@ -1,48 +1,28 @@
-'use client';
+import Link from "next/link";
+import { Button } from "./ui/button";
+import { createClient } from "@/lib/supabase/server";
+import { LogoutButton } from "./logout-button";
 
-import { createClient } from '@/lib/supabase/client';
-import { useEffect, useState } from 'react';
+export async function AuthButton({size}:{size?: "sm" | "lg"} = { size: "sm" }) {
+  const supabase = await createClient();
 
-export default function AuthButton() {
-  const supabase = createClient();
-  const [user, setUser] = useState<any>(null);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-
-    getUser();
-  }, [supabase]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/'; // langsung arahkan ke homepage
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      {user ? (
-        <>
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            {user.email}
-          </span>
-          <button
-            onClick={handleLogout}
-            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Logout
-          </button>
-        </>
-      ) : (
-        <a
-          href="/auth/login"
-          className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Login
-        </a>
-      )}
+  return user ? (
+    <div className="flex items-center gap-4">
+      Hey, {user.user_metadata.name || user.email}!
+      <LogoutButton />
+    </div>
+  ) : (
+    <div className="flex gap-2">
+      <Button asChild size={size} variant={"default"}>
+        <Link href="/auth/login">Masuk</Link>
+      </Button>
+      <Button asChild size={size} variant={"destructive"}>
+        <Link href="/auth/sign-up">daftar</Link>
+      </Button>
     </div>
   );
 }

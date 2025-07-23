@@ -9,7 +9,7 @@ import {
   QrCode,
 } from "lucide-react";
 import { EnvVarWarning } from "@/components/env-var-warning";
-import AuthButton from "@/components/auth-button"; // ✅ diperbaiki di sini
+import {AuthButton} from "@/components/auth-button"; // ✅ diperbaiki di sini
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import Image from "next/image";

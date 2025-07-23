@@ -36,29 +36,62 @@ export default async function Home() {
                 </span>
               </div>
             </Link>
+
             {!hasEnvVars ? (
               <EnvVarWarning />
             ) : (
-              <div className="space-x-2 flex">
-                <Link
-                  href="/login"
-                  className="px-6 py-2.5 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-6 py-2.5 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition"
-                >
-                  Sign Up
-                </Link>
-                 <Link
-                  href="/scan"
-                  className="px-6 py-2.5 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition"
-                >
-                  Scan
-                </Link>
-              </div>
+              <>
+                {/* Desktop */}
+                <div className="hidden md:flex space-x-2">
+                  <Link
+                    href="/login"
+                    className="px-6 py-2.5 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="px-6 py-2.5 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition"
+                  >
+                    Sign Up
+                  </Link>
+                  <Link
+                    href="/scan"
+                    className="px-6 py-2.5 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition"
+                  >
+                    Scan
+                  </Link>
+                </div>
+
+                {/* Mobile */}
+                <div className="md:hidden">
+                  <details className="relative">
+                    <summary className="cursor-pointer list-none px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 dark:text-white">
+                      ☰
+                    </summary>
+                    <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-neutral-800 shadow-lg rounded-lg z-50 overflow-hidden flex flex-col">
+                      <Link
+                        href="/login"
+                        className="px-4 py-2 text-sm text-neutral-900 dark:text-white hover:bg-blue-600 hover:text-white transition"
+                      >
+                        Sign In
+                      </Link>
+                      <Link
+                        href="/register"
+                        className="px-4 py-2 text-sm text-neutral-900 dark:text-white hover:bg-emerald-600 hover:text-white transition"
+                      >
+                        Sign Up
+                      </Link>
+                      <Link
+                        href="/scan"
+                        className="px-4 py-2 text-sm text-neutral-900 dark:text-white hover:bg-emerald-600 hover:text-white transition"
+                      >
+                        Scan
+                      </Link>
+                    </div>
+                  </details>
+                </div>
+              </>
             )}
           </div>
         </nav>
