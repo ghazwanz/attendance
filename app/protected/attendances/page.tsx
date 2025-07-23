@@ -536,9 +536,9 @@ export default function Page() {
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 !bg-white !text-black"
                       value={
                         selected.check_in
-                          ? (typeof selected.check_in === "string" && selected.check_in.length <= 5)
-                            ? selected.check_in
-                            : (() => { try { return new Date(selected.check_in).toISOString().slice(11,16); } catch { return ""; } })()
+                          ? (typeof selected.check_in === "string")
+                            ? selected.check_in.slice(0,5)
+                            : ""
                           : ""
                       }
                       onChange={e => setSelected({ ...selected, check_in: e.target.value })}
@@ -551,9 +551,9 @@ export default function Page() {
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 !bg-white !text-black"
                       value={
                         selected.check_out
-                          ? (typeof selected.check_out === "string" && selected.check_out.length <= 5)
-                            ? selected.check_out
-                            : (() => { try { return new Date(selected.check_out).toISOString().slice(11,16); } catch { return ""; } })()
+                          ? (typeof selected.check_out === "string")
+                            ? selected.check_out.slice(0,5)
+                            : ""
                           : ""
                       }
                       onChange={e => setSelected({ ...selected, check_out: e.target.value })}
