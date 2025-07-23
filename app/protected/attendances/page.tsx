@@ -460,11 +460,28 @@ export default function Page() {
                       status: selected.status,
                     };
                     // Format waktu jika diubah
-                    if (typeof check_in === "string" && check_in.length <= 5 && date) {
-                      updateObj.check_in = new Date(`${date}T${check_in}`).toISOString();
+                    // Jika check_in sudah ISO string, gunakan substring jam-menit, jika string jam-menit, langsung
+                    if (check_in) {
+                      if (typeof check_in === "string" && check_in.length <= 5 && date) {
+                        updateObj.check_in = new Date(`${date}T${check_in}`).toISOString();
+                      } else if (typeof check_in === "string" && check_in.length > 5) {
+                        updateObj.check_in = check_in;
+                      } else if (check_in instanceof Date) {
+                        updateObj.check_in = check_in.toISOString();
+                      } else {
+                        updateObj.check_in = null;
+                      }
                     }
-                    if (typeof check_out === "string" && check_out.length <= 5 && date) {
-                      updateObj.check_out = new Date(`${date}T${check_out}`).toISOString();
+                    if (check_out) {
+                      if (typeof check_out === "string" && check_out.length <= 5 && date) {
+                        updateObj.check_out = new Date(`${date}T${check_out}`).toISOString();
+                      } else if (typeof check_out === "string" && check_out.length > 5) {
+                        updateObj.check_out = check_out;
+                      } else if (check_out instanceof Date) {
+                        updateObj.check_out = check_out.toISOString();
+                      } else {
+                        updateObj.check_out = null;
+                      }
                     }
                     const { error } = await supabase
                       .from("attendances")
@@ -495,7 +512,13 @@ export default function Page() {
                     <input
                       type="time"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-                      value={selected.check_in ? new Date(selected.check_in).toISOString().slice(11,16) : ""}
+                      value={
+                        selected.check_in
+                          ? (typeof selected.check_in === "string" && selected.check_in.length <= 5)
+                            ? selected.check_in
+                            : (() => { try { return new Date(selected.check_in).toISOString().slice(11,16); } catch { return ""; } })()
+                          : ""
+                      }
                       onChange={e => setSelected({ ...selected, check_in: e.target.value })}
                     />
                   </div>
@@ -504,7 +527,13 @@ export default function Page() {
                     <input
                       type="time"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-                      value={selected.check_out ? new Date(selected.check_out).toISOString().slice(11,16) : ""}
+                      value={
+                        selected.check_out
+                          ? (typeof selected.check_out === "string" && selected.check_out.length <= 5)
+                            ? selected.check_out
+                            : (() => { try { return new Date(selected.check_out).toISOString().slice(11,16); } catch { return ""; } })()
+                          : ""
+                      }
                       onChange={e => setSelected({ ...selected, check_out: e.target.value })}
                       disabled={selected.date?.split("T")[0] !== new Date().toISOString().split("T")[0]}
                     />
