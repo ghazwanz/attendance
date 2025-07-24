@@ -65,15 +65,16 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
               status = 'TERLAMBAT';
             }
 
-            const { error: insertError } = await supabase.from('attendances').insert({
+            const attendanceObj = {
               user_id: data.user_id,
               date: now.toISOString(),
               check_in: now.toISOString(),
               check_out: null,
               notes: '',
               created_at: now.toISOString(),
-              status,
-            });
+              status: status,
+            };
+            const { error: insertError } = await supabase.from('attendances').insert([attendanceObj]);
 
             if (insertError) throw new Error('Gagal menyimpan data absensi');
 
