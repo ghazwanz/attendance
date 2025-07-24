@@ -4,6 +4,7 @@ import Link from "next/link";
 import { handleLogin } from "@/lib/auth/action";
 import { useActionState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { ThemeSwitcher } from "./theme-switcher";
 
 export function FormLogin() {
     const [state, action, pending] = useActionState(handleLogin, null);
@@ -65,12 +66,15 @@ export function FormLogin() {
                     </button>
                 </form>
 
-                <p className="text-center text-xs text-zinc-500 dark:text-zinc-500 light:text-zinc-500 mt-6">
-                    Belum punya akun?{" "}
-                    <Link href="./sign-up" className="text-indigo-400 dark:text-indigo-400 light:text-indigo-600 hover:underline">
-                        Daftar Sekarang
-                    </Link>
-                </p>
+                <div className="flex gap-4 items-center justify-center mt-6">
+                    <p className="text-center text-xs text-zinc-500 dark:text-zinc-500 light:text-zinc-500">
+                        Belum punya akun?{" "}
+                        <Link href="./sign-up" className="text-indigo-400 dark:text-indigo-400 light:text-indigo-600 hover:underline">
+                            Daftar Sekarang
+                        </Link>
+                    </p>
+                    <ThemeSwitcher />
+                </div>
             </div>
         </div>
     )
