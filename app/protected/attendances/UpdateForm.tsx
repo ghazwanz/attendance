@@ -104,8 +104,7 @@ export default function UpdateForm({
           type="date"
           value={form.date}
           disabled
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 cursor-not-allowed"
-          style={{ color: '#000', backgroundColor: '#fff' }}
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white cursor-not-allowed"
         />
 
         {/* Check In */}
@@ -113,8 +112,7 @@ export default function UpdateForm({
           type="time"
           value={form.check_in}
           disabled
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 cursor-not-allowed"
-          style={{ color: '#000', backgroundColor: '#fff' }}
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white cursor-not-allowed"
         />
 
         {/* Check Out */}
@@ -122,8 +120,7 @@ export default function UpdateForm({
           type="time"
           value={form.check_out}
           disabled
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 cursor-not-allowed"
-          style={{ color: '#000', backgroundColor: '#fff' }}
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white cursor-not-allowed"
         />
 
         {/* Keterangan */}
