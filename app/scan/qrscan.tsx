@@ -47,7 +47,12 @@ const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'wa
   });
 };
 
-export default function QRScanner() {
+type QRScannerProps = {
+  onScanSuccess?: (userId: string) => void;
+  onScanError?: (error: string) => void;
+};
+
+export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps) {
   const supabase = createClient();
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
