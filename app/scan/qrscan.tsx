@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeResult } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeResult, Html5Qrcode, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 
@@ -10,257 +10,361 @@ interface QRScannerProps {
   onScanError?: (error: string) => void;
 }
 
-export type qrData = {
-  user_id: string;
-  status: 'HADIR' | 'IZIN';
-};
+// ... (imports tetap sama)
 
-const allowedIPs = ['125.166.1.71']; // Ganti dengan IP yang diizinkan
-
-const QRScanner: React.FC<QRScannerProps> = ({ onScanSuccess, onScanError }) => {
-  const [isScanning, setIsScanning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [userIP, setUserIP] = useState<string | null>(null);
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+export default function QRScanner({ onScanError, onScanSuccess }: {
+  onScanError?: (error: string) => void
+  onScanSuccess: (userId: string) => void;
+}) {
   const supabase = createClient();
+  const scannerRef = useRef<HTMLDivElement>(null);
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
-  // Ambil IP publik pengguna
-  useEffect(() => {
-    fetch('https://api.ipify.org?format=json')
-      .then((res) => res.json())
-      .then((data) => setUserIP(data.ip))
-      .catch(() => setUserIP(null));
-  }, []);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
+  const [isScanning, setIsScanning] = useState(false);
 
-  // Bersihkan scanner saat komponen dibongkar
-  useEffect(() => {
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error);
-      }
-    };
-  }, []);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [showIzinForm, setShowIzinForm] = useState(false);
+  const [showPulangModal, setShowPulangModal] = useState(false);
+  const [izinReason, setIzinReason] = useState('');
+  const [balikLagi, setBalikLagi] = useState(false);
 
-  const startScanning = () => {
-    if (!userIP || !allowedIPs.includes(userIP)) {
-      const ipMsg = userIP
-        ? `IP ${userIP} tidak diizinkan untuk menggunakan scanner`
-        : 'Gagal mendapatkan IP pengguna';
-      toast.error(`❌ ${ipMsg}`);
-      setError(ipMsg);
-      return;
-    }
+  const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
-    setIsScanning(true);
-    setError(null);
-    setSuccess(null);
+  const startScan = async () => {
+    if (!scannerRef.current) return;
 
-    const config = {
-      fps: 30,
-      qrbox: { width: 250, height: 250 },
-      aspectRatio: 1.0,
-      disableFlip: false,
-      supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true,
-      },
-      videoConstraints: {
-        facingMode: 'environment',
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-    };
+    const html5QrCode = new Html5Qrcode(scannerRef.current.id);
+    html5QrCodeRef.current = html5QrCode;
 
-    scannerRef.current = new Html5QrcodeScanner('qr-reader', config, false);
+    const config: Html5QrcodeCameraScanConfig = { fps: 30, qrbox: { width: 250, height: 250 } };
 
-    const onScanSuccessHandler = async (decodedText: any, decodedResult: Html5QrcodeResult) => {
-      try {
-        toast.loading('Memproses QR Code...', { id: 'scan-process' });
+    try {
+      await html5QrCode.start(
+        { facingMode },
+        config,
+        async (decodedText) => {
+          toast.dismiss();
+          toast.loading('⏳ Memproses scan...', { id: 'scan-process' });
 
-        const data: qrData = JSON.parse(decodedText);
-        if (!data?.user_id) throw new Error('QR tidak valid, user_id tidak ditemukan');
+          try {
+            const data = JSON.parse(decodedText);
+            const { data: userData, error } = await supabase
+              .from('users')
+              .select('name')
+              .eq('id', data.user_id)
+              .single();
 
-        await scannerRef.current?.clear();
-        setIsScanning(false);
+            if (error || !userData) throw new Error('User tidak ditemukan');
 
-        const { data: user, error: userError } = await supabase
-          .from('users')
-          .select('id, name, role')
-          .eq('id', data.user_id)
-          .single();
+            scanUserRef.current = { user_id: data.user_id, name: userData.name };
 
-        if (userError || !user) throw new Error('User tidak ditemukan di database');
+            // cek apakah sudah absen masuk
+            const today = new Date().toISOString().split('T')[0];
+            const { data: attendanceToday } = await supabase
+              .from('attendances')
+              .select('*')
+              .eq('user_id', data.user_id)
+              .like('date', `${today}%`)
+              .limit(1)
+              .single();
 
-        const today = new Date().toISOString().split('T')[0];
+            toast.dismiss('scan-process');
+            await stopScan();
 
-        const { data: existingAttendance, error: fetchError } = await supabase
-          .from('attendances')
-          .select('*')
-          .eq('user_id', data.user_id)
-          .eq('date', today)
-          .limit(1);
-
-        if (fetchError) throw new Error('Gagal mengecek data absensi');
-
-        if (!existingAttendance || existingAttendance.length === 0) {
-          let status = 'HADIR';
-          const nowHour = new Date().getHours();
-
-          if (data.status === 'IZIN') {
-            status = 'IZIN';
-          } else {
-            status = nowHour < 8 ? 'HADIR' : 'TERLAMBAT';
-          }
-
-          const { error: insertError } = await supabase.from('attendances').insert({
-            user_id: data.user_id,
-            date: new Date().toISOString(),
-            check_in: status === 'IZIN' ? null : new Date().toISOString(),
-            check_out: null,
-            notes: '',
-            created_at: new Date().toISOString(),
-            status: status,
-          });
-
-          if (insertError) throw new Error(`Gagal menyimpan absensi: ${insertError.message}`);
-
-          setSuccess(status === 'IZIN' ? `Izin berhasil untuk ${user.name}` : `Check-in berhasil untuk ${user.name}`);
-          toast.success(status === 'IZIN' ? `✅ Izin berhasil untuk ${user.name}` : `✅ Check-in berhasil untuk ${user.name}`, {
-            id: 'scan-process',
-          });
-
-          if (status === 'IZIN') return;
-        } else {
-          const record = existingAttendance[0];
-
-          if (record.status === 'IZIN') {
-            setError(`${user.name} sedang Izin hari ini. Tidak ada proses absen.`);
-            toast.error(`⚠️ ${user.name} Izin hari ini`, { id: 'scan-process' });
-            return;
-          }
-
-          if (record.check_out) {
-            setError(`User ${user.name} sudah melakukan check-in dan check-out hari ini`);
-            toast.error(`❌ ${user.name} sudah absen penuh hari ini`, { id: 'scan-process' });
-          } else {
-            const checkInTime = new Date(record.check_in);
-            const now = new Date();
-            const diffInMs = now.getTime() - checkInTime.getTime();
-            const diffInHours = diffInMs / (1000 * 60 * 60);
-
-            if (diffInHours < 8) {
-              const remaining = (8 - diffInHours).toFixed(2);
-              setError(`Belum bisa check-out, sisa waktu kerja ${remaining} jam`);
-              toast.error(`❌ Belum bisa check-out. Minimal 8 jam kerja`, { id: 'scan-process' });
+            if (attendanceToday && attendanceToday.check_in && !attendanceToday.check_out) {
+              // sudah absen, belum pulang
+              setShowPulangModal(true);
             } else {
-              const { error: updateError } = await supabase
-                .from('attendances')
-                .update({ check_out: now.toISOString() })
-                .eq('id', record.id);
-
-              if (updateError) throw new Error(`Gagal melakukan check-out: ${updateError.message}`);
-
-              setSuccess(`Check-out berhasil untuk ${user.name}`);
-              toast.success(`✅ Check-out berhasil untuk ${user.name}`, { id: 'scan-process' });
+              // belum absen masuk
+              setShowChoiceModal(true);
             }
+          } catch (err) {
+            toast.error(`❌ ${(err as Error).message}`, {
+              id: 'scan-process',
+              style: { background: '#dc2626', color: '#fff' },
+            });
           }
-        }
-
-        onScanSuccess?.(data.user_id);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses scan';
-        setError(message);
-        setIsScanning(false);
-        toast.error(`❌ ${message}`, { id: 'scan-process' });
-        onScanError?.(message);
-      }
-    };
-
-    const onScanFailure = (error: string) => {
-      if (
-        !error.includes('No MultiFormat Readers') &&
-        !error.includes('NotFoundException') &&
-        !error.includes('No QR code found')
-      ) {
-        console.warn('QR scan warning:', error);
-      }
-    };
-
-    scannerRef.current.render(onScanSuccessHandler, onScanFailure);
+        },
+        (errorMessage) => console.warn(errorMessage)
+      );
+      setIsScanning(true);
+    } catch (err) {
+      toast.error('❌ Gagal memulai kamera');
+    }
   };
 
-  const stopScanning = async () => {
-    if (scannerRef.current) {
-      await scannerRef.current.clear();
+  const stopScan = async () => {
+    if (html5QrCodeRef.current) {
+      await html5QrCodeRef.current.stop();
+      await html5QrCodeRef.current.clear();
+      html5QrCodeRef.current = null;
       setIsScanning(false);
     }
   };
 
+  const handleAbsenHadir = async () => {
+    if (!scanUserRef.current) return;
+    try {
+      const { user_id, name } = scanUserRef.current;
+      const now = new Date().toISOString();
+
+      const { error } = await supabase.from('attendances').insert({
+        user_id,
+        date: now,
+        check_in: now,
+        check_out: null,
+        notes: '',
+        created_at: now,
+        status: 'HADIR',
+      });
+
+      if (error) throw new Error('Gagal menyimpan kehadiran');
+
+      toast.success(`✅ Berhasil hadir untuk ${name}`);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setShowChoiceModal(false);
+    }
+  };
+
+  const handleAbsenIzin = () => {
+    setShowChoiceModal(false);
+    setShowIzinForm(true);
+  };
+
+  const handleSubmitIzin = async () => {
+    if (!izinReason.trim() || !scanUserRef.current) {
+      toast.error('Mohon isi alasan izin');
+      return;
+    }
+
+    try {
+      const { user_id, name } = scanUserRef.current;
+      const now = new Date().toISOString();
+
+      const { error } = await supabase.from('attendances').insert({
+        user_id,
+        date: now,
+        check_in: null,
+        check_out: null,
+        notes: izinReason,
+        created_at: now,
+        status: 'IZIN',
+      });
+
+      if (error) throw new Error('Gagal menyimpan izin');
+
+      toast.success(`✅ Izin berhasil untuk ${name}`);
+      setIzinReason('');
+      setShowIzinForm(false);
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const handlePulang = async () => {
+    if (!scanUserRef.current) return;
+    try {
+      const { user_id, name } = scanUserRef.current;
+      const now = new Date().toISOString();
+
+      const { error } = await supabase
+        .from('attendances')
+        .update({ check_out: now })
+        .eq('user_id', user_id)
+        .like('date', `${now.split('T')[0]}%`);
+
+      if (error) throw new Error('Gagal mencatat pulang');
+
+      toast.success(`✅ Pulang dicatat untuk ${name}`);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setShowPulangModal(false);
+    }
+  };
+
+  const handleIzinPulang = async () => {
+    if (!izinReason.trim() || !scanUserRef.current) {
+      toast.error('Isi alasan izin keluar');
+      return;
+    }
+
+    try {
+      const { user_id, name } = scanUserRef.current;
+      const now = new Date().toISOString();
+
+      const { error } = await supabase
+        .from('attendances')
+        .update({
+          check_out: now,
+          notes: `IZIN KELUAR: ${izinReason} | Balik lagi: ${balikLagi ? 'Ya' : 'Tidak'}`,
+        })
+        .eq('user_id', user_id)
+        .like('date', `${now.split('T')[0]}%`);
+
+      if (error) throw new Error('Gagal menyimpan izin pulang');
+
+      toast.success(`✅ Izin keluar berhasil untuk ${name}`);
+      setIzinReason('');
+      setBalikLagi(false);
+      setShowPulangModal(false);
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">QR Code Attendance Scanner</h2>
-
-      <div className="mb-6">
-        <div id="qr-reader" className={`${isScanning ? 'block' : 'hidden'}`}></div>
-        {!isScanning && (
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <div className="text-gray-500 mb-4">
-              <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
-                />
-              </svg>
-            </div>
-            <p className="text-gray-600">Klik "Start Scanning" untuk memulai</p>
-          </div>
-        )}
-      </div>
-
-      <div className="flex gap-4 justify-center">
-        {!isScanning ? (
-          <button
-            onClick={startScanning}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
-          >
-            Start Scanning
-          </button>
-        ) : (
-          <button
-            onClick={stopScanning}
-            className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-lg transition-colors"
-          >
-            Stop Scanning
-          </button>
-        )}
-      </div>
-
-      {error && (
-        <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-          <p className="text-sm font-medium">Error: {error}</p>
-        </div>
-      )}
-
-      {success && (
-        <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-          <p className="text-sm font-medium">Success: {success}</p>
-        </div>
-      )}
-
-      <div className="mt-6 text-sm text-gray-600">
-        <h3 className="font-medium mb-2">Petunjuk:</h3>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Izinkan akses kamera jika diminta</li>
-          <li>Pastikan QR code berada dalam kotak scan</li>
-          <li>Gunakan pencahayaan yang baik</li>
-          <li>QR code harus mengandung user_id</li>
-        </ul>
-      </div>
+  <div className="p-6 max-w-lg mx-auto rounded-2xl shadow-2xl bg-white text-gray-900 dark:bg-[#1c2431] dark:text-white transition-colors duration-300">
+    <div className="mb-4 text-center">
+      <label className="block mb-2 font-medium text-sm">Pilih Kamera</label>
+      <select
+        value={facingMode}
+        onChange={(e) => setFacingMode(e.target.value as 'user' | 'environment')}
+        className="w-48 px-3 py-2 border border-gray-300 rounded-md dark:bg-gray-800 dark:text-white"
+      >
+        <option value="environment">Belakang</option>
+        <option value="user">Depan</option>
+      </select>
     </div>
-  );
-};
 
-export default QRScanner;
+    <div
+      id="reader"
+      ref={scannerRef}
+      className="rounded-xl border border-dashed border-teal-400 p-4 bg-gray-100 dark:bg-gray-800 text-center transition-colors"
+      style={{ minHeight: 200 }}
+    >
+      <p className="text-gray-600 dark:text-gray-300">Izinkan kamera dan arahkan QR</p>
+    </div>
+
+    <div className="flex justify-center mt-4 space-x-4">
+      <button
+        onClick={startScan}
+        disabled={isScanning}
+        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+      >
+        Mulai
+      </button>
+      <button
+        onClick={stopScan}
+        disabled={!isScanning}
+        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+      >
+        Stop
+      </button>
+    </div>
+
+    {/* Modal Pilihan Hadir / Izin Tidak Hadir */}
+    {showChoiceModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+          <h2 className="text-lg font-semibold mb-4 text-center">Pilih Kehadiran</h2>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleAbsenHadir}
+              className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            >
+              ✅ Hadir
+            </button>
+            <button
+              onClick={handleAbsenIzin}
+              className="w-full px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+            >
+              📝 Izin Tidak Hadir
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Modal Jika Sudah Hadir */}
+    {showPulangModal && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+          <h2 className="text-lg font-semibold mb-4 text-center">Sudah Hadir</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 text-center">Pilih tindakan selanjutnya</p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handlePulang}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              🏁 Pulang
+            </button>
+            <button
+              onClick={() => {
+                setShowPulangModal(false);
+                setShowIzinForm(true);
+              }}
+              className="w-full px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600"
+            >
+              🚪 Izin Pulang Awal
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Form Izin */}
+    {showIzinForm && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-xl text-gray-900 dark:text-white">
+          <h2 className="text-xl font-bold mb-2 flex items-center gap-2">📝 Keterangan Izin</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            Silakan isi alasan Anda dengan jelas.
+          </p>
+
+          <div className="mb-4">
+            <label
+              htmlFor="izinReason"
+              className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1"
+            >
+              Alasan
+            </label>
+            <textarea
+              id="izinReason"
+              value={izinReason}
+              onChange={(e) => setIzinReason(e.target.value)}
+              placeholder="Contoh: Sakit, urusan keluarga..."
+              className="w-full p-3 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none h-28 placeholder:text-gray-400 transition"
+            />
+          </div>
+
+          {/* Tampilkan checkbox jika ini adalah izin pulang */}
+          {showPulangModal && (
+            <div className="mb-4 flex items-center">
+              <input
+                id="balikLagi"
+                type="checkbox"
+                checked={balikLagi}
+                onChange={(e) => setBalikLagi(e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="balikLagi" className="text-sm">Saya akan kembali ke kantor</label>
+            </div>
+          )}
+
+          <div className="flex justify-end mt-6 space-x-3">
+            <button
+              onClick={() => {
+                setShowIzinForm(false);
+                setIzinReason('');
+                setShowPulangModal(false);
+              }}
+              className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-white rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition"
+            >
+              Batal
+            </button>
+            <button
+              onClick={showPulangModal ? handleIzinPulang : handleSubmitIzin}
+              className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition"
+            >
+              Simpan
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
+}
