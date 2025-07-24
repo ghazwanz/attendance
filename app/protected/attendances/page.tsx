@@ -521,7 +521,7 @@ export default function Page() {
                   <label className="block text-sm font-medium mb-1">Tanggal</label>
                   <input
                     type="date"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 !bg-white !text-black"
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                     value={selected.date?.split("T")[0] || ""}
                     onChange={e => setSelected({ ...selected, date: e.target.value })}
                     required
@@ -531,7 +531,7 @@ export default function Page() {
                   <label className="block text-sm font-medium mb-1">Check-in</label>
                   <input
                     type="time"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 !bg-white !text-black"
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                     value={
                       selected.check_in
                         ? new Date(selected.check_in).toLocaleTimeString("en-GB", {
@@ -551,7 +551,7 @@ export default function Page() {
                   <label className="block text-sm font-medium mb-1">Check-out</label>
                   <input
                     type="time"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 !bg-white !text-black"
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                     value={
                       selected.check_out
                         ? new Date(selected.check_out).toLocaleTimeString("en-GB", {
