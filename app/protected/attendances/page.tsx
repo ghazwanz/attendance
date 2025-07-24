@@ -1,4 +1,3 @@
-// ... (import tetap sama)
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -189,23 +188,13 @@ export default function Page() {
                       setAddLoading(false);
                       return;
                     }
-                    // Cek apakah check-in melebihi jam 08:00
-                    let status = addForm.status;
-                    if (addForm.check_in) {
-                      const jamMenit = addForm.check_in.split(":");
-                      const jam = parseInt(jamMenit[0], 10);
-                      const menit = parseInt(jamMenit[1], 10);
-                      if (jam > 8 || (jam === 8 && menit > 0)) {
-                        status = "TERLAMBAT";
-                      }
-                    }
                     const { error } = await supabase.from("attendances").insert({
                       user_id: addForm.user_id,
                       date: addForm.date,
                       check_in: addForm.check_in ? new Date(`${addForm.date}T${addForm.check_in}`).toISOString() : null,
                       check_out: addForm.check_out ? new Date(`${addForm.date}T${addForm.check_out}`).toISOString() : null,
                       notes: addForm.notes,
-                      status,
+                      status: addForm.status,
                     });
                     if (!error) {
                       setShowAddModal(false);
