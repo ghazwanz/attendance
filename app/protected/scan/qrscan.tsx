@@ -56,14 +56,23 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
               return;
             }
 
+            // Tentukan status HADIR/TERLAMBAT berdasarkan jam scan
+            const now = new Date();
+            const jam = now.getHours();
+            const menit = now.getMinutes();
+            let status = 'HADIR';
+            if (jam > 8 || (jam === 8 && menit > 0)) {
+              status = 'TERLAMBAT';
+            }
+
             const { error: insertError } = await supabase.from('attendances').insert({
               user_id: data.user_id,
-              date: new Date().toISOString(),
-              check_in: new Date().toISOString(),
+              date: now.toISOString(),
+              check_in: now.toISOString(),
               check_out: null,
               notes: '',
-              created_at: new Date().toISOString(),
-              status: data.status || 'HADIR',
+              created_at: now.toISOString(),
+              status,
             });
 
             if (insertError) throw new Error('Gagal menyimpan data absensi');
