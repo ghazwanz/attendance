@@ -175,9 +175,9 @@ export default function AttendancePage() {
                         {record.users?.name || 'Pengguna Tidak Diketahui'}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {record.status.toLowerCase() === 'izin'
-                          ? formatTimestamp(record.created_at)
-                          : formatTimestamp(record.check_in)}
+                        {(record.status.toLowerCase() === ('hadir')||record.status.toLowerCase() === ('terlambat'))
+                          ? formatTimestamp(record.check_in)
+                          : formatTimestamp(record.created_at)}
                       </p>
                     </div>
                     <span
