@@ -104,7 +104,6 @@ export default function ProtectedLayout({
 
         <div className="flex-1 flex w-full flex-col gap-20 max-w-7xl sm:p-5 p-4">
           {children}
-          <Toaster position="top-center" reverseOrder={false} />
         </div>
 
         <footer className="w-full flex items-center justify-center border-t border-gray-200 dark:border-white/10 mx-auto text-center text-xs gap-8 py-4">

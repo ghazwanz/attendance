@@ -1,34 +1,63 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Html5QrcodeScanner, Html5QrcodeScanType, Html5QrcodeResult, Html5Qrcode, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 
-interface QRScannerProps {
-  onScanSuccess?: (userId: string) => void;
-  onScanError?: (error: string) => void;
-}
+// Fungsi utilitas untuk notifikasi
+const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'warning'; message: string }) => {
+  const baseStyle = {
+    borderRadius: '8px',
+    padding: '10px 16px',
+    fontWeight: 'bold',
+  };
 
-// ... (imports tetap sama)
+  const colorMap = {
+    success: {
+      background: '#16a34a',
+      color: '#fff',
+      icon: '✅',
+    },
+    error: {
+      background: '#dc2626',
+      color: '#fff',
+      icon: '❌',
+    },
+    info: {
+      background: '#2563eb',
+      color: '#fff',
+      icon: 'ℹ️',
+    },
+    warning: {
+      background: '#eab308',
+      color: '#000',
+      icon: '⚠️',
+    },
+  };
 
-export default function QRScanner({ onScanError, onScanSuccess }: {
-  onScanError?: (error: string) => void
-  onScanSuccess: (userId: string) => void;
-}) {
+  const { background, color, icon } = colorMap[type];
+
+  toast(`${icon} ${message}`, {
+    style: {
+      ...baseStyle,
+      background,
+      color,
+    },
+  });
+};
+
+export default function QRScanner() {
   const supabase = createClient();
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
-
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const [isScanning, setIsScanning] = useState(false);
-
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [showIzinForm, setShowIzinForm] = useState(false);
   const [showPulangModal, setShowPulangModal] = useState(false);
   const [izinReason, setIzinReason] = useState('');
   const [balikLagi, setBalikLagi] = useState(false);
-
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
   const startScan = async () => {
@@ -49,48 +78,32 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
 
           try {
             const data = JSON.parse(decodedText);
-            const { data: userData, error } = await supabase
-              .from('users')
-              .select('name')
-              .eq('id', data.user_id)
-              .single();
+            const { data: userData, error } = await supabase.from('users').select('name').eq('id', data.user_id).single();
 
             if (error || !userData) throw new Error('User tidak ditemukan');
 
             scanUserRef.current = { user_id: data.user_id, name: userData.name };
-
-            // cek apakah sudah absen masuk
             const today = new Date().toISOString().split('T')[0];
-            const { data: attendanceToday } = await supabase
-              .from('attendances')
-              .select('*')
-              .eq('user_id', data.user_id)
-              .like('date', `${today}%`)
-              .limit(1)
-              .single();
+            const { data: attendanceToday } = await supabase.from('attendances').select('*').eq('user_id', data.user_id).like('date', `${today}%`).limit(1).single();
 
             toast.dismiss('scan-process');
             await stopScan();
 
             if (attendanceToday && attendanceToday.check_in && !attendanceToday.check_out) {
-              // sudah absen, belum pulang
               setShowPulangModal(true);
             } else {
-              // belum absen masuk
               setShowChoiceModal(true);
             }
           } catch (err) {
-            toast.error(`❌ ${(err as Error).message}`, {
-              id: 'scan-process',
-              style: { background: '#dc2626', color: '#fff' },
-            });
+            showToast({ type: 'error', message: (err as Error).message });
+            toast.dismiss('scan-process');
           }
         },
         (errorMessage) => console.warn(errorMessage)
       );
       setIsScanning(true);
     } catch (err) {
-      toast.error('❌ Gagal memulai kamera');
+      showToast({ type: 'error', message: 'Gagal memulai kamera' });
     }
   };
 
@@ -121,9 +134,9 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
 
       if (error) throw new Error('Gagal menyimpan kehadiran');
 
-      toast.success(`✅ Berhasil hadir untuk ${name}`);
+      showToast({ type: 'success', message: `Berhasil hadir untuk ${name}` });
     } catch (err) {
-      toast.error((err as Error).message);
+      showToast({ type: 'error', message: (err as Error).message });
     } finally {
       setShowChoiceModal(false);
     }
@@ -136,7 +149,7 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
 
   const handleSubmitIzin = async () => {
     if (!izinReason.trim() || !scanUserRef.current) {
-      toast.error('Mohon isi alasan izin');
+      showToast({ type: 'error', message: 'Mohon isi alasan izin' });
       return;
     }
 
@@ -156,11 +169,11 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
 
       if (error) throw new Error('Gagal menyimpan izin');
 
-      toast.success(`✅ Izin berhasil untuk ${name}`);
+      showToast({ type: 'warning', message: `Izin berhasil untuk ${name}` });
       setIzinReason('');
       setShowIzinForm(false);
     } catch (err) {
-      toast.error((err as Error).message);
+      showToast({ type: 'error', message: (err as Error).message });
     }
   };
 
@@ -170,17 +183,13 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
       const { user_id, name } = scanUserRef.current;
       const now = new Date().toISOString();
 
-      const { error } = await supabase
-        .from('attendances')
-        .update({ check_out: now })
-        .eq('user_id', user_id)
-        .like('date', `${now.split('T')[0]}%`);
+      const { error } = await supabase.from('attendances').update({ check_out: now }).eq('user_id', user_id).like('date', `${now.split('T')[0]}%`);
 
       if (error) throw new Error('Gagal mencatat pulang');
 
-      toast.success(`✅ Pulang dicatat untuk ${name}`);
+      showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
     } catch (err) {
-      toast.error((err as Error).message);
+      showToast({ type: 'error', message: (err as Error).message });
     } finally {
       setShowPulangModal(false);
     }
@@ -188,7 +197,7 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
 
   const handleIzinPulang = async () => {
     if (!izinReason.trim() || !scanUserRef.current) {
-      toast.error('Isi alasan izin keluar');
+      showToast({ type: 'error', message: 'Isi alasan izin keluar' });
       return;
     }
 
@@ -196,25 +205,22 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
       const { user_id, name } = scanUserRef.current;
       const now = new Date().toISOString();
 
-      const { error } = await supabase
-        .from('attendances')
-        .update({
-          check_out: now,
-          notes: `IZIN KELUAR: ${izinReason} | Balik lagi: ${balikLagi ? 'Ya' : 'Tidak'}`,
-        })
-        .eq('user_id', user_id)
-        .like('date', `${now.split('T')[0]}%`);
+      const { error } = await supabase.from('attendances').update({
+        check_out: now,
+        notes: `IZIN KELUAR: ${izinReason} | Balik lagi: ${balikLagi ? 'Ya' : 'Tidak'}`,
+      }).eq('user_id', user_id).like('date', `${now.split('T')[0]}%`);
 
       if (error) throw new Error('Gagal menyimpan izin pulang');
 
-      toast.success(`✅ Izin keluar berhasil untuk ${name}`);
+      showToast({ type: 'info', message: `Izin keluar berhasil untuk ${name}` });
       setIzinReason('');
       setBalikLagi(false);
       setShowPulangModal(false);
     } catch (err) {
-      toast.error((err as Error).message);
+      showToast({ type: 'error', message: (err as Error).message });
     }
   };
+
   return (
   <div className="p-6 max-w-lg mx-auto rounded-2xl shadow-2xl bg-white text-gray-900 dark:bg-[#1c2431] dark:text-white transition-colors duration-300">
     <div className="mb-4 text-center">
