@@ -97,9 +97,8 @@ export default function AttendancePage() {
     }
   };
 
-  const handleScanSuccess = async (userId: string) => {
-    console.log('Scan berhasil untuk user:', userId);
-    // Tidak perlu reload karena realtime handle
+  const handleScanSuccess = () => {
+    loadRecentAttendance();
   };
 
   const handleScanError = (error: string) => {
