@@ -289,6 +289,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
         .update({
           check_out: now,
           notes: `IZIN KELUAR: ${izinReason} | Balik lagi: ${balikLagi ? 'Ya' : 'Tidak'}`,
+          status: 'IZIN',
+
         })
         .eq('user_id', user_id)
         .eq('date', today);
@@ -420,7 +422,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 Batal
               </button>
               <button
-                onClick={isIzinPulang ? handleIzinPulang : handleSubmitIzin}
+                onClick={handleIzinPulang}
                 className="px-4 py-2 bg-teal-600 text-white rounded-md"
               >
                 Simpan
