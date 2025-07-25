@@ -28,16 +28,63 @@ export default function AttendancePage() {
 
   useEffect(() => {
     loadRecentAttendance();
+
+    const channel = supabase
+      .channel('attendance-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'attendances',
+        },
+        async (payload) => {
+          const rawRecord = payload.new as any;
+          const newRecord: AttendanceRecord = {
+            id: rawRecord.id,
+            user_id: rawRecord.user_id,
+            date: rawRecord.date,
+            check_in: rawRecord.check_in,
+            check_out: rawRecord.check_out,
+            notes: rawRecord.notes,
+            created_at: rawRecord.created_at,
+            status: rawRecord.status,
+            users: rawRecord.users || { name: '' },
+          };
+
+          // Fetch name if not included (optional enhancement)
+          if (!newRecord.users || !newRecord.users.name) {
+            const { data: userData } = await supabase
+              .from('users')
+              .select('name')
+              .eq('id', newRecord.user_id)
+              .single();
+
+            newRecord.users = userData ?? { name: '' };
+          }
+
+          setRecentAttendance((prev) => {
+            const updated = [newRecord, ...prev];
+            return updated
+              .filter((v, i, self) => self.findIndex(x => x.id === v.id) === i)
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+              .slice(0, 6);
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadRecentAttendance = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('attendances')
-        .select(`
-          *,
-          users(name)
-        `)
+        .select(`*, users(name)`)
         .limit(6)
         .order('created_at', { ascending: false });
 
@@ -50,9 +97,9 @@ export default function AttendancePage() {
     }
   };
 
-  const handleScanSuccess = (userId: string) => {
-    console.log('Attendance recorded for user:', userId);
-    loadRecentAttendance();
+  const handleScanSuccess = async (userId: string) => {
+    console.log('Scan berhasil untuk user:', userId);
+    // Tidak perlu reload karena realtime handle
   };
 
   const handleScanError = (error: string) => {
@@ -95,41 +142,19 @@ export default function AttendancePage() {
             </button>
           </div>
           <div className="hidden md:flex gap-3">
-            <Link
-              href="/"
-              className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition"
-            >
-              Home
-            </Link>
-            <Link
-              href="/login"
-              className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition"
-            >
-              Login
-            </Link>
+            <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition">Home</Link>
+            <Link href="/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition">Login</Link>
           </div>
         </div>
-        {/* Dropdown Mobile */}
         {menuOpen && (
           <div className="md:hidden flex flex-col items-end px-5 pb-3 gap-2">
-            <Link
-              href="/"
-              className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition w-full text-center"
-            >
-              Home
-            </Link>
-            <Link
-              href="/login"
-              className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition w-full text-center"
-            >
-              Login
-            </Link>
+            <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition w-full text-center">Home</Link>
+            <Link href="/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition w-full text-center">Login</Link>
           </div>
         )}
       </nav>
 
       <div className="py-10 w-full px-4 max-w-5xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             📲 Sistem Absensi
@@ -139,9 +164,8 @@ export default function AttendancePage() {
           </p>
         </div>
 
-        {/* Grid Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* QR Scanner */}
+          {/* QR SCANNER */}
           <div className="bg-white dark:bg-slate-800 shadow-md rounded-xl p-6">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
               QR Scanner
@@ -149,7 +173,7 @@ export default function AttendancePage() {
             <QRScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
           </div>
 
-          {/* Daftar Kehadiran */}
+          {/* RIWAYAT ABSENSI */}
           <div className="bg-white dark:bg-slate-800 shadow-md rounded-xl p-6">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
               Riwayat Kehadiran Terbaru
@@ -159,7 +183,7 @@ export default function AttendancePage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mx-auto"></div>
                 <p className="mt-2 text-gray-600 dark:text-gray-400">Memuat data...</p>
               </div>
-            ) : recentAttendance?.length === 0 ? (
+            ) : recentAttendance.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-center py-10">
                 Belum ada data absensi.
               </p>
@@ -175,7 +199,7 @@ export default function AttendancePage() {
                         {record.users?.name || 'Pengguna Tidak Diketahui'}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {(record.status.toLowerCase() === ('hadir')||record.status.toLowerCase() === ('terlambat'))
+                        {(record.status.toLowerCase() === 'hadir' || record.status.toLowerCase() === 'terlambat')
                           ? formatTimestamp(record.check_in)
                           : formatTimestamp(record.created_at)}
                       </p>
@@ -198,7 +222,7 @@ export default function AttendancePage() {
           </div>
         </div>
 
-        {/* Tips */}
+        {/* TIPS */}
         <div className="mt-12 bg-blue-100 dark:bg-slate-700/40 p-6 rounded-xl">
           <h3 className="text-lg font-semibold text-blue-900 dark:text-white mb-4">
             ℹ️ Tips Pemindaian QR
