@@ -131,22 +131,44 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       const local = new Date(nowDate.getTime() - nowDate.getTimezoneOffset() * 60000);
       const jam = local.getHours();
       const menit = local.getMinutes();
+      // Status default HADIR, tapi jika lewat jam 08:00, wajib TERLAMBAT
       let status = 'HADIR';
       if (jam > 8 || (jam === 8 && menit > 0)) {
         status = 'TERLAMBAT';
       }
 
-      const { error } = await supabase.from('attendances').insert({
-        user_id,
-        date: now,
-        check_in: now,
-        check_out: null,
-        notes: '',
-        created_at: now,
-        status,
-      });
-
-      if (error) throw new Error('Gagal menyimpan kehadiran');
+      // Cek apakah sudah ada absen hari ini, jika ada update, jika tidak insert
+      const today = local.toISOString().split('T')[0];
+      const { data: existing } = await supabase.from('attendances').select('id, check_in, status').eq('user_id', user_id).like('date', `${today}%`).limit(1).single();
+      if (existing && existing.id) {
+        // Jika sudah ada absen, update status ke TERLAMBAT jika check_in baru melebihi jam 08:00
+        let updateStatus = status;
+        // Jika sebelumnya status HADIR dan sekarang sudah lewat jam 08:00, update ke TERLAMBAT
+        if (updateStatus !== 'TERLAMBAT' && (jam > 8 || (jam === 8 && menit > 0))) {
+          updateStatus = 'TERLAMBAT';
+        }
+        // Atau jika sebelumnya status sudah TERLAMBAT, tetap TERLAMBAT
+        if (existing.status === 'TERLAMBAT') {
+          updateStatus = 'TERLAMBAT';
+        }
+        const { error } = await supabase.from('attendances').update({
+          check_in: now,
+          status: updateStatus,
+        }).eq('id', existing.id);
+        if (error) throw new Error('Gagal update kehadiran');
+      } else {
+        // Insert baru, status sudah ditentukan di atas
+        const { error } = await supabase.from('attendances').insert({
+          user_id,
+          date: now,
+          check_in: now,
+          check_out: null,
+          notes: '',
+          created_at: now,
+          status,
+        });
+        if (error) throw new Error('Gagal menyimpan kehadiran');
+      }
 
       showToast({ type: 'success', message: `Berhasil hadir untuk ${name}` });
     } catch (err) {
