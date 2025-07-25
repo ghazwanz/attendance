@@ -125,7 +125,16 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     if (!scanUserRef.current) return;
     try {
       const { user_id, name } = scanUserRef.current;
-      const now = new Date().toISOString();
+      const nowDate = new Date();
+      const now = nowDate.toISOString();
+      // Ambil jam dan menit lokal (WIB)
+      const local = new Date(nowDate.getTime() - nowDate.getTimezoneOffset() * 60000);
+      const jam = local.getHours();
+      const menit = local.getMinutes();
+      let status = 'HADIR';
+      if (jam > 8 || (jam === 8 && menit > 0)) {
+        status = 'TERLAMBAT';
+      }
 
       const { error } = await supabase.from('attendances').insert({
         user_id,
@@ -134,7 +143,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
         check_out: null,
         notes: '',
         created_at: now,
-        status: 'HADIR',
+        status,
       });
 
       if (error) throw new Error('Gagal menyimpan kehadiran');

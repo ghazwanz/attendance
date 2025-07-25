@@ -113,16 +113,30 @@ export default function AttendancePage() {
                   >
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{record.users?.name || 'Pengguna Tidak Diketahui'}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{record.status.toLowerCase()==='hadir'?formatTimestamp(record.check_in):formatTimestamp(record.created_at)}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{['hadir','terlambat'].includes(record.status.toLowerCase()) ? formatTimestamp(record.check_in) : formatTimestamp(record.created_at)}</p>
                     </div>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${record.status.toLowerCase() === 'hadir'
-                      ? 'bg-green-100 text-green-800'
-                      : record.status.toLowerCase() === 'izin'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                      }`}>
-                      {record.status}
-                    </span>
+                    {(() => {
+                      let statusLabel = record.status;
+                      let statusColor = 'bg-green-100 text-green-800';
+                      if (record.status.toLowerCase() === 'hadir' && record.check_in) {
+                        const jamMenit = new Date(record.check_in);
+                        const jam = jamMenit.getHours();
+                        const menit = jamMenit.getMinutes();
+                        if (jam > 8 || (jam === 8 && menit > 0)) {
+                          statusLabel = 'TERLAMBAT';
+                          statusColor = 'bg-red-100 text-red-800';
+                        }
+                      } else if (record.status.toLowerCase() === 'izin') {
+                        statusColor = 'bg-yellow-100 text-yellow-800';
+                      } else if (record.status.toLowerCase() === 'terlambat') {
+                        statusColor = 'bg-red-100 text-red-800';
+                      }
+                      return (
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColor}`}>
+                          {statusLabel}
+                        </span>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
