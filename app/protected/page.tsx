@@ -19,7 +19,7 @@ const formatTimestamp = (timestamp: string) => {
 export default function ProtectedPage() {
   const [userId, setUserId] = useState<string | undefined>();
   const [showScanner, setShowScanner] = useState(false);
-  const [status, setStatus] = useState<"HADIR" | "IZIN" | null>(null);
+  const [status, setStatus] = useState<"HADIR" | null>(null);
   const [countAbsensi, setCountAbsensi] = useState(0);
   const [countIzin, setCountIzin] = useState(0);
   const [countHadir, setCountHadir] = useState(0);
@@ -80,15 +80,46 @@ export default function ProtectedPage() {
         .order('created_at', { ascending: false });
       setRecentAttendance(data || []);
     };
-    fetchData();
-  }, []);
 
-  const handleShowQR = (statusType: "HADIR" | "IZIN") => {
-    setStatus(statusType);
+    fetchData();
+
+    const channel = supabase
+      .channel("realtime:attendances")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "attendances",
+        },
+        (payload) => {
+          const newRecord = payload.new;
+          if (newRecord.user_id === userId) {
+            setRecentAttendance((prev) => {
+              const updated = [newRecord, ...prev];
+              return updated
+                .filter((v, i, self) => self.findIndex(x => x.id === v.id) === i)
+                .sort((a, b) =>
+                  new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                )
+                .slice(0, 6);
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
+  const handleShowQR = () => {
+    setStatus("HADIR");
     setShowScanner(true);
   };
 
-  const qrData = JSON.stringify({ user_id: userId, status: status });
+  const qrData = JSON.stringify({ user_id: userId, status });
 
   const dashboardCards = [
     {
@@ -156,39 +187,39 @@ export default function ProtectedPage() {
             </p>
           ) : (
             <div className="space-y-4">
-             {recentAttendance.map((record) => {
-              const statusColor: Record<string, string> = {
-                hadir: 'bg-green-100 text-green-700',
-                izin: 'bg-yellow-100 text-yellow-700',
-                'tanpa keterangan': 'bg-red-100 text-red-700',
-                terlambat: 'bg-orange-100 text-orange-700',
-              };
+              {recentAttendance.map((record) => {
+                const statusColor: Record<string, string> = {
+                  hadir: 'bg-green-100 text-green-700',
+                  izin: 'bg-yellow-100 text-yellow-700',
+                  'tanpa keterangan': 'bg-red-100 text-red-700',
+                  terlambat: 'bg-orange-100 text-orange-700',
+                };
 
-              const statusLabel:string = record.status.toLowerCase();
-              const timeLabel =
-                statusLabel === 'izin'
-                  ? formatTimestamp(record.created_at)
-                  : formatTimestamp(record.check_in || record.created_at);
+                const statusLabel = record.status?.toLowerCase();
+                const timeLabel =
+                  statusLabel === 'izin'
+                    ? formatTimestamp(record.created_at)
+                    : formatTimestamp(record.check_in || record.created_at);
 
-              return (
-                <div
-                  key={record.id}
-                  className="flex items-center justify-between border border-gray-200 dark:border-slate-600 rounded-lg px-4 py-3 bg-white dark:bg-slate-700 shadow-sm"
-                >
-                  <div className="flex flex-col">
-                    <p className="font-semibold text-gray-800 dark:text-white">
-                      {record.users?.name || 'Tidak Diketahui'}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{timeLabel}</p>
-                  </div>
-                  <span
-                    className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${statusColor[statusLabel] || 'bg-gray-100 text-gray-600'}`}
+                return (
+                  <div
+                    key={record.id}
+                    className="flex items-center justify-between border border-gray-200 dark:border-slate-600 rounded-lg px-4 py-3 bg-white dark:bg-slate-700 shadow-sm"
                   >
-                    {record.status}
-                  </span>
-                </div>
-              );
-            })}
+                    <div className="flex flex-col">
+                      <p className="font-semibold text-gray-800 dark:text-white">
+                        {record.users?.name || 'Tidak Diketahui'}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{timeLabel}</p>
+                    </div>
+                    <span
+                      className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${statusColor[statusLabel] || 'bg-gray-100 text-gray-600'}`}
+                    >
+                      {record.status}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -199,24 +230,17 @@ export default function ProtectedPage() {
               🏠 Beranda Absensi
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              Pilih jenis kehadiran untuk menampilkan QR.
+              Tekan tombol untuk menampilkan QR Absensi.
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-3">
             <button
-              onClick={() => handleShowQR("HADIR")}
-              className="flex items-center gap-3 justify-center w-full py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition text-sm sm:text-base"
+              onClick={handleShowQR}
+              className="group relative flex items-center justify-center gap-3 w-full px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold text-base shadow-md hover:shadow-lg transition-all duration-300"
             >
-              <QrCode size={18} />
-              Tampilkan QR Scan HADIR
-            </button>
-            <button
-              onClick={() => handleShowQR("IZIN")}
-              className="flex items-center gap-3 justify-center w-full py-3 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-semibold transition text-sm sm:text-base"
-            >
-              <QrCode size={18} />
-              Tampilkan QR Scan IZIN
+              <QrCode className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+              <span className="tracking-wide">QR Scan</span>
             </button>
           </div>
         </div>
