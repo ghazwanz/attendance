@@ -24,7 +24,7 @@ const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'wa
 };
 
 type QRScannerProps = {
-  onScanSuccess?: (userId: string) => void;
+  onScanSuccess?: () => void;
   onScanError?: (error: string) => void;
 };
 
@@ -77,10 +77,10 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
             const { data: userData, error } = await supabase
               .from("users")
-              .select("name")
+              .select("*")
               .eq("id", data.user_id)
               .single();
-
+            console.log("User data:", userData, error)  ;
             if (error || !userData) throw new Error("User tidak ditemukan");
 
             scanUserRef.current = {
@@ -88,15 +88,15 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               name: userData.name,
             };
 
-            const today = new Date().toISOString().split("T")[0];
+            const today = new Date().toISOString();
             const { data: attendanceToday } = await supabase
               .from("attendances")
               .select("*")
-              .eq("user_id", data.user_id)
-              .like("date", `${today}%`)
+              .eq("user_id", userData.id)
+              .eq("date", today)
               .limit(1)
               .single();
-
+            console.log("Attendance today:", attendanceToday);
             toast.dismiss("scan-process");
 
             // ✅ Hanya tampilkan modal setelah scan berhenti
@@ -155,7 +155,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       let status = 'HADIR';
       if (jam > 8 || (jam === 8 && menit > 0)) status = 'TERLAMBAT';
 
-      const today = local.toISOString().split('T')[0];
+      const today = local.toISOString();
       const { data: existing } = await supabase.from('attendances').select('id, check_in, status').eq('user_id', user_id).like('date', `${today}%`).limit(1).single();
 
       if (existing && existing.id) {
@@ -180,6 +180,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       }
 
       showToast({ type: 'success', message: `Berhasil hadir untuk ${name}` });
+      if (onScanSuccess) {onScanSuccess}
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
@@ -216,6 +217,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       if (error) throw new Error('Gagal menyimpan izin');
 
       showToast({ type: 'warning', message: `Izin berhasil untuk ${name}` });
+      if (onScanSuccess) {onScanSuccess}
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
@@ -236,6 +238,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       if (error) throw new Error('Gagal mencatat pulang');
 
       showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
+      if (onScanSuccess) {onScanSuccess}
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
@@ -261,6 +264,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       if (error) throw new Error('Gagal menyimpan izin pulang');
 
       showToast({ type: 'info', message: `Izin keluar berhasil untuk ${name}` });
+      if (onScanSuccess) {onScanSuccess}
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
