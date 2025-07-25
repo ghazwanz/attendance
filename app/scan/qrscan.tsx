@@ -63,11 +63,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           if (hasScanned) return;
           setHasScanned(true);
 
-          // ⛔ STOP QR CODE SEGERA
-          await html5QrCode.stop();
-          await html5QrCode.clear();
-          html5QrCodeRef.current = null;
-          setIsScanning(false);
 
           toast.dismiss();
           toast.loading("⏳ Memproses scan...", { id: "scan-process" });
@@ -87,6 +82,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               user_id: data.user_id,
               name: userData.name,
             };
+
+            await stopScan()
 
             const today = new Date().toISOString();
             const { data: attendanceToday } = await supabase
