@@ -41,18 +41,12 @@ export function QRForm({ users, encryptedQRData }: { users: User[], encryptedQRD
           ))}
         </select>
 
-        <div className="flex flex-col md:flex-row gap-4 md:justify-center mt-2">
+        <div className="flex justify-center mt-2">
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
             onClick={() => handleGenerate("HADIR")}
           >
-            Tampilkan QR HADIR
-          </button>
-          <button
-            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
-            onClick={() => handleGenerate("IZIN")}
-          >
-            Tampilkan QR IZIN
+            Tampilkan QR
           </button>
         </div>
 
