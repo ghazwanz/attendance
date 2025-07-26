@@ -11,6 +11,8 @@ export type Schedule = {
     day: string;
     start_time: string;
     end_time: string;
+    mulai_istirahat?: string;
+  selesai_istirahat?: string;
 }
 
 export type Attendance = {
