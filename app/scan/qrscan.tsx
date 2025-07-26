@@ -75,7 +75,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               .select("*")
               .eq("id", data.user_id)
               .single();
-            console.log("User data:", userData, error)  ;
+            console.log("User data:", userData, error);
             if (error || !userData) throw new Error("User tidak ditemukan");
 
             scanUserRef.current = {
@@ -177,7 +177,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       }
 
       showToast({ type: 'success', message: `Berhasil hadir untuk ${name}` });
-      if (onScanSuccess) {onScanSuccess}
+      if (onScanSuccess) onScanSuccess();
+
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
@@ -214,7 +215,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       if (error) throw new Error('Gagal menyimpan izin');
 
       showToast({ type: 'warning', message: `Izin berhasil untuk ${name}` });
-      if (onScanSuccess) {onScanSuccess}
+      if (onScanSuccess) onScanSuccess();
+
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
@@ -226,16 +228,44 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
   const handlePulang = async () => {
     if (!scanUserRef.current) return;
+
     try {
       const { user_id, name } = scanUserRef.current;
-      const now = new Date().toISOString();
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
 
-      const { error } = await supabase.from('attendances').update({ check_out: now }).eq('user_id', user_id).like('date', `${now.split('T')[0]}%`);
+      const { data: attendanceToday, error: fetchError } = await supabase
+        .from('attendances')
+        .select('*')
+        .eq('user_id', user_id)
+        .eq('date', today)
+        .single();
 
-      if (error) throw new Error('Gagal mencatat pulang');
+      if (fetchError || !attendanceToday) {
+        throw new Error('Data kehadiran tidak ditemukan');
+      }
+
+      const checkInTime = new Date(attendanceToday.check_in);
+      const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+
+      if (hoursDiff < 8) {
+        showToast({
+          type: 'warning',
+          message: `Belum bisa pulang. Baru ${hoursDiff.toFixed(1)} jam, minimal 8 jam.`,
+        });
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from('attendances')
+        .update({ check_out: now.toISOString() })
+        .eq('user_id', user_id)
+        .eq('date', today);
+
+      if (updateError) throw new Error('Gagal mencatat pulang');
 
       showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
-      if (onScanSuccess) {onScanSuccess}
+      if (onScanSuccess) onScanSuccess();
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
@@ -252,16 +282,25 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     try {
       const { user_id, name } = scanUserRef.current;
       const now = new Date().toISOString();
+      const today = now.split('T')[0];
 
-      const { error } = await supabase.from('attendances').update({
-        check_out: now,
-        notes: `IZIN KELUAR: ${izinReason} | Balik lagi: ${balikLagi ? 'Ya' : 'Tidak'}`,
-      }).eq('user_id', user_id).like('date', `${now.split('T')[0]}%`);
+      const { error } = await supabase
+        .from('attendances')
+        .update({
+          check_out: now,
+          notes: `IZIN KELUAR: ${izinReason} | Balik lagi: ${balikLagi ? 'Ya' : 'Tidak'}`,
+          status: 'IZIN',
+
+        })
+        .eq('user_id', user_id)
+        .eq('date', today);
 
       if (error) throw new Error('Gagal menyimpan izin pulang');
 
       showToast({ type: 'info', message: `Izin keluar berhasil untuk ${name}` });
-      if (onScanSuccess) {onScanSuccess}
+      if (onScanSuccess) {
+        onScanSuccess();
+      }
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
@@ -272,6 +311,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       setIsIzinPulang(false);
     }
   };
+
 
   return (
     <div className="p-6 max-w-lg mx-auto rounded-2xl shadow-2xl bg-white text-gray-900 dark:bg-[#1c2431] dark:text-white">
@@ -382,7 +422,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 Batal
               </button>
               <button
-                onClick={isIzinPulang ? handleIzinPulang : handleSubmitIzin}
+                onClick={handleIzinPulang}
                 className="px-4 py-2 bg-teal-600 text-white rounded-md"
               >
                 Simpan

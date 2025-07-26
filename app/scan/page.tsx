@@ -205,14 +205,14 @@ export default function AttendancePage() {
                     </div>
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        record.status.toLowerCase() === 'hadir'
-                          ? 'bg-green-100 text-green-800'
-                          : record.status.toLowerCase() === 'izin'
+                        (record.status.toLowerCase() === 'izin' || (record.notes && record.notes.toLowerCase().includes('izin keluar')))
                           ? 'bg-yellow-100 text-yellow-800'
+                          : record.status.toLowerCase() === 'hadir'
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                       }`}
                     >
-                      {record.status}
+                      {record.status.toUpperCase()}
                     </span>
                   </div>
                 ))}
