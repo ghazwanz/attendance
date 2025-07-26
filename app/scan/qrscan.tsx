@@ -482,7 +482,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 Batal
               </button>
               <button
-                onClick={handleIzinPulang}
+                onClick={isIzinPulang?handleIzinPulang: handleSubmitIzin}
                 className="px-4 py-2 bg-teal-600 text-white rounded-md"
               >
                 Simpan
