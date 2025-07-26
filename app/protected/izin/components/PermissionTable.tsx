@@ -1,7 +1,6 @@
-// components/tables/PermissionTable.tsx
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Permission } from "../lib/types";
 
 interface PermissionTableProps {
@@ -10,6 +9,7 @@ interface PermissionTableProps {
     onEdit: (item: Permission) => void;
     onDelete: (id: string) => void;
     loading: boolean;
+    onApproveStatus?: (id: string, status: string) => void; // Handler untuk perubahan status
 }
 
 export default function PermissionTable({
@@ -17,13 +17,30 @@ export default function PermissionTable({
     currentUser,
     onEdit,
     onDelete,
-    loading
+    loading,
+    onApproveStatus
 }: PermissionTableProps) {
+    const [showStatusModal, setShowStatusModal] = useState(false);
+    const [selectedPermissionId, setSelectedPermissionId] = useState<string | null>(null);
+
     const formatDateTime = (dateString: string) => {
         return new Date(dateString).toLocaleString("id-ID", {
             dateStyle: "short",
             timeStyle: "short",
         });
+    };
+
+    const handleOpenStatusModal = (id: string) => {
+        setSelectedPermissionId(id);
+        setShowStatusModal(true);
+    };
+
+    const handleSelectStatus = (status: string) => {
+        if (selectedPermissionId && onApproveStatus) {
+            onApproveStatus(selectedPermissionId, status);
+        }
+        setShowStatusModal(false);
+        setSelectedPermissionId(null);
     };
 
     return (
@@ -42,34 +59,24 @@ export default function PermissionTable({
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((item,idx) => (
+                    {data.map((item, idx) => (
                         <tr key={item.id} className="rounded-xl shadow-sm">
-                            <td>{idx+1}</td>
+                            <td>{idx + 1}</td>
                             <td className="px-4 py-3 rounded-l-xl">
                                 {item.users?.name || "-"}
                             </td>
-                            <td className="px-4 py-3">{item.exit_time?formatDateTime(item.exit_time):"-"}</td>
-                            <td className="px-4 py-3">{item.reentry_time?formatDateTime(item.reentry_time):"-"}</td>
-                            <td>
-                                lapet
+                            <td className="px-4 py-3">
+                                {item.exit_time ? formatDateTime(item.exit_time) : "-"}
                             </td>
-                            <td className="px-4 py-3">{item?.reason ? item.reason:"-"}</td>
-                            {/* <td className="px-4 py-3">
-                                <span
-                                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${item.status === "diterima"
-                                            ? "bg-green-100 text-green-700"
-                                            : item.status === "ditolak"
-                                                ? "bg-red-100 text-red-700"
-                                                : "bg-yellow-100 text-yellow-700"
-                                        }`}
-                                >
-                                    {item.status}
-                                </span>
-                            </td> */}
+                            <td className="px-4 py-3">
+                                {item.reentry_time ? formatDateTime(item.reentry_time) : "-"}
+                            </td>
+                            <td>lapet</td>
+                            <td className="px-4 py-3">{item?.reason || "-"}</td>
                             <td className="px-4 py-3">
                                 {formatDateTime(item.created_at)}
                             </td>
-                            <td className="px-4 py-3 flex gap-2">
+                            <td className="px-4 py-3 flex gap-2 flex-wrap">
                                 <button
                                     onClick={() => onEdit(item)}
                                     disabled={loading}
@@ -79,17 +86,27 @@ export default function PermissionTable({
                                 </button>
 
                                 {currentUser?.role === "admin" && (
-                                    <button
-                                        onClick={() => onDelete(item.id)}
-                                        disabled={loading}
-                                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
-                                    >
-                                        🗑️ Hapus
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => onDelete(item.id)}
+                                            disabled={loading}
+                                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
+                                        >
+                                            🗑️ Hapus
+                                        </button>
+                                        <button
+                                            onClick={() => handleOpenStatusModal(item.id)}
+                                            disabled={loading}
+                                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
+                                        >
+                                            ✅ Setujui
+                                        </button>
+                                    </>
                                 )}
                             </td>
                         </tr>
                     ))}
+
                     {data.length === 0 && (
                         <tr>
                             <td colSpan={8} className="text-center text-gray-500 py-4">
@@ -99,6 +116,41 @@ export default function PermissionTable({
                     )}
                 </tbody>
             </table>
+
+            {/* MODAL PILIH STATUS */}
+{showStatusModal && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-[#0F172A] rounded-xl shadow-xl p-6 w-64 text-center animate-fade-in">
+            <h2 className="text-lg font-semibold mb-4 text-white">Pilih Status Izin</h2>
+            <div className="flex flex-col gap-2">
+                <button
+                    onClick={() => handleSelectStatus("pending")}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-full"
+                >
+                    Pending
+                </button>
+                <button
+                    onClick={() => handleSelectStatus("diterima")}
+                    className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-full"
+                >
+                    Diterima
+                </button>
+                <button
+                    onClick={() => handleSelectStatus("ditolak")}
+                    className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-full"
+                >
+                    Ditolak
+                </button>
+            </div>
+            <button
+                onClick={() => { setShowStatusModal(false); setSelectedPermissionId(null); }}
+                className="mt-4 text-sm text-gray-300 hover:text-white"
+            >
+                Batal
+            </button>
+        </div>
+    </div>
+)}
         </div>
     );
 }
