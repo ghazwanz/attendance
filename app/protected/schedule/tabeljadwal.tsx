@@ -22,6 +22,11 @@ export default function Tabeljadwal() {
     if (!error) setData(data || []);
   };
 
+  const formatTime = (time:string|any)=>{
+    const times = time.split(':');
+    return `${times[0]}:${times[1]}`;
+  }
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -82,16 +87,16 @@ export default function Tabeljadwal() {
                 <td className="px-6 py-4 font-medium">{index + 1}</td>
                 <td className="px-6 py-4">{schedule.day.toUpperCase()}</td>
                 <td className="px-6 py-4 text-yellow-500 font-semibold">
-                  {schedule.start_time}
+                  {formatTime(schedule.start_time)}
                 </td>
                 <td className="px-6 py-4 text-blue-500 font-semibold">
-                  {schedule.end_time}
+                  {formatTime(schedule.end_time)}
                 </td>
                 <td className="px-6 py-4 text-orange-500 font-semibold">
-                  {schedule.mulai_istirahat || '11:30'}
+                  {formatTime(schedule.mulai_istirahat) || '11:30'}
                 </td>
                 <td className="px-6 py-4 text-orange-500 font-semibold">
-                  {schedule.selesai_istirahat || '12:30'}
+                  {formatTime(schedule.selesai_istirahat) || '12:30'}
                 </td>
                 <td className="px-6 py-4 space-x-2">
                   <button
