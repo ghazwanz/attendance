@@ -2,7 +2,13 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
+export default function CreateForm({
+  onRefresh,
+  userRole,
+}: {
+  onRefresh: () => void;
+  userRole: string;
+}) {
   const supabase = createClient();
 
   const [form, setForm] = useState({ status: "HADIR" });
@@ -11,12 +17,11 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
   const [isFinished, setIsFinished] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
-
   const [showIzinModal, setShowIzinModal] = useState(false);
   const [izinReason, setIzinReason] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
-  const allowedIP = ["125.166.12.91","125.166.1.71"];
+  const allowedIP = ["125.166.12.91", "125.166.1.71"]; // Ganti sesuai IP kantor
 
   useEffect(() => {
     const init = async () => {
@@ -52,7 +57,11 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
       const currentIP = ipData.ip;
       console.log("Current IP:", currentIP);
 
-      if (currentIP !== allowedIP[0] && status !== "IZIN" && currentIP !== allowedIP[1]) {
+      if (
+        currentIP !== allowedIP[0] &&
+        currentIP !== allowedIP[1] &&
+        status !== "IZIN"
+      ) {
         setShowError(true);
         setTimeout(() => setShowError(false), 3000);
         return;
@@ -79,7 +88,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
             date: today,
             check_in: status === "IZIN" ? null : nowISO,
             check_out: null,
-            notes: notes,
+            notes,
             status: finalStatus,
           },
         ])
@@ -91,7 +100,6 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
       } else {
         setAttendanceId(data.id);
         setShowSuccess(true);
-
         setTimeout(() => {
           setShowSuccess(false);
           setIsFinished(true);
@@ -106,7 +114,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
 
   return (
     <>
-      {/* ✅ Notifikasi */}
+      {/* ✅ Notifikasi Sukses */}
       {showSuccess && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
@@ -115,6 +123,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
         </div>
       )}
 
+      {/* ❌ Notifikasi Error IP */}
       {showError && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
@@ -123,7 +132,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
         </div>
       )}
 
-      {/* ✅ Modal IZIN */}
+      {/* 🟡 Modal Alasan Izin */}
       {showIzinModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg w-full max-w-md space-y-4">
@@ -132,7 +141,7 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
             </h3>
             <textarea
               rows={3}
-              placeholder="Contoh: Sakit demam atau ada keperluan keluarga"
+              placeholder="Contoh: Sakit, urusan keluarga, dll."
               className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:text-white"
               value={izinReason}
               onChange={(e) => setIzinReason(e.target.value)}
@@ -158,14 +167,23 @@ export default function CreateForm({ onRefresh }: { onRefresh: () => void }) {
         </div>
       )}
 
-      {/* ✅ Form Utama */}
-      {isFinished ? (
+      {/* ✅ Tampilan Berdasarkan Role */}
+      {userRole === "admin" ? (
+        <div className="p-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-md text-center">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+            🔧 Akses Admin
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            Gunakan tombol "Tambah Absen" untuk menambah data manual.
+          </p>
+        </div>
+      ) : isFinished ? (
         <div className="p-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl shadow-md text-center">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
             ✅ Absensi Hari Ini Telah Diselesaikan
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            Terima kasih! Anda sudah mengisi absensi masuk hari ini.
+            Terima kasih! Anda sudah mengisi absensi hari ini.
           </p>
         </div>
       ) : (
