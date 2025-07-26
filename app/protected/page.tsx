@@ -19,7 +19,6 @@ const formatTimestamp = (timestamp: string) => {
 export default function ProtectedPage() {
   const [userId, setUserId] = useState<string | undefined>();
   const [showScanner, setShowScanner] = useState(false);
-  const [status, setStatus] = useState<"HADIR" | null>(null);
   const [countAbsensi, setCountAbsensi] = useState(0);
   const [countIzin, setCountIzin] = useState(0);
   const [countHadir, setCountHadir] = useState(0);
@@ -115,11 +114,10 @@ export default function ProtectedPage() {
   }, [userId]);
 
   const handleShowQR = () => {
-    setStatus("HADIR");
     setShowScanner(true);
   };
 
-  const qrData = JSON.stringify({ user_id: userId, status });
+  const qrData = JSON.stringify({ user_id: userId });
 
   const dashboardCards = [
     {
@@ -246,7 +244,7 @@ export default function ProtectedPage() {
         </div>
       </div>
 
-      {showScanner && status && (
+      {showScanner && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
           <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xl w-full max-w-xs sm:max-w-md relative">
             <button
@@ -256,10 +254,10 @@ export default function ProtectedPage() {
               ✖
             </button>
             <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-              📷 QR Anda ({status})
+              📷 QR Anda
             </h2>
             <div className="text-center text-sm text-gray-600 mb-4">
-              Tunjukkan QR ini ke scanner untuk absensi {status.toLowerCase()}.
+              Tunjukkan QR ini ke scanner untuk absensi.
             </div>
             <div className="flex justify-center">
               <QRCodeSVG value={qrData} size={200} />
