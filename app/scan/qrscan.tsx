@@ -41,6 +41,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   const [balikLagi, setBalikLagi] = useState(false);
   const [isIzinPulang, setIsIzinPulang] = useState(false);
   const [hasScanned, setHasScanned] = useState(false);
+  const [izinDate, setIzinDate] = useState('');
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
   const startScan = async () => {
@@ -228,6 +229,9 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     setIsIzinPulang(false);
     setShowChoiceModal(false);
     setShowIzinForm(true);
+    // Set default tanggal izin ke hari ini setiap buka form
+    const today = new Date();
+    setIzinDate(today.toISOString().split('T')[0]);
   };
 
   const handleSubmitIzin = async () => {
@@ -235,26 +239,28 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       showToast({ type: 'error', message: 'Mohon isi alasan izin' });
       return;
     }
-
+    // Validasi tanggal tidak boleh kemarin
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0];
+    if (izinDate < minDate) {
+      showToast({ type: 'error', message: 'Izin tidak bisa untuk hari kemarin.' });
+      return;
+    }
     try {
       const { user_id, name } = scanUserRef.current;
       const now = new Date().toISOString();
-
-      const { error } = await supabase.from('attendances').insert({
+      // Insert ke tabel permission, bukan attendances
+      const { error } = await supabase.from('permissions').insert({
         user_id,
-        date: now,
-        check_in: null,
-        check_out: null,
-        notes: izinReason,
+        date: izinDate,
+        reason: izinReason,
         created_at: now,
-        status: 'IZIN',
+        status: 'pending',
+
       });
-
       if (error) throw new Error('Gagal menyimpan izin');
-
       showToast({ type: 'warning', message: `Izin berhasil untuk ${name}` });
       if (onScanSuccess) onScanSuccess();
-
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
@@ -430,6 +436,22 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               {isIzinPulang ? 'Silakan isi alasan izin pulang awal Anda.' : 'Silakan isi alasan tidak hadir Anda.'}
             </p>
 
+            {!isIzinPulang && (
+              <div className="mb-4">
+                <label htmlFor="izinDate" className="block text-sm font-medium mb-1">Tanggal Izin</label>
+                <input
+                  type="date"
+                  id="izinDate"
+                  value={izinDate}
+                  min={(() => {
+                    const today = new Date();
+                    return today.toISOString().split('T')[0];
+                  })()}
+                  onChange={e => setIzinDate(e.target.value)}
+                  className="w-full p-2 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg"
+                />
+              </div>
+            )}
             <div className="mb-4">
               <label htmlFor="izinReason" className="block text-sm font-medium mb-1">Alasan</label>
               <textarea
