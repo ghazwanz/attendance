@@ -130,18 +130,6 @@ export default function Page() {
             Kelola data kehadiran harian secara efisien dan akurat.
           </p>
 
-          {/* 🔍 Input Search */}
-          <div className="mt-6 max-w-md mx-auto">
-            <input
-              type="text"
-              placeholder="🔍 Cari nama Team..."
-              className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
         {/* Form Absensi */}
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
           <h2 className="text-xl font-semibold mb-4">📝 Form Absensi</h2>
@@ -150,8 +138,23 @@ export default function Page() {
               fetchData();
               showSuccessToast("Absensi masuk berhasil disimpan!");
             }}
+            userRole={userRole ?? ""}
           />
+
+        </div>
           {/* Tombol Tambah Absen khusus admin di bawah form */}
+          {/* 🔍 Input Search */}
+          <div className="flex justify-between items-center mt-6">
+
+          <div className="mt-6 max-w-md ">
+            <input
+              type="text"
+              placeholder="🔍 Cari nama Team..."
+              className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
           {userRole === "admin" && (
             <div className="flex justify-end mt-4">
               <button
@@ -162,7 +165,9 @@ export default function Page() {
               </button>
             </div>
           )}
+          </div>
         </div>
+        
 
         {/* Tabel Kehadiran */}
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">

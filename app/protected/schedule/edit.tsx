@@ -2,14 +2,17 @@
 'use client';
 import React, { useState } from 'react';
 import { X, Save } from 'lucide-react';
+import { Schedule } from '@/lib/type';
 
-export default function EditModal({ item, onClose, onSave }: any) {
+export default function EditModal({ item, onClose, onSave }: {item:Schedule, onClose: () => void, onSave: (updatedItem: Schedule) => void}) {
   const [day, setDay] = useState(item.day);
   const [start, setStart] = useState(item.start_time);
   const [end, setEnd] = useState(item.end_time);
+  const [breakStart, setBreakStart] = useState(item.mulai_istirahat);
+  const [breakEnd, setBreakEnd] = useState(item.selesai_istirahat);
 
   const handleSubmit = () => {
-    onSave({ ...item, day, start_time: start, end_time: end });
+    onSave({ ...item, day, start_time: start, end_time: end, mulai_istirahat: breakStart, selesai_istirahat: breakEnd });
   };
 
    return (
@@ -52,6 +55,28 @@ export default function EditModal({ item, onClose, onSave }: any) {
             type="time"
             value={end}
             onChange={(e) => setEnd( e.target.value )}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            ⌛ Waktu Istirahat Mulai
+          </label>
+          <input
+            type="time"
+            value={breakStart||""}
+            onChange={(e) => setBreakStart( e.target.value )}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            ⌛ Waktu Istirahat Selesai
+          </label>
+          <input
+            type="time"
+            value={breakEnd||""}
+            onChange={(e) => setBreakEnd( e.target.value )}
             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
