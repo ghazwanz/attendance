@@ -84,14 +84,14 @@ export default function Tabeljadwal() {
                 <td className="px-6 py-4 text-yellow-500 font-semibold">
                   {schedule.start_time}
                 </td>
+                <td className="px-6 py-4 text-blue-500 font-semibold">
+                  {schedule.end_time}
+                </td>
                 <td className="px-6 py-4 text-orange-500 font-semibold">
                   {schedule.mulai_istirahat || '11:30'}
                 </td>
                 <td className="px-6 py-4 text-orange-500 font-semibold">
                   {schedule.selesai_istirahat || '12:30'}
-                </td>
-                <td className="px-6 py-4 text-blue-500 font-semibold">
-                  {schedule.end_time}
                 </td>
                 <td className="px-6 py-4 space-x-2">
                   <button
