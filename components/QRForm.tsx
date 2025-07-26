@@ -10,14 +10,12 @@ interface User {
 
 export function QRForm({ users, encryptedQRData }: { users: User[], encryptedQRData: string | null }) {
   const [userId, setUserId] = useState('');
-  const [status, setStatus] = useState('');
   const [qrData, setQrData] = useState<string | null>(encryptedQRData);
 
-  const handleGenerate = (value: string) => {
+  const handleGenerate = () => {
     if (!userId) return;
-    const payload = JSON.stringify({ user_id: userId, status: value, timestamp: Date.now() });
+    const payload = JSON.stringify({ user_id: userId, timestamp: Date.now() });
     setQrData(btoa(payload));
-    setStatus(value);
   };
 
   return (
@@ -44,7 +42,7 @@ export function QRForm({ users, encryptedQRData }: { users: User[], encryptedQRD
         <div className="flex justify-center mt-2">
           <button
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-            onClick={() => handleGenerate("HADIR")}
+            onClick={() => handleGenerate()}
           >
             Tampilkan QR
           </button>
