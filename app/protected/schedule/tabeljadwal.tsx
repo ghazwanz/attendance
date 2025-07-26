@@ -103,15 +103,7 @@ export default function Tabeljadwal() {
                   >
                     ✏️ Edit
                   </button>
-                  <button
-                    onClick={() => {
-                      setSelectedItem(schedule);
-                      setShowDelete(true);
-                    }}
-                    className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                  >
-                    🗑 Delete
-                  </button>
+                 
                 </td>
               </tr>
             ))}
