@@ -60,7 +60,7 @@ export default function ProtectedLayout({
                   <Link href="/protected/attendances" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
                     <CalendarCheck2 size={16} /> Attendance
                   </Link>
-                  <Link href="/protected/permission" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
+                  <Link href="/protected/izin" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
                     <ClipboardList size={16} /> Permission
                   </Link>
                   <Link href="/protected/schedule" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
@@ -89,7 +89,7 @@ export default function ProtectedLayout({
                 <CalendarCheck2 size={16} /> Attendance
               </Link>
               <Link href="/protected/permission" className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition">
-                <ClipboardList size={16} /> Permission
+                <ClipboardList size={16} /> izin
               </Link>
               <Link href="/protected/schedule" className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition">
                 <CalendarClock size={16} /> Schedule
