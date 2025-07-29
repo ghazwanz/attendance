@@ -52,7 +52,7 @@ export default function PermissionTable({
     const success = await statusActions.updatePermissionStatus(
       selectedPermissionId,
       status,
-      selectedPermission
+      selectedPermission,
     );
 
     if (success) {
