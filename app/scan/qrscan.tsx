@@ -99,29 +99,35 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
             console.log("Attendance today:", attendanceToday);
             toast.dismiss("scan-process");
 
+            const { data: izinHariIni } = await supabase
+              .from("permissions")
+              .select("*")
+              .eq("user_id", userData.id)
+              .eq("date", today)
+              .eq("status", "pending")
+              .maybeSingle();
             if (attendanceToday) {
               if (
                 attendanceToday.status === 'IZIN' &&
                 !attendanceToday.check_in &&
                 !attendanceToday.check_out
               ) {
-                // User sudah izin tapi belum absen → tampilkan modal ubah ke HADIR
                 setShowIzinToHadirModal(true);
               } else if (attendanceToday.check_in && !attendanceToday.check_out) {
-                // Sudah hadir tapi belum pulang → tampilkan modal Pulang
                 setShowPulangModal(true);
               } else {
-                // Sudah absen masuk dan pulang
                 showToast({
                   type: "info",
                   message: "Kamu sudah absen masuk dan pulang hari ini.",
                 });
               }
             } else {
-              // Belum absen sama sekali → tampilkan pilihan Hadir / Izin
-              setShowChoiceModal(true);
+              if (izinHariIni) {
+                setShowIzinToHadirModal(true);
+              } else {
+                setShowChoiceModal(true);
+              }
             }
-
 
           } catch (err) {
             toast.dismiss("scan-process");
@@ -494,7 +500,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 Batal
               </button>
               <button
-                onClick={isIzinPulang?handleIzinPulang: handleSubmitIzin}
+                onClick={isIzinPulang ? handleIzinPulang : handleSubmitIzin}
                 className="px-4 py-2 bg-teal-600 text-white rounded-md"
               >
                 Simpan
