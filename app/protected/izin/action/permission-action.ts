@@ -30,7 +30,7 @@ export const permissionActions = {
 
         const query = supabase
             .from("permissions")
-            .select("*, users(name)")
+            .select("*, user_id(*)")
             .order("created_at", { ascending: false });
 
         // Filter by user_id if not admin
