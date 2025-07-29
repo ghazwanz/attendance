@@ -433,6 +433,36 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
         </div>
       )}
 
+      {/* Modal Ubah dari Izin ke Hadir */}
+      {showIzinToHadirModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold mb-4 text-center">Ubah Kehadiran</h2>
+            <p className="text-sm text-center mb-4">
+              Kamu sebelumnya mengajukan izin. Apakah sekarang ingin mengganti menjadi HADIR?
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  setShowIzinToHadirModal(false);
+                  handleAbsenHadir(); // langsung ubah jadi hadir
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-md"
+              >
+                ✅ Hadir
+              </button>
+              <button
+                onClick={() => setShowIzinToHadirModal(false)}
+                className="px-4 py-2 bg-gray-400 text-white rounded-md"
+              >
+                ❌ Batal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* Modal Pulang / Izin Pulang */}
       {showPulangModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
