@@ -11,6 +11,8 @@ export default function PermissionTable() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterStart, setFilterStart] = useState("");
+  const [filterEnd, setFilterEnd] = useState("");
   const [selectedIdToDelete, setSelectedIdToDelete] = useState<string | null>(
     null
   );
@@ -177,10 +179,21 @@ useEffect(() => {
     const jenis = item.type.toLowerCase();
     const keyword = searchTerm.toLowerCase();
 
+    // Filter by created_at (waktu mengisi izin)
+    let createdAtValid = true;
+    if (filterStart) {
+      createdAtValid = createdAtValid && new Date(item.created_at) >= new Date(filterStart);
+    }
+    if (filterEnd) {
+      // Tambahkan 1 hari ke filterEnd agar filter hingga akhir hari
+      const endDate = new Date(filterEnd);
+      endDate.setDate(endDate.getDate() + 1);
+      createdAtValid = createdAtValid && new Date(item.created_at) < endDate;
+    }
+
     return (
-      nama.includes(keyword) ||
-      alasan.includes(keyword) ||
-      jenis.includes(keyword)
+      (nama.includes(keyword) || alasan.includes(keyword) || jenis.includes(keyword)) &&
+      createdAtValid
     );
   });
 
@@ -322,7 +335,7 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Tombol Tambah & Pencarian */}
+      {/* Tombol Tambah, Pencarian & Filter Waktu Mengisi */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <button
           onClick={() => {
@@ -334,13 +347,31 @@ useEffect(() => {
           {showForm ? "Tutup Form" : "Tambah Izin"}
         </button>
 
-        <input
-          type="text"
-          placeholder="🔍 Cari nama, jenis, atau alasan..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="mb-4 px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
-        />
+        <div className="flex flex-col md:flex-row gap-2 items-center">
+          <input
+            type="text"
+            placeholder="🔍 Cari nama, jenis, atau alasan..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="mb-4 px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
+          />
+          <input
+            type="date"
+            value={filterStart}
+            onChange={e => setFilterStart(e.target.value)}
+            className="px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
+            placeholder="Dari tanggal isi"
+            title="Filter dari tanggal mengisi izin"
+          />
+          <input
+            type="date"
+            value={filterEnd}
+            onChange={e => setFilterEnd(e.target.value)}
+            className="px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
+            placeholder="Sampai tanggal isi"
+            title="Filter sampai tanggal mengisi izin"
+          />
+        </div>
       </div>
 
       {/* Form Tambah */}
