@@ -17,6 +17,8 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
   const [isScanning, setIsScanning] = useState(false);
   const [showIzinForm, setShowIzinForm] = useState(false);
   const [izinReason, setIzinReason] = useState('');
+  const [izinStart, setIzinStart] = useState('');
+  const [izinEnd, setIzinEnd] = useState('');
   const izinDataRef = useRef<{ user_id: string; name: string } | null>(null);
 
   const startScan = async () => {
@@ -117,34 +119,39 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
   };
 
   const handleIzinSubmit = async () => {
-    if (!izinReason.trim() || !izinDataRef.current) {
-      toast.error('Mohon isi alasan izin', {
+    if (!izinReason.trim() || !izinDataRef.current || !izinStart || !izinEnd) {
+      toast.error('Mohon isi tanggal mulai, hingga, dan alasan izin', {
         style: { background: '#dc2626', color: '#fff' },
       });
       return;
     }
-
+    if (izinEnd < izinStart) {
+      toast.error('Tanggal hingga tidak boleh sebelum tanggal mulai', {
+        style: { background: '#dc2626', color: '#fff' },
+      });
+      return;
+    }
     try {
       const { user_id, name } = izinDataRef.current;
-
-      const { error: insertError } = await supabase.from('attendances').insert({
+      const now = new Date().toISOString();
+      // Insert ke tabel permissions, field exit_time dan reentry_time
+      const { error: insertError } = await supabase.from('permissions').insert({
         user_id,
-        date: new Date().toISOString(),
-        check_in: null,
-        check_out: null,
-        notes: izinReason,
-        created_at: new Date().toISOString(),
-        status: 'IZIN',
+        exit_time: izinStart,
+        reentry_time: izinEnd,
+        reason: izinReason,
+        created_at: now,
+        type: 'izin',
+        status: 'pending',
       });
-
       if (insertError) throw new Error('Gagal menyimpan izin');
-
       toast.success(`✅ Izin berhasil untuk ${name}`, {
         style: { background: '#16a34a', color: '#fff' },
       });
-
       setShowIzinForm(false);
       setIzinReason('');
+      setIzinStart('');
+      setIzinEnd('');
       izinDataRef.current = null;
     } catch (err) {
       toast.error(`❌ ${(err as Error).message}`, {
@@ -199,9 +206,29 @@ export default function QRScanner({ onScanError, onScanSuccess }: {
           <div className="bg-white dark:bg-[#1e293b] border border-teal-600 rounded-xl p-6 w-full max-w-md text-gray-900 dark:text-white shadow-xl animate-fade-in">
             <h2 className="text-xl font-bold mb-2 flex items-center gap-2">📝 Keterangan Izin</h2>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Silakan isi alasan izin Anda dengan jelas.
+              Silakan isi tanggal izin dan alasan Anda dengan jelas.
             </p>
 
+            <div className="mb-4">
+              <label htmlFor="izinStart" className="block text-sm font-medium mb-1">Mulai Izin</label>
+              <input
+                type="date"
+                id="izinStart"
+                value={izinStart}
+                onChange={e => setIzinStart(e.target.value)}
+                className="w-full p-2 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="izinEnd" className="block text-sm font-medium mb-1">Hingga</label>
+              <input
+                type="date"
+                id="izinEnd"
+                value={izinEnd}
+                onChange={e => setIzinEnd(e.target.value)}
+                className="w-full p-2 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg"
+              />
+            </div>
             <div className="mb-4">
               <label
                 htmlFor="izinReason"
