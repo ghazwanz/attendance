@@ -28,6 +28,7 @@ export default function Page() {
   const [deleteItem, setDeleteItem] = useState<any | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
 
   const fetchData = async () => {
     const { data: userData } = await supabase.auth.getUser();
@@ -93,6 +94,38 @@ export default function Page() {
 
         if (absensiHariIni && now >= batasPulang) {
           setCheckoutItem(absensiHariIni);
+
+          if (selectedFilter === "today") {
+            const start = new Date();
+            start.setHours(0, 0, 0, 0);
+            const end = new Date();
+            end.setHours(23, 59, 59, 999);
+
+            query = query
+              .gte("date", start.toISOString())
+              .lte("date", end.toISOString());
+          }
+
+          if (selectedFilter === "yesterday") {
+            const start = new Date();
+            start.setDate(start.getDate() - 1);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date();
+            end.setDate(end.getDate() - 1);
+            end.setHours(23, 59, 59, 999);
+
+            query = query
+              .gte("date", start.toISOString())
+              .lte("date", end.toISOString());
+          }
+
+          if (selectedFilter === "last7days") {
+            const start = new Date();
+            start.setDate(start.getDate() - 6); // 6 hari ke belakang + hari ini = 7
+            start.setHours(0, 0, 0, 0);
+
+            query = query.gte("date", start.toISOString());
+          }
         }
       }
     }
@@ -130,44 +163,55 @@ export default function Page() {
             Kelola data kehadiran harian secara efisien dan akurat.
           </p>
 
-        {/* Form Absensi */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
-          <h2 className="text-xl font-semibold mb-4">📝 Form Absensi</h2>
-          <CreateForm
-            onRefresh={() => {
-              fetchData();
-              showSuccessToast("Absensi masuk berhasil disimpan!");
-            }}
-            userRole={userRole ?? ""}
-          />
+          {/* Form Absensi */}
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
+            <h2 className="text-xl font-semibold mb-4">📝 Form Absensi</h2>
+            <CreateForm
+              onRefresh={() => {
+                fetchData();
+                showSuccessToast("Absensi masuk berhasil disimpan!");
+              }}
+              userRole={userRole ?? ""}
+            />
 
-        </div>
+          </div>
           {/* Tombol Tambah Absen khusus admin di bawah form */}
           {/* 🔍 Input Search */}
-          <div className="flex justify-between items-center mt-6">
+          <div className="flex justify-between items-center mt-6 flex-wrap gap-4">
+            {/* Filter Hari */}
+            <select
+              value={selectedFilter}
+              onChange={(e) => setSelectedFilter(e.target.value)}
+              className="px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">📅 Semua Hari</option>
+              <option value="today">📆 Hari Ini</option>
+              <option value="yesterday">📆 Kemarin</option>
+              <option value="last7days">📆 7 Hari Terakhir</option>
+            </select>
 
-          <div className="mt-6 max-w-md ">
-            <input
-              type="text"
-              placeholder="🔍 Cari nama Team..."
-              className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          {userRole === "admin" && (
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="bg-blue-700 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow font-semibold"
-              >
-                Tambah Absen
-              </button>
+            <div className="mt-6 max-w-md ">
+              <input
+                type="text"
+                placeholder="🔍 Cari nama Team..."
+                className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-          )}
+            {userRole === "admin" && (
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="bg-blue-700 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow font-semibold"
+                >
+                  Tambah Absen
+                </button>
+              </div>
+            )}
           </div>
         </div>
-        
+
 
         {/* Tabel Kehadiran */}
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
