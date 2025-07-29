@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import toast from "react-hot-toast";
 import { Permission } from "../lib/types";
 
 interface PermissionTableProps {
@@ -18,12 +20,13 @@ export default function PermissionTable({
   onDelete,
   loading,
 }: PermissionTableProps) {
+  const supabase = createClient();
   const [localData, setLocalData] = useState<Permission[]>([]);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedPermissionId, setSelectedPermissionId] = useState<string | null>(null);
 
   useEffect(() => {
-    setLocalData(data); // Sinkronisasi data awal
+    setLocalData(data);
   }, [data]);
 
   const formatDateTime = (dateString: string) => {
@@ -38,9 +41,10 @@ export default function PermissionTable({
     setShowStatusModal(true);
   };
 
-  const handleSelectStatus = (status: string) => {
+  const handleSelectStatus = async (status: string) => {
     if (!selectedPermissionId) return;
 
+    // Update lokal
     setLocalData((prev) =>
       prev.map((item) =>
         item.id === selectedPermissionId
@@ -48,6 +52,18 @@ export default function PermissionTable({
           : item
       )
     );
+
+    // Update database
+    const { error } = await supabase
+      .from("permissions") // ganti sesuai nama tabelmu
+      .update({ status })
+      .eq("id", selectedPermissionId);
+
+    if (error) {
+      toast.error("Gagal mengubah status.");
+    } else {
+      toast.success("Status berhasil diperbarui.");
+    }
 
     setShowStatusModal(false);
     setSelectedPermissionId(null);
@@ -80,7 +96,7 @@ export default function PermissionTable({
               <td className="px-4 py-3">{item.exit_time ? formatDateTime(item.exit_time) : "-"}</td>
               <td className="px-4 py-3">{item.reentry_time ? formatDateTime(item.reentry_time) : "-"}</td>
               <td className="px-4 py-3">lapet</td>
-              <td className="px-4 py-3">{item?.reason || "-"}</td>
+              <td className="px-4 py-3">{item.reason || "-"}</td>
               <td className="px-4 py-3">
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold capitalize
@@ -133,7 +149,7 @@ export default function PermissionTable({
         </tbody>
       </table>
 
-      {/* Modal Pilih Status */}
+      {/* MODAL STATUS */}
       {showStatusModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-[#0F172A] rounded-xl shadow-xl p-6 w-64 text-center animate-fade-in">
