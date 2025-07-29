@@ -37,6 +37,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [showIzinForm, setShowIzinForm] = useState(false);
   const [showPulangModal, setShowPulangModal] = useState(false);
+  const [showIzinToHadirModal, setShowIzinToHadirModal] = useState(false);
   const [izinReason, setIzinReason] = useState('');
   const [balikLagi, setBalikLagi] = useState(false);
   const [isIzinPulang, setIsIzinPulang] = useState(false);
@@ -86,7 +87,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
             await stopScan()
 
-            const today = new Date().toISOString();
+            const today = new Date().toISOString().split("T")[0]; // hasil: "2025-07-26"
+
             const { data: attendanceToday } = await supabase
               .from("attendances")
               .select("*")
@@ -97,19 +99,29 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
             console.log("Attendance today:", attendanceToday);
             toast.dismiss("scan-process");
 
-            // ✅ Hanya tampilkan modal setelah scan berhenti
             if (attendanceToday) {
-              if (attendanceToday.check_in && !attendanceToday.check_out) {
+              if (
+                attendanceToday.status === 'IZIN' &&
+                !attendanceToday.check_in &&
+                !attendanceToday.check_out
+              ) {
+                // User sudah izin tapi belum absen → tampilkan modal ubah ke HADIR
+                setShowIzinToHadirModal(true);
+              } else if (attendanceToday.check_in && !attendanceToday.check_out) {
+                // Sudah hadir tapi belum pulang → tampilkan modal Pulang
                 setShowPulangModal(true);
               } else {
+                // Sudah absen masuk dan pulang
                 showToast({
                   type: "info",
                   message: "Kamu sudah absen masuk dan pulang hari ini.",
                 });
               }
             } else {
+              // Belum absen sama sekali → tampilkan pilihan Hadir / Izin
               setShowChoiceModal(true);
             }
+
 
           } catch (err) {
             toast.dismiss("scan-process");
