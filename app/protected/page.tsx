@@ -68,7 +68,7 @@ export default function ProtectedPage() {
         .from('attendances')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .eq('status', 'TANPA KETERANGAN');
+        .eq('status', 'ALPA');
       setCountAlpha(countAlphas || 0);
 
       const { data } = await supabase
