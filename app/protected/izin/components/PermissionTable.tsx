@@ -24,10 +24,12 @@ export default function PermissionTable({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedPermissionId, setSelectedPermissionId] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
-
   useEffect(() => {
     setLocalData(data);
   }, [data]);
+
+  // Urutkan data izin berdasarkan tanggal dibuat (created_at) terbaru di paling atas
+  const filteredData = [...localData].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString("id-ID", {
@@ -52,7 +54,7 @@ export default function PermissionTable({
     const success = await statusActions.updatePermissionStatus(
       selectedPermissionId,
       status,
-      selectedPermission
+      selectedPermission,
     );
 
     if (success) {
@@ -79,6 +81,7 @@ export default function PermissionTable({
 
   return (
     <>
+
       <div className="overflow-x-auto w-full p-2 bg-gray-100 dark:bg-[#0F172A] transition-colors">
         <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
