@@ -146,7 +146,7 @@ export default function Page() {
           {/* 🔍 Input Search */}
           <div className="flex justify-between items-center mt-6">
 
-          <div className="mt-6 max-w-md">
+          <div className="mt-6 max-w-md ">
             <input
               type="text"
               placeholder="🔍 Cari nama Team..."

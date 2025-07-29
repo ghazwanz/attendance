@@ -33,7 +33,12 @@ const Tambahjadwal = () => {
 
     return (
         <>
-           
+            <button
+                onClick={() => setShowEdit(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow inline-flex items-center gap-2"
+            >
+                <span className="text-lg">＋</span> Tambah Jadwal
+            </button>
 
             {showEdit && (
                 <TambahModal
