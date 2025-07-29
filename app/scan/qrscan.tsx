@@ -42,7 +42,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   const [balikLagi, setBalikLagi] = useState(false);
   const [isIzinPulang, setIsIzinPulang] = useState(false);
   const [hasScanned, setHasScanned] = useState(false);
-  const [izinDate, setIzinDate] = useState('');
+  const [izinStart, setIzinStart] = useState('');
+  const [izinEnd, setIzinEnd] = useState('');
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
   const startScan = async () => {
@@ -243,32 +244,39 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     setShowIzinForm(true);
     // Set default tanggal izin ke hari ini setiap buka form
     const today = new Date();
-    setIzinDate(today.toISOString().split('T')[0]);
+    const todayStr = today.toISOString().split('T')[0];
+    setIzinStart(todayStr);
+    setIzinEnd(todayStr);
   };
 
   const handleSubmitIzin = async () => {
-    if (!izinReason.trim() || !scanUserRef.current) {
-      showToast({ type: 'error', message: 'Mohon isi alasan izin' });
+    if (!izinReason.trim() || !scanUserRef.current || !izinStart || !izinEnd) {
+      showToast({ type: 'error', message: 'Mohon isi tanggal mulai, hingga, dan alasan izin' });
       return;
     }
-    // Validasi tanggal tidak boleh kemarin
+    // Validasi tanggal tidak boleh kemarin dan hingga >= mulai
     const today = new Date();
     const minDate = today.toISOString().split('T')[0];
-    if (izinDate < minDate) {
+    if (izinStart < minDate) {
       showToast({ type: 'error', message: 'Izin tidak bisa untuk hari kemarin.' });
+      return;
+    }
+    if (izinEnd < izinStart) {
+      showToast({ type: 'error', message: 'Tanggal hingga tidak boleh sebelum tanggal mulai' });
       return;
     }
     try {
       const { user_id, name } = scanUserRef.current;
       const now = new Date().toISOString();
-      // Insert ke tabel permission, bukan attendances
+      // Insert ke tabel permissions, field exit_time dan reentry_time
       const { error } = await supabase.from('permissions').insert({
         user_id,
-        date: izinDate,
         reason: izinReason,
         created_at: now,
+        exit_time: izinStart,
+        reentry_time: izinEnd,
+        date: izinStart,
         status: 'pending',
-
       });
       if (error) throw new Error('Gagal menyimpan izin');
       showToast({ type: 'warning', message: `Izin berhasil untuk ${name}` });
@@ -277,6 +285,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       showToast({ type: 'error', message: (err as Error).message });
     } finally {
       setIzinReason('');
+      setIzinStart('');
+      setIzinEnd('');
       setShowIzinForm(false);
       setIsIzinPulang(false);
     }
@@ -445,24 +455,40 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-md shadow-xl text-gray-900 dark:text-white">
             <h2 className="text-xl font-bold mb-2 flex items-center gap-2">📝 Keterangan Izin</h2>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              {isIzinPulang ? 'Silakan isi alasan izin pulang awal Anda.' : 'Silakan isi alasan tidak hadir Anda.'}
+              {isIzinPulang ? 'Silakan isi alasan izin pulang awal Anda.' : 'Silakan isi tanggal mulai, hingga, dan alasan tidak hadir Anda.'}
             </p>
 
             {!isIzinPulang && (
-              <div className="mb-4">
-                <label htmlFor="izinDate" className="block text-sm font-medium mb-1">Tanggal Izin</label>
-                <input
-                  type="date"
-                  id="izinDate"
-                  value={izinDate}
-                  min={(() => {
-                    const today = new Date();
-                    return today.toISOString().split('T')[0];
-                  })()}
-                  onChange={e => setIzinDate(e.target.value)}
-                  className="w-full p-2 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg"
-                />
-              </div>
+              <>
+                <div className="mb-4">
+                  <label htmlFor="izinStart" className="block text-sm font-medium mb-1">Mulai Izin</label>
+                  <input
+                    type="date"
+                    id="izinStart"
+                    value={izinStart}
+                    min={(() => {
+                      const today = new Date();
+                      return today.toISOString().split('T')[0];
+                    })()}
+                    onChange={e => setIzinStart(e.target.value)}
+                    className="w-full p-2 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="izinEnd" className="block text-sm font-medium mb-1">Hingga</label>
+                  <input
+                    type="date"
+                    id="izinEnd"
+                    value={izinEnd}
+                    min={izinStart || (() => {
+                      const today = new Date();
+                      return today.toISOString().split('T')[0];
+                    })()}
+                    onChange={e => setIzinEnd(e.target.value)}
+                    className="w-full p-2 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg"
+                  />
+                </div>
+              </>
             )}
             <div className="mb-4">
               <label htmlFor="izinReason" className="block text-sm font-medium mb-1">Alasan</label>
@@ -486,6 +512,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 onClick={() => {
                   setShowIzinForm(false);
                   setIzinReason('');
+                  setIzinStart('');
+                  setIzinEnd('');
                   setBalikLagi(false);
                   setIsIzinPulang(false);
                 }}
