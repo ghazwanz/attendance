@@ -47,6 +47,41 @@ export default function PermissionTable({
     const selectedPermission = localData.find((item) => item.id === selectedPermissionId);
     if (!selectedPermission) return;
 
+    const tanggal = new Date(selectedPermission.created_at).toISOString().split("T")[0];
+
+    // Cek jika status 'diterima', pastikan belum ada absensi hari itu
+    if (status === "diterima") {
+      const { data: existingAttendance, error: checkError } = await supabase
+        .from("attendances")
+        .select("*")
+        .eq("user_id", selectedPermission.user_id)
+        .eq("date", tanggal)
+        .maybeSingle();
+
+      if (checkError) {
+        toast.error("Gagal memeriksa data absensi.");
+        return;
+      }
+
+      if (existingAttendance) {
+        toast.error("User sudah melakukan absensi di tanggal tersebut.");
+        return;
+      }
+
+      // Simpan ke attendances
+      const { error: insertError } = await supabase.from("attendances").insert({
+        user_id: selectedPermission.user_id,
+        status: "IZIN",
+        notes: selectedPermission.reason,
+        date: tanggal,
+      });
+
+      if (insertError) {
+        toast.error("Gagal menyimpan ke absensi.");
+        return;
+      }
+    }
+
     // Update status permission
     const { error: updateError } = await supabase
       .from("permissions")
@@ -64,24 +99,6 @@ export default function PermissionTable({
             : item
         )
       );
-    }
-
-    // Jika status diterima, simpan ke attendances dulu
-    if (status === "diterima") {
-      const { error: insertError } = await supabase.from("attendances").insert({
-        user_id: selectedPermission.user_id,
-        // permission_id: ,
-        // check_in: selectedPermission.exit_time,
-        // check_out: selectedPermission.reentry_time,
-        status: "IZIN",
-        notes: selectedPermission.reason,
-        date: new Date(selectedPermission.created_at).toISOString().split("T")[0],
-      });
-
-      if (insertError) {
-        toast.error("Gagal menyimpan ke absensi.");
-        return;
-      }
     }
 
     setShowStatusModal(false);
