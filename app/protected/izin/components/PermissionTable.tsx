@@ -24,26 +24,12 @@ export default function PermissionTable({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedPermissionId, setSelectedPermissionId] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
-  const [filterStart, setFilterStart] = useState("");
-  const [filterEnd, setFilterEnd] = useState("");
-
   useEffect(() => {
     setLocalData(data);
   }, [data]);
 
-  // Filter by waktu mengisi (created_at)
-  const filteredData = localData.filter((item) => {
-    let createdAtValid = true;
-    if (filterStart) {
-      createdAtValid = createdAtValid && new Date(item.created_at) >= new Date(filterStart);
-    }
-    if (filterEnd) {
-      const endDate = new Date(filterEnd);
-      endDate.setDate(endDate.getDate() + 1);
-      createdAtValid = createdAtValid && new Date(item.created_at) < endDate;
-    }
-    return createdAtValid;
-  });
+  // Urutkan data izin berdasarkan tanggal dibuat (created_at) terbaru di paling atas
+  const filteredData = [...localData].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString("id-ID", {
@@ -95,25 +81,7 @@ export default function PermissionTable({
 
   return (
     <>
-      {/* Filter waktu mengisi izin */}
-      <div className="flex flex-col md:flex-row gap-2 items-center mb-4">
-        <input
-          type="date"
-          value={filterStart}
-          onChange={e => setFilterStart(e.target.value)}
-          className="px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
-          placeholder="Dari tanggal isi"
-          title="Filter dari tanggal mengisi izin"
-        />
-        <input
-          type="date"
-          value={filterEnd}
-          onChange={e => setFilterEnd(e.target.value)}
-          className="px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
-          placeholder="Sampai tanggal isi"
-          title="Filter sampai tanggal mengisi izin"
-        />
-      </div>
+
       <div className="overflow-x-auto w-full p-2 bg-gray-100 dark:bg-[#0F172A] transition-colors">
         <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
