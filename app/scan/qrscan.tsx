@@ -451,12 +451,48 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               >
                 ✅ Hadir
               </button>
-              <button
-                onClick={() => setShowIzinToHadirModal(false)}
-                className="px-4 py-2 bg-gray-400 text-white rounded-md"
-              >
-                ❌ Batal
-              </button>
+              {showIzinToHadirModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+                    <h2 className="text-lg font-semibold mb-4 text-center">Ubah Kehadiran</h2>
+                    <p className="text-sm text-center mb-4">
+                      Kamu sebelumnya mengajukan izin. Apakah sekarang ingin mengganti menjadi HADIR?
+                    </p>
+                    <div className="flex justify-center gap-4">
+                      <button
+                        onClick={async () => {
+                          setShowIzinToHadirModal(false);
+
+                          if (scanUserRef.current) {
+                            const today = new Date().toISOString().split("T")[0];
+
+                            // Hapus izin pending hari ini
+                            await supabase
+                              .from("permissions")
+                              .delete()
+                              .eq("user_id", scanUserRef.current.user_id)
+                              .eq("date", today)
+                              .eq("status", "pending");
+                          }
+
+                          handleAbsenHadir(); // lanjutkan absen hadir
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md"
+                      >
+                        ✅ Hadir
+                      </button>
+                      <button
+                        onClick={() => setShowIzinToHadirModal(false)}
+                        className="px-4 py-2 bg-gray-400 text-white rounded-md"
+                      >
+                        ❌ Batal
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
             </div>
           </div>
         </div>
