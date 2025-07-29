@@ -1,12 +1,10 @@
 // app/users/page.tsx
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import UsersTable from './UsersTable';
 import { User } from '@/lib/type';
 import { createClient, createAdmin } from '@/lib/supabase/server';
 
-// Server Actions
 async function createUser(formData: FormData) {
   'use server';
 
@@ -134,11 +132,10 @@ async function deleteUser(formData: FormData) {
   }
 }
 
-// Main Server Component
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string }>;
+  searchParams: Promise<{ search?: string; day?: string }>;
 }) {
   const supabaseClient = await createClient();
   const supabaseAdmin = await createAdmin();
@@ -182,17 +179,50 @@ export default async function UsersPage({
     users = [currentUser];
   }
 
-  // Await the searchParams promise
-  const { search } = await searchParams;
-  const filteredUsers = search?.toLowerCase()
+  const { search, day } = await searchParams;
+
+  const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const getDayName = (dateString: string) => {
+    const dayIndex = new Date(dateString).getDay();
+    return dayNames[dayIndex];
+  };
+
+  let filteredUsers = search?.toLowerCase()
     ? users.filter(user =>
-      user.name?.toLowerCase().includes(search) ||
-      user.role?.toLowerCase().includes(search)
-    )
+        user.name?.toLowerCase().includes(search) ||
+        user.role?.toLowerCase().includes(search)
+      )
     : users;
+
+  if (day) {
+    filteredUsers = filteredUsers.filter(user =>
+      getDayName(user.created_at).toLowerCase() === day.toLowerCase()
+    );
+  }
 
   return (
     <div className="rounded-2xl shadow-lg dark:shadow-white/20 p-8">
+      <form method="GET" className="mb-4 flex flex-wrap items-center gap-3">
+        <input
+          type="text"
+          name="search"
+          placeholder="Cari nama atau role..."
+          defaultValue={search || ''}
+          className="border px-3 py-1 rounded-md"
+        />
+        <select name="day" defaultValue={day || ''} className="border px-3 py-1 rounded-md">
+          <option value="">Semua Hari</option>
+          {dayNames.map((dayOption) => (
+            <option key={dayOption} value={dayOption}>
+              {dayOption}
+            </option>
+          ))}
+        </select>
+        <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded-md">
+          Filter
+        </button>
+      </form>
+
       <UsersTable
         users={filteredUsers}
         currentUser={currentUser}
