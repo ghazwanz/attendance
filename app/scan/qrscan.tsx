@@ -162,7 +162,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
       // Ambil hari ini (misalnya 'Monday', 'Tuesday')
       const options = { weekday: 'long' } as const;
-      const todayName = nowDate.toLocaleDateString('en-US', options); // misalnya: 'Monday'
+      const todayName = nowDate.toLocaleDateString('id-ID', options).toLowerCase(); // misalnya: 'Monday'
 
       // Ambil jadwal hari ini dari tabel schedules
       const { data: jadwalHariIni, error: jadwalError } = await supabase
