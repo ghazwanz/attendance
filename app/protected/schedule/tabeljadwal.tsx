@@ -67,10 +67,10 @@ export default function Tabeljadwal() {
             <tr>
               <th className="px-6 py-4 text-left">No</th>
               <th className="px-6 py-4 text-left">Hari</th>
-              <th className="px-6 py-4 text-left">Waktu Mulai</th>
-              <th className="px-6 py-4 text-left">Waktu Istirahat</th>
+              <th className="px-6 py-4 text-left">Jam Masuk</th>
+              <th className="px-6 py-4 text-left">Jam Pulang</th>
+              <th className="px-6 py-4 text-left">Mulai Istirahat</th>
               <th className="px-6 py-4 text-left">Selesai Istirahat</th>
-              <th className="px-6 py-4 text-left">Waktu Selesai</th>
               <th className="px-6 py-4 text-left">Action</th>
             </tr>
           </thead>
