@@ -44,25 +44,44 @@ export default function PermissionTable({
   const handleSelectStatus = async (status: string) => {
     if (!selectedPermissionId) return;
 
-    // Update lokal
-    setLocalData((prev) =>
-      prev.map((item) =>
-        item.id === selectedPermissionId
-          ? { ...item, status: status as Permission["status"] }
-          : item
-      )
-    );
+    const selectedPermission = localData.find((item) => item.id === selectedPermissionId);
+    if (!selectedPermission) return;
 
-    // Update database
-    const { error } = await supabase
-      .from("permissions") // ganti sesuai nama tabelmu
+    // Update status permission
+    const { error: updateError } = await supabase
+      .from("permissions")
       .update({ status })
       .eq("id", selectedPermissionId);
 
-    if (error) {
+    if (updateError) {
       toast.error("Gagal mengubah status.");
     } else {
       toast.success("Status berhasil diperbarui.");
+      setLocalData((prev) =>
+        prev.map((item) =>
+          item.id === selectedPermissionId
+            ? { ...item, status: status as Permission["status"] }
+            : item
+        )
+      );
+    }
+
+    // Jika status diterima, simpan ke attendances dulu
+    if (status === "diterima") {
+      const { error: insertError } = await supabase.from("attendances").insert({
+        user_id: selectedPermission.user_id,
+        // permission_id: ,
+        // check_in: selectedPermission.exit_time,
+        // check_out: selectedPermission.reentry_time,
+        status: "IZIN",
+        notes: selectedPermission.reason,
+        date: new Date(selectedPermission.created_at).toISOString().split("T")[0],
+      });
+
+      if (insertError) {
+        toast.error("Gagal menyimpan ke absensi.");
+        return;
+      }
     }
 
     setShowStatusModal(false);
