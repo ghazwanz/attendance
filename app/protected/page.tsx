@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { QrCode, CalendarCheck, UserCheck, Clock9, Ban, Home, UserX } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { createClient } from '@/lib/supabase/client';
-import { Attendance } from "@/lib/type";
+import { Attendance as BaseAttendance } from "@/lib/type";
+
+type Attendance = BaseAttendance & {
+  users?: {
+    name?: string;
+  };
+};
 
 const formatTimestamp = (timestamp: string) => {
   return new Date(timestamp).toLocaleString("id-ID", {
@@ -24,6 +30,7 @@ export default function ProtectedPage() {
   const [countHadir, setCountHadir] = useState(0);
   const [countTerlambat, setCountTerlambat] = useState(0);
   const [countAlpha, setCountAlpha] = useState(0);
+  const [pendingIzin, setPendingIzin] = useState<Attendance[]>([]);
   const [recentAttendance, setRecentAttendance] = useState<Attendance[] | any[]>([]);
 
   useEffect(() => {
@@ -78,6 +85,13 @@ export default function ProtectedPage() {
         .limit(6)
         .order('created_at', { ascending: false });
       setRecentAttendance(data || []);
+
+      const { data: pending } = await supabase
+        .from('permissions')
+        .select('*, users(name)')
+        .eq('status', 'pending')
+
+      setPendingIzin(pending || []);
     };
 
     fetchData();
@@ -243,6 +257,34 @@ export default function ProtectedPage() {
           </div>
         </div>
       </div>
+
+      {pendingIzin.length > 0 && (
+  <div className="mt-6 bg-yellow-50 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4">
+    <h3 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-3">
+      🕒 Izin Belum Diproses
+    </h3>
+    <ul className="space-y-2">
+      {pendingIzin.map((izin) => (
+        <li
+          key={izin.id}
+          className="flex items-center justify-between bg-white dark:bg-slate-700 px-4 py-2 rounded shadow"
+        >
+          <div>
+            <p className="font-medium text-gray-800 dark:text-white">
+              {izin.users?.name}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-300">
+              {formatTimestamp(izin.created_at)}
+            </p>
+          </div>
+          <span className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
+            Belum Diproses
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
 
       {showScanner && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
