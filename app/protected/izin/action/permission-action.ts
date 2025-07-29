@@ -1,4 +1,3 @@
-// actions/permission-actions.ts
 import { createClient } from "@/lib/supabase/client";
 import { Permission, PermissionForm } from "../lib/types";
 
@@ -11,7 +10,7 @@ export const permissionActions = {
         return data || [];
     },
 
-    async fetchCurrentUser(): Promise<{ id: string; role: string; user_metadata:string} | null> {
+    async fetchCurrentUser(): Promise<{ id: string; role: string; user_metadata: string} | null> {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return null;
 
@@ -30,7 +29,7 @@ export const permissionActions = {
 
         const query = supabase
             .from("permissions")
-            .select("*, users(name)")
+            .select("*, users!permissions_user_id_fkey(*)")
             .order("created_at", { ascending: false });
 
         // Filter by user_id if not admin
