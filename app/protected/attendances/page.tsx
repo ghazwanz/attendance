@@ -140,9 +140,39 @@ export default function Page() {
     setTimeout(() => setSuccessMessage(null), 3000);
   };
 
-  const filteredData = data.filter((item) =>
-    item.users?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredData = data.filter((item) => {
+    const nameMatch = item.users?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const itemDate = new Date(item.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedFilter === "today") {
+      return (
+        itemDate.toDateString() === today.toDateString() &&
+        nameMatch
+      );
+    }
+
+    if (selectedFilter === "yesterday") {
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      return (
+        itemDate.toDateString() === yesterday.toDateString() &&
+        nameMatch
+      );
+    }
+
+    if (selectedFilter === "last7days") {
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 6); // termasuk hari ini
+      return itemDate >= sevenDaysAgo && itemDate <= today && nameMatch;
+    }
+
+    // Semua hari
+    return nameMatch;
+  });
+
 
   return (
     <div className="min-h-screen py-10 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
