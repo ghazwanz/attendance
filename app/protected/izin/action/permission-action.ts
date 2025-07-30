@@ -29,7 +29,7 @@ export const permissionActions = {
 
         const query = supabase
             .from("permissions")
-            .select("*, users!permissions_user_id_fkey(*)")
+            .select("*, users!permissions_user_id_fkey(*), users!permissions_user_id_fkey(*)")
             .order("created_at", { ascending: false });
 
         // Filter by user_id if not admin
