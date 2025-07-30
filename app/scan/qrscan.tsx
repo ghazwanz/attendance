@@ -104,9 +104,11 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               .from("permissions")
               .select("*")
               .eq("user_id", userData.id)
-              .eq("date", today)
               .eq("status", "pending")
+              .gte("date", today) // hanya izin mulai hari ini atau ke depan
               .maybeSingle();
+
+
             if (attendanceToday) {
               if (
                 attendanceToday.status === 'IZIN' &&
@@ -256,6 +258,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   };
 
   const handleSubmitIzin = async () => {
+
     if (!izinReason.trim() || !scanUserRef.current || !izinStart || !izinEnd) {
       showToast({ type: 'error', message: 'Mohon isi tanggal mulai, hingga, dan alasan izin' });
       return;

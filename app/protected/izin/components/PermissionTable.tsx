@@ -75,7 +75,6 @@ export default function PermissionTable({
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString("id-ID", {
       dateStyle: "short",
-      timeStyle: "short",
     });
   };
 
