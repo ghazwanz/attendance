@@ -13,7 +13,6 @@ interface PermissionTableProps {
   loading: boolean;
 }
 
-
 export default function PermissionTable({
   data,
   currentUser,
@@ -33,19 +32,15 @@ export default function PermissionTable({
     setLocalData(data);
   }, [data]);
 
-  // Fungsi untuk mendapatkan nama hari dari tanggal
   const getDayName = (dateString: string) => {
     const days = ["minggu", "senin", "selasa", "rabu", "kamis", "jum'at", "sabtu"];
     const date = new Date(dateString);
     return days[date.getDay()];
   };
 
-  // Filter data berdasarkan nama dan hari
-  // Filter data berdasarkan nama dan hari
   const filteredData = [...localData]
     .filter((item) => {
-      // Filter nama
-      if (searchName && !(item.users?.name || "").toLowerCase().includes(searchName.toLowerCase())) {
+      if (searchName && !(item.user?.name || "").toLowerCase().includes(searchName.toLowerCase())) {
         return false;
       }
       // Filter hari
@@ -91,7 +86,6 @@ export default function PermissionTable({
 
   const handleSelectStatus = async (status: string) => {
     if (!selectedPermissionId) return;
-
     const selectedPermission = localData.find((item) => item.id === selectedPermissionId);
     if (!selectedPermission) return;
 
@@ -100,14 +94,18 @@ export default function PermissionTable({
     const success = await statusActions.updatePermissionStatus(
       selectedPermissionId,
       status,
-      selectedPermission,
+      selectedPermission
     );
 
     if (success) {
       setLocalData((prev) =>
         prev.map((item) =>
           item.id === selectedPermissionId
-            ? { ...item, status: status as Permission["status"] }
+            ? {
+                ...item,
+                status: status as Permission["status"],
+                approved_by: currentUser?.id || null,
+              }
             : item
         )
       );
@@ -127,19 +125,19 @@ export default function PermissionTable({
 
   return (
     <div>
-      {/* Filter Bar tanpa judul */}
+      {/* Filter */}
       <div className="flex flex-wrap gap-2 mb-4 items-end">
         <input
           type="text"
           value={searchName}
-          onChange={e => setSearchName(e.target.value)}
+          onChange={(e) => setSearchName(e.target.value)}
           placeholder="Cari nama..."
           className="border rounded text-sm px-4 py-2 h-10"
           style={{ minWidth: 150 }}
         />
         <select
           value={selectedDay}
-          onChange={e => setSelectedDay(e.target.value)}
+          onChange={(e) => setSelectedDay(e.target.value)}
           className="border rounded text-sm px-4 py-2 h-10"
           style={{ minWidth: 170 }}
         >
@@ -153,12 +151,13 @@ export default function PermissionTable({
           <button
             className="ml-2 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm px-4 h-10"
             style={{ minWidth: 80 }}
-            onClick={() => { setSelectedDay("all"); setSearchName(""); }}
+            onClick={() => { setSelectedDay("today"); setSearchName(""); }}
           >
             Reset
           </button>
         )}
       </div>
+
       <div className="overflow-x-auto w-full p-2 bg-gray-100 dark:bg-[#0F172A] transition-colors">
         <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
@@ -170,6 +169,7 @@ export default function PermissionTable({
               <th className="px-4 py-3">Jenis</th>
               <th className="px-4 py-3">Alasan</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Disetujui Oleh</th>
               <th className="px-4 py-3">Dibuat</th>
               <th className="px-4 py-3 rounded-r-xl">Aksi</th>
             </tr>
@@ -181,7 +181,7 @@ export default function PermissionTable({
                 className="rounded-xl shadow-sm bg-white dark:bg-slate-800 text-black dark:text-white transition-colors"
               >
                 <td className="px-4 py-3">{idx + 1}</td>
-                <td className="px-4 py-3 rounded-l-xl">{item.users?.name || "-"}</td>
+                <td className="px-4 py-3 rounded-l-xl">{item.user?.name || "-"}</td>
                 <td className="px-4 py-3">{item.exit_time ? formatDateTime(item.exit_time) : "-"}</td>
                 <td className="px-4 py-3">{item.reentry_time ? formatDateTime(item.reentry_time) : "-"}</td>
                 <td className="px-4 py-3">lapet</td>
@@ -198,6 +198,7 @@ export default function PermissionTable({
                   </span>
                 </td>
                 <td className="px-4 py-3">{formatDateTime(item.created_at)}</td>
+                <td className="px-4 py-3">{item.approver?.name || "-"}</td>
                 <td className="px-4 py-3 flex gap-2 flex-wrap">
                   <button
                     onClick={() => onEdit(item)}
@@ -232,7 +233,7 @@ export default function PermissionTable({
 
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan={9} className="text-center text-gray-400 py-4">
+                <td colSpan={10} className="text-center text-gray-400 py-4">
                   Tidak ada data izin.
                 </td>
               </tr>

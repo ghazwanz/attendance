@@ -144,7 +144,7 @@ export function usePermissions() {
 
     // Filter permissions based on search term
     const filteredPermissions = permissions.filter((item) => {
-        const nama = item.users?.name?.toLowerCase() || "";
+        const nama = item.user?.name?.toLowerCase() || "";
         const alasan = item.reason.toLowerCase();
         const keyword = searchTerm.toLowerCase();
 
