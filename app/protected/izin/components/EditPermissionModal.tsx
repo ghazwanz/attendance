@@ -36,13 +36,14 @@ export default function EditPermissionModal({
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg w-full max-w-xl text-black dark:text-white">
                 <h2 className="text-xl font-bold mb-4">✏️ Edit Izin</h2>
                 <form onSubmit={onSubmit} className="space-y-4">
+                    <label className="block mb-0 font-medium">Pilih User</label>
                     <select
                         name="user_id"
                         value={form.user_id}
                         onChange={onChange}
                         required
-                        className="w-full px-3 py-2 rounded border border-black bg-white/10 dark:text-white"
-                    >
+                        className="w-full px-3 py-2 rounded border border-white/20 bg-white/10 dark:text-white"
+                    >    
                         <option value="">Pilih Nama User</option>
                         {availableUsers.map((user) => (
                             <option key={user.id} value={user.id} className="text-black">
@@ -50,7 +51,7 @@ export default function EditPermissionModal({
                             </option>
                         ))}
                     </select>
-
+                    <label className="block mb-0 font-medium">Mulai Izin</label>
                     <input
                         type="datetime-local"
                         name="exit_time"
@@ -59,7 +60,7 @@ export default function EditPermissionModal({
                         className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
                         required
                     />
-
+                    <label className="block mb-0 font-medium">Waktu Masuk Kembali</label>
                     <input
                         type="datetime-local"
                         name="reentry_time"
@@ -68,7 +69,7 @@ export default function EditPermissionModal({
                         className="w-full px-3 py-2 rounded bg-white/10 border border-black dark:border-white/20 text-black dark:text-white"
                         required
                     />
-
+                    <label className="block mb-0  font-medium">Alasan</label>
                     <input
                         type="text"
                         name="reason"
