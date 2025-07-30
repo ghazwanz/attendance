@@ -13,6 +13,7 @@ interface PermissionTableProps {
   loading: boolean;
 }
 
+
 export default function PermissionTable({
   data,
   currentUser,
@@ -24,12 +25,36 @@ export default function PermissionTable({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedPermissionId, setSelectedPermissionId] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
+  // State untuk filter
+  const [searchName, setSearchName] = useState("");
+  const [selectedDay, setSelectedDay] = useState("semua");
+
   useEffect(() => {
     setLocalData(data);
   }, [data]);
 
-  // Urutkan data izin berdasarkan tanggal dibuat (created_at) terbaru di paling atas
-  const filteredData = [...localData].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  // Fungsi untuk mendapatkan nama hari dari tanggal
+  const getDayName = (dateString: string) => {
+    const days = ["minggu", "senin", "selasa", "rabu", "kamis", "jum'at", "sabtu"];
+    const date = new Date(dateString);
+    return days[date.getDay()];
+  };
+
+  // Filter data berdasarkan nama dan hari
+  const filteredData = [...localData]
+    .filter((item) => {
+      // Filter nama
+      if (searchName && !(item.users?.name || "").toLowerCase().includes(searchName.toLowerCase())) {
+        return false;
+      }
+      // Filter hari
+      if (selectedDay !== "semua") {
+        const dayName = getDayName(item.created_at);
+        if (dayName !== selectedDay) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString("id-ID", {
@@ -81,6 +106,51 @@ export default function PermissionTable({
 
   return (
     <div>
+      {/* Filter Bar tanpa judul */}
+      <div className="flex flex-wrap gap-2 mb-4 items-end">
+        <input
+          type="text"
+          value={searchName}
+          onChange={e => setSearchName(e.target.value)}
+          placeholder="Cari nama..."
+          className="border rounded text-sm px-4 py-2 h-10"
+          style={{ minWidth: 150 }}
+        />
+        <select
+          value={selectedDay}
+          onChange={e => setSelectedDay(e.target.value)}
+          className="border rounded text-sm px-4 py-2 h-10"
+          style={{ minWidth: 130 }}
+        >
+          <option value="semua">Semua Hari</option>
+          <option value="minggu">Minggu</option>
+          <option value="senin">Senin</option>
+          <option value="selasa">Selasa</option>
+          <option value="rabu">Rabu</option>
+          <option value="kamis">Kamis</option>
+          <option value="jum'at">Jum'at</option>
+          <option value="sabtu">Sabtu</option>
+        </select>
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold px-4 h-10"
+          style={{ minWidth: 90 }}
+          onClick={() => {
+            setSearchName(searchName); // trigger filter
+            setSelectedDay(selectedDay);
+          }}
+        >
+          Filter
+        </button>
+        {(searchName || selectedDay !== "semua") && (
+          <button
+            className="ml-2 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm px-4 h-10"
+            style={{ minWidth: 80 }}
+            onClick={() => { setSearchName(""); setSelectedDay("semua"); }}
+          >
+            Reset
+          </button>
+        )}
+      </div>
       <div className="overflow-x-auto w-full p-2 bg-gray-100 dark:bg-[#0F172A] transition-colors">
         <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
