@@ -26,8 +26,8 @@ export default function PermissionTable({
   const [selectedPermissionId, setSelectedPermissionId] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
   // State untuk filter
+  const [selectedDay, setSelectedDay] = useState("today");
   const [searchName, setSearchName] = useState("");
-  const [selectedDay, setSelectedDay] = useState("semua");
 
   useEffect(() => {
     setLocalData(data);
@@ -41,6 +41,7 @@ export default function PermissionTable({
   };
 
   // Filter data berdasarkan nama dan hari
+  // Filter data berdasarkan nama dan hari
   const filteredData = [...localData]
     .filter((item) => {
       // Filter nama
@@ -48,10 +49,30 @@ export default function PermissionTable({
         return false;
       }
       // Filter hari
-      if (selectedDay !== "semua") {
-        const dayName = getDayName(item.created_at);
-        if (dayName !== selectedDay) return false;
+      if (selectedDay === "today") {
+        const today = new Date();
+        const created = new Date(item.created_at);
+        return created.toDateString() === today.toDateString();
+      } else if (selectedDay === "yesterday") {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const created = new Date(item.created_at);
+        return created.toDateString() === yesterday.toDateString();
+      } else if (selectedDay === "last7") {
+        const today = new Date();
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 7);
+        const created = new Date(item.created_at);
+        return created >= sevenDaysAgo && created <= today;
+      } else if (selectedDay === "last30") {
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        const created = new Date(item.created_at);
+        return created >= thirtyDaysAgo && created <= today;
       }
+      // "all"
       return true;
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -120,32 +141,29 @@ export default function PermissionTable({
           value={selectedDay}
           onChange={e => setSelectedDay(e.target.value)}
           className="border rounded text-sm px-4 py-2 h-10"
-          style={{ minWidth: 130 }}
+          style={{ minWidth: 170 }}
         >
-          <option value="semua">Semua Hari</option>
-          <option value="minggu">Minggu</option>
-          <option value="senin">Senin</option>
-          <option value="selasa">Selasa</option>
-          <option value="rabu">Rabu</option>
-          <option value="kamis">Kamis</option>
-          <option value="jum'at">Jum'at</option>
-          <option value="sabtu">Sabtu</option>
+          <option value="today">Hari Ini</option>
+          <option value="yesterday">Kemarin</option>
+          <option value="last7">7 Hari Kemarin</option>
+          <option value="last30">Sebulan Kemarin</option>
+          <option value="all">Semua Data</option>
         </select>
         <button
           className="bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold px-4 h-10"
           style={{ minWidth: 90 }}
           onClick={() => {
-            setSearchName(searchName); // trigger filter
             setSelectedDay(selectedDay);
+            setSearchName(searchName);
           }}
         >
           Filter
         </button>
-        {(searchName || selectedDay !== "semua") && (
+        {(selectedDay !== "today" || searchName) && (
           <button
             className="ml-2 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm px-4 h-10"
             style={{ minWidth: 80 }}
-            onClick={() => { setSearchName(""); setSelectedDay("semua"); }}
+            onClick={() => { setSelectedDay("today"); setSearchName(""); }}
           >
             Reset
           </button>
