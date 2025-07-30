@@ -356,18 +356,18 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       const now = new Date().toISOString();
       const today = now.split('T')[0];
 
-      const { error } = await supabase
-        .from('attendances')
-        .update({
-          check_out: now,
-          notes: `IZIN KELUAR: ${izinReason} | Balik lagi: ${balikLagi ? 'Ya' : 'Tidak'}`,
-          status: 'IZIN',
+      // 1. Insert ke tabel permissions
+      const { error: izinError } = await supabase.from('permissions').insert({
+        user_id,
+        reason: izinReason,
+        created_at: now,
+        exit_time: now,
+        reentry_time: null,
+        date: today,
+        status: 'pending',
+      });
 
-        })
-        .eq('user_id', user_id)
-        .eq('date', today);
-
-      if (error) throw new Error('Gagal menyimpan izin pulang');
+      if (izinError) throw new Error('Gagal menyimpan izin pulang ke permissions');
 
       showToast({ type: 'info', message: `Izin keluar berhasil untuk ${name}` });
       if (onScanSuccess) {
