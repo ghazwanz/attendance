@@ -62,29 +62,40 @@ export default function PermissionPage() {
                 onClose={() => setShowEditModal(false)}
             />
 
-            {/* Header Controls */}
+            {/* Kontrol Header */}
             <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <button
-                    onClick={() => {
-                        setShowForm(!showForm);
-                        if (showForm) resetForm();
-                    }}
-                    className="bg-blue-600 text-white font-semibold px-4 py-2 rounded w-fit"
-                >
-                    {showForm ? "Tutup Form" : "Tambah Izin"}
-                </button>
+                {!showForm && (
+                    <button
+                        onClick={() => setShowForm(true)}
+                        className="bg-blue-600 text-white font-semibold px-4 py-2 rounded w-fit"
+                    >
+                        Tambah Izin
+                    </button>
+                )}
             </div>
 
-            {/* Add Form */}
+            {/* Modal Tambah Izin */}
             {showForm && (
-                <PermissionForm
-                    form={form}
-                    users={users}
-                    currentUser={currentUser}
-                    loading={loading}
-                    onSubmit={handleSubmit}
-                    onChange={handleFormChange}
-                />
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 w-full max-w-lg relative">
+                        <button
+                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white text-2xl font-bold"
+                            onClick={() => { setShowForm(false); resetForm(); }}
+                            aria-label="Tutup"
+                        >
+                            ×
+                        </button>
+                        <h2 className="text-xl font-semibold mb-4">Tambah Izin</h2>
+                        <PermissionForm
+                            form={form}
+                            users={users}
+                            currentUser={currentUser}
+                            loading={loading}
+                            onSubmit={handleSubmit}
+                            onChange={handleFormChange}
+                        />
+                    </div>
+                </div>
             )}
 
             {/* Permissions Table */}
