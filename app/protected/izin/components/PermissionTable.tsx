@@ -101,10 +101,10 @@ export default function PermissionTable({
         prev.map((item) =>
           item.id === selectedPermissionId
             ? {
-                ...item,
-                status: status as Permission["status"],
-                approved_by: currentUser?.id || null,
-              }
+              ...item,
+              status: status as Permission["status"],
+              approved_by: currentUser?.id || null,
+            }
             : item
         )
       );
@@ -181,8 +181,8 @@ export default function PermissionTable({
               <th className="px-4 py-3">Jenis</th>
               <th className="px-4 py-3">Alasan</th>
               <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Disetujui Oleh</th>
               <th className="px-4 py-3">Dibuat</th>
+              <th className="px-4 py-3">Disetujui Oleh</th>
               <th className="px-4 py-3 rounded-r-xl">Aksi</th>
             </tr>
           </thead>
@@ -212,13 +212,18 @@ export default function PermissionTable({
                 <td className="px-4 py-3">{formatDateTime(item.created_at)}</td>
                 <td className="px-4 py-3">{item.approver?.name || "-"}</td>
                 <td className="px-4 py-3 flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => onEdit(item)}
-                    disabled={loading}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
-                  >
-                    ✏️ Edit
-                  </button>
+                  {(currentUser?.role === "admin" ||
+                    (currentUser?.id === item.user_id &&
+                      item.status === "pending" &&
+                      new Date(item.created_at).toDateString() === new Date().toDateString())) && (
+                      <button
+                        onClick={() => onEdit(item)}
+                        disabled={loading}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
                   {currentUser?.role === "admin" && (
                     <>
                       <button
