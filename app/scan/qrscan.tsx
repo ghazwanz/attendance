@@ -44,6 +44,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   const [hasScanned, setHasScanned] = useState(false);
   const [izinStart, setIzinStart] = useState('');
   const [izinEnd, setIzinEnd] = useState('');
+  const [sudahIzinPulang, setSudahIzinPulang] = useState(false);
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
   const startScan = async () => {
@@ -136,7 +137,20 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                   return;
                 }
 
+                // Cek apakah user sudah izin pulang awal hari ini
+                const { data: izinPulangHariIni } = await supabase
+                  .from("permissions")
+                  .select("*")
+                  .eq("user_id", userData.id)
+                  .eq("status", "pending")
+                  .eq("date", today)
+                  .not("exit_time", "is", null)
+                  .is("reentry_time", null)
+                  .maybeSingle();
+
+                setSudahIzinPulang(!!izinPulangHariIni); // true jika sudah izin
                 setShowPulangModal(true);
+
 
               } else {
                 showToast({
