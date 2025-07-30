@@ -9,7 +9,12 @@ import { Attendance as BaseAttendance } from "@/lib/type";
 type Attendance = BaseAttendance & {
   users?: {
     name?: string;
-  };
+  },
+  user?:{
+    id?: string;
+    name?: string;
+    role?: string;
+  }
 };
 
 const formatTimestamp = (timestamp: string) => {
@@ -88,7 +93,10 @@ export default function ProtectedPage() {
 
       const { data: pending } = await supabase
         .from('permissions')
-        .select('*, users(name)')
+        .select(`
+                *,
+                user:users!permissions_user_id_fkey(id, name, role),
+                approver:users!permissions_approved_by_fkey(id, name, role)`)
         .eq('status', 'pending')
 
       setPendingIzin(pending || []);
@@ -259,32 +267,41 @@ export default function ProtectedPage() {
       </div>
 
       {pendingIzin.length > 0 && (
-  <div className="mt-6 bg-yellow-50 dark:bg-yellow-900 border border-yellow-300 dark:border-yellow-700 rounded-lg p-4">
-    <h3 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-3">
-      🕒 Izin Belum Diproses
-    </h3>
-    <ul className="space-y-2">
-      {pendingIzin.map((izin) => (
-        <li
-          key={izin.id}
-          className="flex items-center justify-between bg-white dark:bg-slate-700 px-4 py-2 rounded shadow"
-        >
-          <div>
-            <p className="font-medium text-gray-800 dark:text-white">
-              {izin.users?.name}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-300">
-              {formatTimestamp(izin.created_at)}
-            </p>
+        <div className="mt-10 w-full bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-semibold text-yellow-700 dark:text-yellow-400 mb-4 flex items-center gap-2">
+            <Clock9 className="w-5 h-5" />
+            Izin Belum Di-ACC Admin
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700 text-sm">
+              <thead className="bg-yellow-100 dark:bg-yellow-800 text-yellow-900 dark:text-yellow-100">
+                <tr>
+                  <th className="px-4 py-3 text-left font-semibold">Nama</th>
+                  <th className="px-4 py-3 text-left font-semibold">Tanggal Pengajuan</th>
+                  <th className="px-4 py-3 text-left font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                {pendingIzin.map((izin) => (
+                  <tr key={izin.id} className="hover:bg-yellow-50 dark:hover:bg-slate-700 transition">
+                    <td className="px-4 py-3 text-gray-800 dark:text-white">
+                      {izin.user?.name || 'Tidak Diketahui'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                      {formatTimestamp(izin.created_at)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-block bg-yellow-200 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
+                        Menunggu ACC
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <span className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
-            Belum Diproses
-          </span>
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
+        </div>
+      )}
 
       {showScanner && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
