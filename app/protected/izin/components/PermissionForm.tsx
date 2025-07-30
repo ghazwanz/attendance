@@ -21,6 +21,17 @@ export default function PermissionFormComponent({
     onSubmit,
     onChange
 }: PermissionFormProps) {
+    // Validation: reentry_time >= exit_time
+    let timeError = "";
+    let isTimeValid = true;
+    if (form.exit_time && form.reentry_time) {
+        const exit = new Date(form.exit_time);
+        const reentry = new Date(form.reentry_time);
+        if (reentry < exit) {
+            timeError = "Waktu Masuk Kembali harus sama atau setelah Mulai Izin.";
+            isTimeValid = false;
+        }
+    }
     const availableUsers = currentUser?.role === "admin"
         ? users
         : users.filter(user => user.id === currentUser?.id);
@@ -79,8 +90,12 @@ export default function PermissionFormComponent({
                     value={form.reentry_time}
                     onChange={onChange}
                     required
+                    min={form.exit_time || undefined}
                     className="w-full px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
                 />
+                {!isTimeValid && (
+                    <div className="text-red-500 text-xs mt-1">{timeError}</div>
+                )}
             </div>
             <div>
                 <label className="block mb-1 font-medium">Alasan</label>
@@ -97,7 +112,7 @@ export default function PermissionFormComponent({
             <button
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded w-full md:w-auto disabled:opacity-50"
-                disabled={loading}
+                disabled={loading || !isTimeValid}
             >
                 {loading ? "Menambahkan..." : "Tambah"}
             </button>
