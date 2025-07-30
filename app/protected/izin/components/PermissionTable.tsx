@@ -138,13 +138,17 @@ export default function PermissionTable({
                       >
                         🗑️ Hapus
                       </button>
-                      <button
-                        onClick={() => handleOpenStatusModal(item.id)}
-                        disabled={loading || statusLoading}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
-                      >
-                        ✅ Setujui
-                      </button>
+                      {item.status === "pending" && (
+                        <>
+                          <button
+                            onClick={() => handleOpenStatusModal(item.id)}
+                            disabled={loading || statusLoading}
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
+                          >
+                            ✅ Setujui
+                          </button>
+                        </>
+                      )}
                     </>
                   )}
                 </td>
