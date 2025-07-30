@@ -10,13 +10,13 @@ export interface Permission {
   created_at: string;
 
   // Relasi ke user yang mengajukan izin
-  users?: {
+  user?: {
     name: string;
   };
 
   // Relasi ke admin yang menyetujui izin
   approved_by?: string | null;
-  approved_by_user?: {
+  approver?: {
     name: string;
   } | null;
 }

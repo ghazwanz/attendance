@@ -39,7 +39,7 @@ export default function PermissionTable({
 
   const filteredData = [...localData]
     .filter((item) => {
-      if (searchName && !(item.users?.name || "").toLowerCase().includes(searchName.toLowerCase())) {
+      if (searchName && !(item.user?.name || "").toLowerCase().includes(searchName.toLowerCase())) {
         return false;
       }
       // Filter hari
@@ -193,7 +193,7 @@ export default function PermissionTable({
                 className="rounded-xl shadow-sm bg-white dark:bg-slate-800 text-black dark:text-white transition-colors"
               >
                 <td className="px-4 py-3">{idx + 1}</td>
-                <td className="px-4 py-3 rounded-l-xl">{item.users?.name || "-"}</td>
+                <td className="px-4 py-3 rounded-l-xl">{item.user?.name || "-"}</td>
                 <td className="px-4 py-3">{item.exit_time ? formatDateTime(item.exit_time) : "-"}</td>
                 <td className="px-4 py-3">{item.reentry_time ? formatDateTime(item.reentry_time) : "-"}</td>
                 <td className="px-4 py-3">lapet</td>
@@ -210,7 +210,7 @@ export default function PermissionTable({
                   </span>
                 </td>
                 <td className="px-4 py-3">{formatDateTime(item.created_at)}</td>
-                <td className="px-4 py-3">{item.approved_by_user?.name || "-"}</td>
+                <td className="px-4 py-3">{item.approver?.name || "-"}</td>
                 <td className="px-4 py-3 flex gap-2 flex-wrap">
                   <button
                     onClick={() => onEdit(item)}
