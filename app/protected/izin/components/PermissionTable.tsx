@@ -151,7 +151,10 @@ export default function PermissionTable({
           <button
             className="ml-2 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm px-4 h-10"
             style={{ minWidth: 80 }}
-            onClick={() => { setSelectedDay("today"); setSearchName(""); }}
+            onClick={() => {
+              setSearchName("");
+              setSelectedDay("semua");
+            }}
           >
             Reset
           </button>
