@@ -73,14 +73,6 @@ export default function PermissionPage() {
                 >
                     {showForm ? "Tutup Form" : "Tambah Izin"}
                 </button>
-
-                <input
-                    type="text"
-                    placeholder="🔍 Cari nama, jenis, atau alasan..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="mb-4 px-3 py-2 rounded border border-black bg-white/10 text-black dark:text-white"
-                />
             </div>
 
             {/* Add Form */}
