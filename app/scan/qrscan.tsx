@@ -369,19 +369,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
       if (izinError) throw new Error('Gagal menyimpan izin pulang ke permissions');
 
-      // 2. Update tabel attendances
-      const { error: updateError } = await supabase
-        .from('attendances')
-        .update({
-          check_out: now,
-          notes: `IZIN KELUAR: ${izinReason} | Balik lagi: ${balikLagi ? 'Ya' : 'Tidak'}`,
-          status: 'IZIN',
-        })
-        .eq('user_id', user_id)
-        .eq('date', today);
-
-      if (updateError) throw new Error('Gagal menyimpan izin pulang ke attendances');
-
       showToast({ type: 'info', message: `Izin keluar berhasil untuk ${name}` });
       if (onScanSuccess) {
         onScanSuccess();
