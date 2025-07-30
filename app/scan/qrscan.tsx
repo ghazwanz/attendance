@@ -364,7 +364,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
         exit_time: now,
         reentry_time: null,
         date: today,
-        status: 'izin_pulang',
+        status: 'pending',
       });
 
       if (izinError) throw new Error('Gagal menyimpan izin pulang ke permissions');
