@@ -117,7 +117,27 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               ) {
                 setShowIzinToHadirModal(true);
               } else if (attendanceToday.check_in && !attendanceToday.check_out) {
+                // Cek apakah user sudah izin pulang awal
+                const { data: izinPulang } = await supabase
+                  .from("permissions")
+                  .select("*")
+                  .eq("user_id", userData.id)
+                  .eq("status", "pending")
+                  .eq("date", today)
+                  .not("exit_time", "is", null)
+                  .is("reentry_time", null)
+                  .maybeSingle();
+
+                if (izinPulang) {
+                  showToast({
+                    type: "error",
+                    message: "Anda sudah izin pulang awal tadi.",
+                  });
+                  return;
+                }
+
                 setShowPulangModal(true);
+
               } else {
                 showToast({
                   type: "info",
