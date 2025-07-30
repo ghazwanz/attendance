@@ -118,7 +118,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               ) {
                 setShowIzinToHadirModal(true);
               } else if (attendanceToday.check_in && !attendanceToday.check_out) {
-                // Cek apakah user sudah izin pulang awal
+                // Cek apakah user sudah izin pulang hari ini
                 const { data: izinPulang } = await supabase
                   .from("permissions")
                   .select("*")
@@ -129,28 +129,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                   .is("reentry_time", null)
                   .maybeSingle();
 
-                if (izinPulang) {
-                  showToast({
-                    type: "error",
-                    message: "Anda sudah izin pulang awal tadi.",
-                  });
-                  return;
-                }
-
-                // Cek apakah user sudah izin pulang awal hari ini
-                const { data: izinPulangHariIni } = await supabase
-                  .from("permissions")
-                  .select("*")
-                  .eq("user_id", userData.id)
-                  .eq("status", "pending")
-                  .eq("date", today)
-                  .not("exit_time", "is", null)
-                  .is("reentry_time", null)
-                  .maybeSingle();
-
-                setSudahIzinPulang(!!izinPulangHariIni); // true jika sudah izin
+                setSudahIzinPulang(!!izinPulang); // true jika sudah ada izin pulang
                 setShowPulangModal(true);
-
 
               } else {
                 showToast({
@@ -542,18 +522,35 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
             <h2 className="text-lg font-semibold mb-4 text-center">Sudah Hadir</h2>
             <div className="flex flex-col gap-3">
-              <button onClick={handlePulang} className="w-full px-4 py-2 bg-blue-600 text-white rounded-md">🏁 Pulang</button>
+              <button
+                onClick={handlePulang}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md"
+              >
+                🏁 Pulang
+              </button>
+
               <button
                 onClick={() => {
-                  setShowPulangModal(false);
-                  setIsIzinPulang(true);
-                  setShowIzinForm(true);
+                  if (!sudahIzinPulang) {
+                    setShowPulangModal(false);
+                    setIsIzinPulang(true);
+                    setShowIzinForm(true);
+                  }
                 }}
-                className="w-full px-4 py-2 bg-orange-500 text-white rounded-md"
+                disabled={sudahIzinPulang}
+                className={`w-full px-4 py-2 text-white rounded-md ${sudahIzinPulang ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500'
+                  }`}
               >
                 🚪 Izin Pulang Awal
               </button>
+
+              {sudahIzinPulang && (
+                <p className="text-xs text-center text-red-500 mt-1">
+                  Anda sudah izin pulang awal hari ini.
+                </p>
+              )}
             </div>
+
           </div>
         </div>
       )}
