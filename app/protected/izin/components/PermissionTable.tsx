@@ -24,7 +24,8 @@ export default function PermissionTable({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedPermissionId, setSelectedPermissionId] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
-  const [selectedDay, setSelectedDay] = useState("today");
+  // State untuk filter
+  const [selectedDay, setSelectedDay] = useState("all");
   const [searchName, setSearchName] = useState("");
 
   useEffect(() => {
@@ -140,23 +141,13 @@ export default function PermissionTable({
           className="border rounded text-sm px-4 py-2 h-10"
           style={{ minWidth: 170 }}
         >
+          <option value="all">Semua Data</option>
           <option value="today">Hari Ini</option>
           <option value="yesterday">Kemarin</option>
           <option value="last7">7 Hari Kemarin</option>
           <option value="last30">Sebulan Kemarin</option>
-          <option value="all">Semua Data</option>
         </select>
-        <button
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold px-4 h-10"
-          style={{ minWidth: 90 }}
-          onClick={() => {
-            setSelectedDay(selectedDay);
-            setSearchName(searchName);
-          }}
-        >
-          Filter
-        </button>
-        {(selectedDay !== "today" || searchName) && (
+        {(selectedDay !== "all" || searchName) && (
           <button
             className="ml-2 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm px-4 h-10"
             style={{ minWidth: 80 }}
