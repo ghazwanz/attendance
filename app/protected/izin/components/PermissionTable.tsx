@@ -13,7 +13,6 @@ interface PermissionTableProps {
   loading: boolean;
 }
 
-
 export default function PermissionTable({
   data,
   currentUser,
@@ -25,7 +24,6 @@ export default function PermissionTable({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedPermissionId, setSelectedPermissionId] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
-  // State untuk filter
   const [searchName, setSearchName] = useState("");
   const [selectedDay, setSelectedDay] = useState("semua");
 
@@ -33,21 +31,17 @@ export default function PermissionTable({
     setLocalData(data);
   }, [data]);
 
-  // Fungsi untuk mendapatkan nama hari dari tanggal
   const getDayName = (dateString: string) => {
     const days = ["minggu", "senin", "selasa", "rabu", "kamis", "jum'at", "sabtu"];
     const date = new Date(dateString);
     return days[date.getDay()];
   };
 
-  // Filter data berdasarkan nama dan hari
   const filteredData = [...localData]
     .filter((item) => {
-      // Filter nama
       if (searchName && !(item.users?.name || "").toLowerCase().includes(searchName.toLowerCase())) {
         return false;
       }
-      // Filter hari
       if (selectedDay !== "semua") {
         const dayName = getDayName(item.created_at);
         if (dayName !== selectedDay) return false;
@@ -70,7 +64,6 @@ export default function PermissionTable({
 
   const handleSelectStatus = async (status: string) => {
     if (!selectedPermissionId) return;
-
     const selectedPermission = localData.find((item) => item.id === selectedPermissionId);
     if (!selectedPermission) return;
 
@@ -79,14 +72,18 @@ export default function PermissionTable({
     const success = await statusActions.updatePermissionStatus(
       selectedPermissionId,
       status,
-      selectedPermission,
+      selectedPermission
     );
 
     if (success) {
       setLocalData((prev) =>
         prev.map((item) =>
           item.id === selectedPermissionId
-            ? { ...item, status: status as Permission["status"] }
+            ? {
+                ...item,
+                status: status as Permission["status"],
+                approved_by: currentUser?.id || null,
+              }
             : item
         )
       );
@@ -106,19 +103,19 @@ export default function PermissionTable({
 
   return (
     <div>
-      {/* Filter Bar tanpa judul */}
+      {/* Filter */}
       <div className="flex flex-wrap gap-2 mb-4 items-end">
         <input
           type="text"
           value={searchName}
-          onChange={e => setSearchName(e.target.value)}
+          onChange={(e) => setSearchName(e.target.value)}
           placeholder="Cari nama..."
           className="border rounded text-sm px-4 py-2 h-10"
           style={{ minWidth: 150 }}
         />
         <select
           value={selectedDay}
-          onChange={e => setSelectedDay(e.target.value)}
+          onChange={(e) => setSelectedDay(e.target.value)}
           className="border rounded text-sm px-4 py-2 h-10"
           style={{ minWidth: 130 }}
         >
@@ -135,7 +132,7 @@ export default function PermissionTable({
           className="bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-semibold px-4 h-10"
           style={{ minWidth: 90 }}
           onClick={() => {
-            setSearchName(searchName); // trigger filter
+            setSearchName(searchName);
             setSelectedDay(selectedDay);
           }}
         >
@@ -145,12 +142,16 @@ export default function PermissionTable({
           <button
             className="ml-2 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm px-4 h-10"
             style={{ minWidth: 80 }}
-            onClick={() => { setSearchName(""); setSelectedDay("semua"); }}
+            onClick={() => {
+              setSearchName("");
+              setSelectedDay("semua");
+            }}
           >
             Reset
           </button>
         )}
       </div>
+
       <div className="overflow-x-auto w-full p-2 bg-gray-100 dark:bg-[#0F172A] transition-colors">
         <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
@@ -162,26 +163,29 @@ export default function PermissionTable({
               <th className="px-4 py-3">Jenis</th>
               <th className="px-4 py-3">Alasan</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Disetujui Oleh</th>
               <th className="px-4 py-3">Dibuat</th>
               <th className="px-4 py-3 rounded-r-xl">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {(() => {
-              // Group data: hari ini dan hari-hari sebelumnya
               const today = new Date();
-              const pad = (n: number) => n.toString().padStart(2, '0');
+              const pad = (n: number) => n.toString().padStart(2, "0");
               const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
               let renderedToday = false;
               let renderedPrev = false;
               let rowIdx = 0;
-              return filteredData.map((item, idx) => {
-                const createdDate = item.created_at.split('T')[0];
+
+              return filteredData.map((item) => {
+                const createdDate = item.created_at.split("T")[0];
                 let sectionLabel = null;
                 if (createdDate === todayStr && !renderedToday) {
                   sectionLabel = (
                     <tr key="section-today">
-                      <td colSpan={9} className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 font-bold text-center py-2">Hari Ini</td>
+                      <td colSpan={10} className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 font-bold text-center py-2">
+                        Hari Ini
+                      </td>
                     </tr>
                   );
                   renderedToday = true;
@@ -189,7 +193,9 @@ export default function PermissionTable({
                 } else if (createdDate !== todayStr && !renderedPrev) {
                   sectionLabel = (
                     <tr key="section-prev">
-                      <td colSpan={9} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold text-center py-2">Hari Sebelumnya</td>
+                      <td colSpan={10} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold text-center py-2">
+                        Hari Sebelumnya
+                      </td>
                     </tr>
                   );
                   renderedPrev = true;
@@ -197,12 +203,11 @@ export default function PermissionTable({
                 } else {
                   rowIdx++;
                 }
+
                 return (
                   <React.Fragment key={item.id}>
                     {sectionLabel}
-                    <tr
-                      className="rounded-xl shadow-sm bg-white dark:bg-slate-800 text-black dark:text-white transition-colors"
-                    >
+                    <tr className="rounded-xl shadow-sm bg-white dark:bg-slate-800 text-black dark:text-white transition-colors">
                       <td className="px-4 py-3">{rowIdx}</td>
                       <td className="px-4 py-3 rounded-l-xl">{item.users?.name || "-"}</td>
                       <td className="px-4 py-3">{item.exit_time ? formatDateTime(item.exit_time) : "-"}</td>
@@ -214,12 +219,12 @@ export default function PermissionTable({
                           className={`px-3 py-1 rounded-full text-xs font-semibold capitalize
                             ${item.status === "pending" ? "bg-yellow-100 text-yellow-800" : ""}
                             ${item.status === "diterima" ? "bg-green-100 text-green-800" : ""}
-                            ${item.status === "ditolak" ? "bg-red-100 text-red-800" : ""}
-                          `}
+                            ${item.status === "ditolak" ? "bg-red-100 text-red-800" : ""}`}
                         >
                           {item.status || "pending"}
                         </span>
                       </td>
+                      <td className="px-4 py-3">{item.approved_by_user?.name || "-"}</td>
                       <td className="px-4 py-3">{formatDateTime(item.created_at)}</td>
                       <td className="px-4 py-3 flex gap-2 flex-wrap">
                         <button
@@ -239,17 +244,15 @@ export default function PermissionTable({
                               🗑️ Hapus
                             </button>
                             {item.status === "pending" && (
-                        <>
-                          <button
-                                  onClick={() => handleOpenStatusModal(item.id)}
-                                  disabled={loading || statusLoading}
-                                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
-                                >
-                                  ✅ Setujui
-                                </button>
-                              </>
-                      )}
-                    </>
+                              <button
+                                onClick={() => handleOpenStatusModal(item.id)}
+                                disabled={loading || statusLoading}
+                                className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
+                              >
+                                ✅ Setujui
+                              </button>
+                            )}
+                          </>
                         )}
                       </td>
                     </tr>
@@ -260,7 +263,7 @@ export default function PermissionTable({
 
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan={9} className="text-center text-gray-400 py-4">
+                <td colSpan={10} className="text-center text-gray-400 py-4">
                   Tidak ada data izin.
                 </td>
               </tr>
