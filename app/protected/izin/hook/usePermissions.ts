@@ -84,8 +84,18 @@ export function usePermissions() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
 
+        // Backend-side validation: exit_time must be <= reentry_time
+        if (form.exit_time && form.reentry_time) {
+            const exit = new Date(form.exit_time);
+            const reentry = new Date(form.reentry_time);
+            if (reentry < exit) {
+                alert("Waktu Masuk Kembali harus sama atau setelah Mulai Izin.");
+                return;
+            }
+        }
+
+        setLoading(true);
         try {
             if (editingId) {
                 await permissionActions.updatePermission(editingId, form);
