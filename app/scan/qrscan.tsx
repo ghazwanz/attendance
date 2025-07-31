@@ -38,6 +38,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   const [showIzinForm, setShowIzinForm] = useState(false);
   const [showPulangModal, setShowPulangModal] = useState(false);
   const [showIzinToHadirModal, setShowIzinToHadirModal] = useState(false);
+  const [showIzinReturnModal, setShowIzinReturnModal] = useState(false);
   const [izinReason, setIzinReason] = useState('');
   const [balikLagi, setBalikLagi] = useState(false);
   const [isIzinPulang, setIsIzinPulang] = useState(false);
@@ -132,6 +133,13 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                   .maybeSingle();
 
                 setSudahIzinPulang(!!izinPulang);
+                if (izinPulang && izinPulang.exit_time && !izinPulang.reentry_time) {
+                  // User keluar tapi belum kembali
+                  setShowPulangModal(false);
+                  setShowIzinReturnModal(true); // modal baru yang akan kamu buat
+                  return;
+                }
+
                 setShowPulangModal(true);
               } else {
                 showToast({
@@ -628,6 +636,53 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               >
                 Simpan
               </button>
+              {showIzinReturnModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+                    <h2 className="text-lg font-semibold mb-4 text-center">Konfirmasi Kembali</h2>
+                    <p className="text-sm text-center mb-4">
+                      Kamu sebelumnya izin pulang awal. Apakah kamu sudah kembali ke kantor sekarang?
+                    </p>
+                    <div className="flex justify-center gap-4">
+                      <button
+                        onClick={async () => {
+                          setShowIzinReturnModal(false);
+                          const now = new Date().toISOString();
+                          const today = new Date().toISOString().split("T")[0];
+
+                          if (scanUserRef.current) {
+                            const { error } = await supabase
+                              .from("permissions")
+                              .update({ reentry_time: now })
+                              .eq("user_id", scanUserRef.current.user_id)
+                              .eq("date", today)
+                              .eq("status", "pending")
+                              .not("exit_time", "is", null)
+                              .is("reentry_time", null);
+
+                            if (error) {
+                              showToast({ type: "error", message: "Gagal mencatat kembali" });
+                            } else {
+                              showToast({ type: "success", message: "Kamu berhasil kembali ke kantor" });
+                              if (onScanSuccess) onScanSuccess();
+                            }
+                          }
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md"
+                      >
+                        ✅ Sudah Kembali
+                      </button>
+                      <button
+                        onClick={() => setShowIzinReturnModal(false)}
+                        className="px-4 py-2 bg-gray-400 text-white rounded-md"
+                      >
+                        ❌ Batal
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </div>
