@@ -4,6 +4,7 @@
 import React from "react";
 import { usePermissions } from "./hook/usePermissions";
 import PermissionForm from "./components/PermissionForm";
+import ErrorNotification from "./components/ErrorNotification";
 import PermissionTable from "./components/PermissionTable";
 import EditPermissionModal from "./components/EditPermissionModal";
 import DeleteConfirmModal from "./components/DeleteModal";
@@ -30,10 +31,13 @@ export default function PermissionPage() {
         setShowForm,
         setShowEditModal,
         setShowConfirmModal,
+        errorMessage,
+        setErrorMessage,
     } = usePermissions();
 
     return (
         <div className="w-full max-w-screen-xl mx-auto px-6 py-6 border border-white/20 rounded-xl shadow-lg text-black dark:text-white">
+            <ErrorNotification message={errorMessage} onClose={() => setErrorMessage("")} />
             <h1 className="text-3xl font-bold mb-4">📋 Tabel Izin</h1>
 
             {successMessage && (
@@ -64,14 +68,14 @@ export default function PermissionPage() {
 
             {/* Kontrol Header */}
             <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                {!showForm && (
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="bg-blue-600 text-white font-semibold px-4 py-2 rounded w-fit"
-                    >
-                        Tambah Izin
-                    </button>
-                )}
+                <button
+                    onClick={() => setShowForm(true)}
+                    className="bg-blue-600 text-white font-semibold px-4 py-2 rounded w-fit"
+                    disabled={showForm}
+                    style={showForm ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                >
+                    Tambah Izin
+                </button>
             </div>
 
             {/* Modal Tambah Izin */}
