@@ -50,6 +50,10 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   const startScan = async () => {
     if (!scannerRef.current || isScanning) return;
 
+    setIsScanning(true); // ⛔ Lock scanning SEBELUM proses apapun dimulai
+    scannerRef.current.innerHTML = ''; // Bersihkan elemen scanner
+    await stopScan(); // Pastikan scanner lama dihentikan
+
     const html5QrCode = new Html5Qrcode(scannerRef.current.id);
     html5QrCodeRef.current = html5QrCode;
 
@@ -67,7 +71,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           if (hasScanned) return;
           setHasScanned(true);
 
-
           toast.dismiss();
           toast.loading("⏳ Memproses scan...", { id: "scan-process" });
 
@@ -79,7 +82,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               .select("*")
               .eq("id", data.user_id)
               .single();
-            console.log("User data:", userData, error);
+
             if (error || !userData) throw new Error("User tidak ditemukan");
 
             scanUserRef.current = {
@@ -87,9 +90,9 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               name: userData.name,
             };
 
-            await stopScan()
+            await stopScan();
 
-            const today = new Date().toISOString().split("T")[0]; // hasil: "2025-07-26"
+            const today = new Date().toISOString().split("T")[0];
 
             const { data: attendanceToday } = await supabase
               .from("attendances")
@@ -98,7 +101,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               .eq("date", today)
               .limit(1)
               .single();
-            console.log("Attendance today:", attendanceToday);
+
             toast.dismiss("scan-process");
 
             const { data: izinHariIni } = await supabase
@@ -106,9 +109,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               .select("*")
               .eq("user_id", userData.id)
               .eq("status", "pending")
-              .gte("date", today) // hanya izin mulai hari ini atau ke depan
+              .gte("date", today)
               .maybeSingle();
-
 
             if (attendanceToday) {
               if (
@@ -118,7 +120,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               ) {
                 setShowIzinToHadirModal(true);
               } else if (attendanceToday.check_in && !attendanceToday.check_out) {
-                // Cek apakah user sudah izin pulang hari ini
                 const { data: izinPulang } = await supabase
                   .from("permissions")
                   .select("*")
@@ -129,9 +130,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                   .is("reentry_time", null)
                   .maybeSingle();
 
-                setSudahIzinPulang(!!izinPulang); // true jika sudah ada izin pulang
+                setSudahIzinPulang(!!izinPulang);
                 setShowPulangModal(true);
-
               } else {
                 showToast({
                   type: "info",
@@ -145,10 +145,9 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 setShowChoiceModal(true);
               }
             }
-
           } catch (err) {
             toast.dismiss("scan-process");
-            setHasScanned(false); // allow re-scan
+            setHasScanned(false);
             showToast({
               type: "error",
               message: (err as Error).message,
@@ -165,6 +164,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       showToast({ type: "error", message: "Gagal memulai kamera" });
     }
   };
+
 
   const stopScan = async () => {
     if (html5QrCodeRef.current) {
@@ -416,7 +416,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           <option value="user">Depan</option>
         </select>
       </div>
-
       {/* Scanner Box */}
       <div
         id="reader"
@@ -426,7 +425,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       >
         <p className="text-gray-600 dark:text-gray-300">Izinkan kamera dan arahkan QR</p>
       </div>
-
       {/* Tombol */}
       <div className="flex justify-center mt-4 space-x-4">
         <button onClick={startScan} disabled={isScanning} className="px-4 py-2 bg-green-600 text-white rounded-lg">
@@ -436,7 +434,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           Stop
         </button>
       </div>
-
       {/* Modal Pilih Hadir / Izin */}
       {showChoiceModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
@@ -449,7 +446,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           </div>
         </div>
       )}
-
       {/* Modal Ubah dari Izin ke Hadir */}
       {showIzinToHadirModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
@@ -514,8 +510,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           </div>
         </div>
       )}
-
-
       {/* Modal Pulang / Izin Pulang */}
       {showPulangModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
