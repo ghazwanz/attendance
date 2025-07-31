@@ -22,9 +22,12 @@ export type Attendance = {
     date: string; // ISO 8601 format, e.g., "2023-10-01"
     check_in: string; // ISO 8601 format, e.g., "2023-10-01T08:00:00Z"
     check_out: string; // ISO 8601 format, e.g., "2023-10-01T08:00:00Z"
-    status: "HADIR" | "TERLAMBAT" | "IZIN" | "SAKIT" | "TANPA KETERANGAN";
-    note?: string; // Optional field for additional notes
+    status: "HADIR" | "TERLAMBAT" | "IZIN" | "SAKIT" | "ALPA";
+    notes?: string; // Optional field for additional notes
     created_at: string; // ISO 8601 format
+    users:{
+        name: string; // Reference to User
+    }
 }
 
 export type Permission = {
