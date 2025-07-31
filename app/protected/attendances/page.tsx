@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import CreateForm from "./CreateForm";
 import UpdateForm from "./UpdateForm";
+import { Attendance } from "@/lib/type";
 
 export default function Page() {
   // State untuk daftar user
@@ -21,7 +22,7 @@ export default function Page() {
   const [addLoading, setAddLoading] = useState(false);
   const supabase = createClient();
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Attendance[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selected, setSelected] = useState<any | null>(null);
   const [checkoutItem, setCheckoutItem] = useState<any | null>(null);
@@ -483,7 +484,7 @@ export default function Page() {
                           </>
                         ) : (
                           <>
-                            {!item.check_out && userRole !== "admin" && (
+                            {!item.check_out && item.status !== "alpa".toUpperCase() && userRole !== "admin" && (
                               <button
                                 onClick={() => {
                                   setCheckoutItem(item);
