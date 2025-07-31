@@ -19,7 +19,9 @@ export default function Page() {
     notes: "",
     status: "HADIR",
   });
+
   const [addLoading, setAddLoading] = useState(false);
+  const [errorToast, setErrorToast] = useState<string | null>(null); // ✅ Tambahkan ini  
   const supabase = createClient();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [data, setData] = useState<Attendance[]>([]);
@@ -136,6 +138,13 @@ export default function Page() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (errorToast) {
+      const timeout = setTimeout(() => setErrorToast(null), 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [errorToast]);  
+
   const showSuccessToast = (message: string) => {
     setSuccessMessage(message);
     setTimeout(() => setSuccessMessage(null), 3000);
@@ -173,7 +182,6 @@ export default function Page() {
     // Semua hari
     return nameMatch;
   });
-
 
   return (
     <div className="min-h-screen py-10 bg-white dark:bg-slate-900 text-black dark:text-white transition-colors">
@@ -243,7 +251,6 @@ export default function Page() {
           </div>
         </div>
 
-
         {/* Tabel Kehadiran */}
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
           <h2 className="text-xl font-semibold mb-4">📋 Tabel Kehadiran</h2>
@@ -258,32 +265,65 @@ export default function Page() {
                   ✖
                 </button>
                 <h2 className="text-lg font-bold mb-4 text-center">Tambah Absen</h2>
+                {errorToast && (
+                  <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
+                    <div className="bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
+                      {errorToast}
+                    </div>
+                  </div>
+                )}
                 <form
                   onSubmit={async (e) => {
                     e.preventDefault();
                     setAddLoading(true);
-                    // Validasi
+
+                    // Validasi wajib isi
                     if (!addForm.user_id || !addForm.date) {
                       alert("Nama dan Tanggal wajib diisi!");
                       setAddLoading(false);
                       return;
                     }
+
+                    // Validasi waktu check-in dan check-out
+                    if (addForm.check_in && addForm.check_out) {
+                      const checkIn = new Date(`${addForm.date}T${addForm.check_in}`);
+                      const checkOut = new Date(`${addForm.date}T${addForm.check_out}`);
+                      if (checkIn >= checkOut) {
+                        setErrorToast("❌ Jam Check-in tidak boleh sama atau lebih dari Check-out!");
+                        setAddLoading(false);
+                        return;
+                      }
+                    }
+
                     const { error } = await supabase.from("attendances").insert({
                       user_id: addForm.user_id,
                       date: addForm.date,
-                      check_in: addForm.check_in ? new Date(`${addForm.date}T${addForm.check_in}`).toISOString() : null,
-                      check_out: addForm.check_out ? new Date(`${addForm.date}T${addForm.check_out}`).toISOString() : null,
+                      check_in: addForm.check_in
+                        ? new Date(`${addForm.date}T${addForm.check_in}`).toISOString()
+                        : null,
+                      check_out: addForm.check_out
+                        ? new Date(`${addForm.date}T${addForm.check_out}`).toISOString()
+                        : null,
                       notes: addForm.notes,
                       status: addForm.status,
                     });
+
                     if (!error) {
                       setShowAddModal(false);
-                      setAddForm({ user_id: "", date: "", check_in: "", check_out: "", notes: "", status: "HADIR" });
+                      setAddForm({
+                        user_id: "",
+                        date: "",
+                        check_in: "",
+                        check_out: "",
+                        notes: "",
+                        status: "HADIR",
+                      });
                       fetchData();
                       showSuccessToast("Data absen berhasil ditambahkan!");
                     } else {
                       alert("Gagal menambah data absen!");
                     }
+
                     setAddLoading(false);
                   }}
                   className="space-y-4"
@@ -305,6 +345,7 @@ export default function Page() {
                       ))}
                     </select>
                   </div>
+
                   {/* Tanggal */}
                   <div>
                     <label className="block text-sm font-medium mb-1">Tanggal</label>
@@ -316,6 +357,7 @@ export default function Page() {
                       required
                     />
                   </div>
+
                   {/* Check-in */}
                   <div>
                     <label className="block text-sm font-medium mb-1">Check-in</label>
@@ -326,6 +368,7 @@ export default function Page() {
                       onChange={(e) => setAddForm({ ...addForm, check_in: e.target.value })}
                     />
                   </div>
+
                   {/* Check-out */}
                   <div>
                     <label className="block text-sm font-medium mb-1">Check-out</label>
@@ -336,6 +379,7 @@ export default function Page() {
                       onChange={(e) => setAddForm({ ...addForm, check_out: e.target.value })}
                     />
                   </div>
+
                   {/* Keterangan */}
                   <div>
                     <label className="block text-sm font-medium mb-1">Keterangan</label>
@@ -346,6 +390,7 @@ export default function Page() {
                       onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
                     />
                   </div>
+
                   {/* Status */}
                   <div>
                     <label className="block text-sm font-medium mb-1">Status</label>
@@ -359,6 +404,7 @@ export default function Page() {
                       <option value="TANPA KETERANGAN">TANPA KETERANGAN</option>
                     </select>
                   </div>
+
                   <div className="flex justify-end gap-2 mt-4">
                     <button
                       type="button"
