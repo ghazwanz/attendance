@@ -109,8 +109,9 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               .select("*")
               .eq("user_id", userData.id)
               .eq("status", "pending")
-              .gte("date", today)
+              .eq("date", today) // ✅ Hanya ambil izin untuk hari ini
               .maybeSingle();
+
 
             if (attendanceToday) {
               if (
