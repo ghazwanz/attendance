@@ -3,7 +3,54 @@
 import React, { useEffect, useState } from "react";
 import { Permission } from "../lib/types";
 import { statusActions } from "../action/status-actions";
-import StatusModal from "./StatusModal";
+
+interface StatusModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectStatus: (status: string) => void;
+  loading: boolean;
+}
+
+function StatusModal({ isOpen, onClose, onSelectStatus, loading }: StatusModalProps) {
+  const [selectedStatus, setSelectedStatus] = useState("diterima");
+
+  useEffect(() => {
+    if (isOpen) setSelectedStatus("diterima");
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg max-w-sm w-full relative">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+        >
+          ✖
+        </button>
+        <h3 className="text-lg font-semibold mb-4 text-center">Pilih Status Izin</h3>
+        <select
+          onChange={(e) => setSelectedStatus(e.target.value)}
+          value={selectedStatus}
+          className="border rounded px-3 py-2 w-full dark:bg-slate-700 dark:text-white"
+        >
+          <option value="diterima">Diterima</option>
+          <option value="ditolak">Ditolak</option>
+        </select>
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={() => onSelectStatus(selectedStatus)}
+            disabled={loading}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
+          >
+            {loading ? "Menyimpan..." : "Simpan"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface PermissionTableProps {
   data: Permission[];
@@ -24,7 +71,6 @@ export default function PermissionTable({
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [selectedPermissionId, setSelectedPermissionId] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(false);
-  // State untuk filter
   const [selectedDay, setSelectedDay] = useState("all");
   const [searchName, setSearchName] = useState("");
 
@@ -32,50 +78,34 @@ export default function PermissionTable({
     setLocalData(data);
   }, [data]);
 
-  const getDayName = (dateString: string) => {
-    const days = ["minggu", "senin", "selasa", "rabu", "kamis", "jum'at", "sabtu"];
-    const date = new Date(dateString);
-    return days[date.getDay()];
-  };
-
   const filteredData = [...localData]
     .filter((item) => {
       if (searchName && !(item.user?.name || "").toLowerCase().includes(searchName.toLowerCase())) {
         return false;
       }
-      // Filter hari
+      const created = new Date(item.created_at);
+      const today = new Date();
       if (selectedDay === "today") {
-        const today = new Date();
-        const created = new Date(item.created_at);
         return created.toDateString() === today.toDateString();
       } else if (selectedDay === "yesterday") {
-        const today = new Date();
         const yesterday = new Date(today);
         yesterday.setDate(today.getDate() - 1);
-        const created = new Date(item.created_at);
         return created.toDateString() === yesterday.toDateString();
       } else if (selectedDay === "last7") {
-        const today = new Date();
         const sevenDaysAgo = new Date(today);
         sevenDaysAgo.setDate(today.getDate() - 7);
-        const created = new Date(item.created_at);
         return created >= sevenDaysAgo && created <= today;
       } else if (selectedDay === "last30") {
-        const today = new Date();
         const thirtyDaysAgo = new Date(today);
         thirtyDaysAgo.setDate(today.getDate() - 30);
-        const created = new Date(item.created_at);
         return created >= thirtyDaysAgo && created <= today;
       }
-      // "all"
       return true;
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("id-ID", {
-      dateStyle: "short",
-    });
+    return new Date(dateString).toLocaleString("id-ID", { dateStyle: "short" });
   };
 
   const handleOpenStatusModal = (id: string) => {
@@ -124,7 +154,6 @@ export default function PermissionTable({
 
   return (
     <div>
-      {/* Filter */}
       <div className="flex flex-wrap gap-2 mb-4 items-end">
         <input
           type="text"
@@ -149,10 +178,9 @@ export default function PermissionTable({
         {(selectedDay !== "all" || searchName) && (
           <button
             className="ml-2 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm px-4 h-10"
-            style={{ minWidth: 80 }}
             onClick={() => {
               setSearchName("");
-              setSelectedDay("semua");
+              setSelectedDay("all");
             }}
           >
             Reset
@@ -160,7 +188,7 @@ export default function PermissionTable({
         )}
       </div>
 
-      <div className="overflow-x-auto w-full p-2 bg-gray-100 dark:bg-[#0F172A] transition-colors">
+      <div className="overflow-x-auto w-full p-2 bg-gray-100 dark:bg-[#0F172A]">
         <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
             <tr className="bg-blue-600 text-white uppercase tracking-wider">
@@ -178,10 +206,7 @@ export default function PermissionTable({
           </thead>
           <tbody>
             {filteredData.map((item, idx) => (
-              <tr
-                key={item.id}
-                className="rounded-xl shadow-sm bg-white dark:bg-slate-800 text-black dark:text-white transition-colors"
-              >
+              <tr key={item.id} className="rounded-xl shadow-sm bg-white dark:bg-slate-800">
                 <td className="px-4 py-3">{idx + 1}</td>
                 <td className="px-4 py-3 rounded-l-xl">{item.user?.name || "-"}</td>
                 <td className="px-4 py-3">{item.exit_time ? formatDateTime(item.exit_time) : "-"}</td>
@@ -189,55 +214,40 @@ export default function PermissionTable({
                 <td className="px-4 py-3">lapet</td>
                 <td className="px-4 py-3">{item.reason || "-"}</td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold capitalize
-                      ${item.status === "pending" ? "bg-yellow-100 text-yellow-800" : ""}
-                      ${item.status === "diterima" ? "bg-green-100 text-green-800" : ""}
-                      ${item.status === "ditolak" ? "bg-red-100 text-red-800" : ""}
-                    `}
-                  >
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${item.status === "pending" ? "bg-yellow-100 text-yellow-800" : item.status === "diterima" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
                     {item.status || "pending"}
                   </span>
                 </td>
                 <td className="px-4 py-3">{formatDateTime(item.created_at)}</td>
                 <td className="px-4 py-3">{item.approver?.name || "-"}</td>
-                <td className="px-4 py-3 flex gap-2 flex-wrap">
+                <td className="px-4 py-3 flex gap-2 flex-nowrap">
                   {(currentUser?.role === "admin" ||
                     (currentUser?.id === item.user_id &&
                       item.status === "pending" &&
                       new Date(item.created_at).toDateString() === new Date().toDateString())) && (
-                      <button
-                        onClick={() => onEdit(item)}
-                        disabled={loading}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
-                      >
-                        ✏️ Edit
-                      </button>
-                    )}
-                  {currentUser?.role === "admin" && (
-                    <>
-                      <button
-                        onClick={() => onDelete(item.id)}
-                        disabled={loading}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
-                      >
-                        🗑️ Hapus
-                      </button>
-                      {item.status === "pending" && (
+                      <>
                         <button
-                          onClick={() => handleOpenStatusModal(item.id)}
-                          disabled={loading || statusLoading}
-                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs disabled:opacity-50"
+                          onClick={() => onEdit(item)}
+                          disabled={loading}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs"
                         >
-                          ✅ Setujui
+                          ✏️ Edit
                         </button>
-                      )}
-                    </>
-                  )}
+
+                        {currentUser?.role === "admin" && (
+                          <button
+                            onClick={() => handleOpenStatusModal(item.id)}
+                            disabled={loading || statusLoading}
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs"
+                          >
+                            ✅ Persetujuan
+                          </button>
+                        )}
+                      </>
+                    )}
                 </td>
               </tr>
             ))}
-
             {filteredData.length === 0 && (
               <tr>
                 <td colSpan={10} className="text-center text-gray-400 py-4">
