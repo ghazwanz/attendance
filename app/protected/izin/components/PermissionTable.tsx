@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Permission } from "../lib/types";
 import { statusActions } from "../action/status-actions";
 
+// ---------------- Modal Status ----------------
 interface StatusModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -12,39 +13,35 @@ interface StatusModalProps {
 }
 
 function StatusModal({ isOpen, onClose, onSelectStatus, loading }: StatusModalProps) {
-  const [selectedStatus, setSelectedStatus] = useState("diterima");
-
-  useEffect(() => {
-    if (isOpen) setSelectedStatus("diterima");
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg max-w-sm w-full relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-all duration-300 ease-in-out">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm px-6 py-8 relative animate-fadeInUp">
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+          className="absolute top-3 right-4 text-gray-400 hover:text-red-500 text-xl font-bold transition"
         >
-          ✖
+          ×
         </button>
-        <h3 className="text-lg font-semibold mb-4 text-center">Pilih Status Izin</h3>
-        <select
-          onChange={(e) => setSelectedStatus(e.target.value)}
-          value={selectedStatus}
-          className="border rounded px-3 py-2 w-full dark:bg-slate-700 dark:text-white"
-        >
-          <option value="diterima">Diterima</option>
-          <option value="ditolak">Ditolak</option>
-        </select>
-        <div className="flex justify-end mt-4">
+        <h3 className="text-2xl font-bold text-center text-gray-800 dark:text-white mb-6">
+          Pilih Status Izin
+        </h3>
+
+        <div className="flex flex-col gap-4">
           <button
-            onClick={() => onSelectStatus(selectedStatus)}
+            onClick={() => onSelectStatus("diterima")}
             disabled={loading}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-semibold text-sm shadow-md disabled:opacity-50 transition"
           >
-            {loading ? "Menyimpan..." : "Simpan"}
+            ✅ Diterima
+          </button>
+          <button
+            onClick={() => onSelectStatus("ditolak")}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold text-sm shadow-md disabled:opacity-50 transition"
+          >
+            ❌ Ditolak
           </button>
         </div>
       </div>
@@ -52,6 +49,7 @@ function StatusModal({ isOpen, onClose, onSelectStatus, loading }: StatusModalPr
   );
 }
 
+// ---------------- Tabel Izin ----------------
 interface PermissionTableProps {
   data: Permission[];
   currentUser: { id: string; role: string } | null;
@@ -131,10 +129,10 @@ export default function PermissionTable({
         prev.map((item) =>
           item.id === selectedPermissionId
             ? {
-              ...item,
-              status: status as Permission["status"],
-              approved_by: currentUser?.id || null,
-            }
+                ...item,
+                status: status as Permission["status"],
+                approved_by: currentUser?.id || null,
+              }
             : item
         )
       );
@@ -154,6 +152,7 @@ export default function PermissionTable({
 
   return (
     <div>
+      {/* Filter */}
       <div className="flex flex-wrap gap-2 mb-4 items-end">
         <input
           type="text"
@@ -188,14 +187,15 @@ export default function PermissionTable({
         )}
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto w-full p-2 bg-gray-100 dark:bg-[#0F172A]">
         <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
             <tr className="bg-blue-600 text-white uppercase tracking-wider">
               <th className="px-4 py-3 rounded-l-xl">NO</th>
               <th className="px-4 py-3">Nama</th>
-              <th className="px-4 py-3">Waktu Keluar</th>
-              <th className="px-4 py-3">Waktu Masuk</th>
+              <th className="px-4 py-3">Mulai Izin</th>
+              <th className="px-4 py-3">Selesai Izin</th>
               <th className="px-4 py-3">Jenis</th>
               <th className="px-4 py-3">Alasan</th>
               <th className="px-4 py-3">Status</th>
@@ -214,7 +214,13 @@ export default function PermissionTable({
                 <td className="px-4 py-3">lapet</td>
                 <td className="px-4 py-3">{item.reason || "-"}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${item.status === "pending" ? "bg-yellow-100 text-yellow-800" : item.status === "diterima" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                    item.status === "pending"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : item.status === "diterima"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}>
                     {item.status || "pending"}
                   </span>
                 </td>
@@ -225,26 +231,26 @@ export default function PermissionTable({
                     (currentUser?.id === item.user_id &&
                       item.status === "pending" &&
                       new Date(item.created_at).toDateString() === new Date().toDateString())) && (
-                      <>
-                        <button
-                          onClick={() => onEdit(item)}
-                          disabled={loading}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs"
-                        >
-                          ✏️ Edit
-                        </button>
+                    <>
+                      <button
+                        onClick={() => onEdit(item)}
+                        disabled={loading}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs"
+                      >
+                        ✏️ Edit
+                      </button>
 
-                        {currentUser?.role === "admin" && (
-                          <button
-                            onClick={() => handleOpenStatusModal(item.id)}
-                            disabled={loading || statusLoading}
-                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs"
-                          >
-                            ✅ Persetujuan
-                          </button>
-                        )}
-                      </>
-                    )}
+                      {currentUser?.role === "admin" && (
+                        <button
+                          onClick={() => handleOpenStatusModal(item.id)}
+                          disabled={loading || statusLoading}
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs"
+                        >
+                          ✅ Persetujuan
+                        </button>
+                      )}
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -259,6 +265,7 @@ export default function PermissionTable({
         </table>
       </div>
 
+      {/* Modal */}
       <StatusModal
         isOpen={showStatusModal}
         onClose={handleCloseModal}

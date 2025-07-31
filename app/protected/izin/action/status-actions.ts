@@ -31,44 +31,46 @@ export const statusActions = {
 
             // Cek jika status 'diterima', pastikan belum ada absensi hari itu
             if (status === "diterima") {
-                const { data: existingAttendance, error: checkError } = await supabase
-                    .from("attendances")
-                    .select("*")
-                    .eq("user_id", permission.user_id)
-                    .eq("date", tanggal)
-                    .maybeSingle();
-
-                if (checkError) {
-                    toast.error("Gagal memeriksa data absensi.");
-                    return false;
-                }
-
-                if (existingAttendance) {
-                    const { error: updateError } = await supabase
+                const startDate = new Date(permission.exit_time);
+                const endDate = new Date(permission.reentry_time);
+            
+                const attendanceInserts = [];
+            
+                for (
+                    let date = new Date(startDate);
+                    date <= endDate;
+                    date.setDate(date.getDate() + 1)
+                ) {
+                    const tanggal = date.toISOString().split("T")[0];
+            
+                    const { data: existingAttendance } = await supabase
                         .from("attendances")
-                        .update({ status: "IZIN", notes: permission.reason, permission_id: permissionId })
-                        .eq("id", existingAttendance.id);
-                    if (updateError) {
-                        toast.error("Gagal mengupdate ke absensi.");
-                        return false;
+                        .select("*")
+                        .eq("user_id", permission.user_id)
+                        .eq("date", tanggal)
+                        .maybeSingle();
+            
+                    if (existingAttendance) {
+                        await supabase
+                            .from("attendances")
+                            .update({ status: "IZIN", notes: permission.reason, permission_id: permissionId })
+                            .eq("id", existingAttendance.id);
+                    } else {
+                        attendanceInserts.push({
+                            user_id: permission.user_id,
+                            status: "IZIN",
+                            notes: permission.reason,
+                            date: tanggal,
+                            permission_id: permissionId,
+                        });
                     }
                 }
-                else {
-                    // Simpan ke attendances
-                    const { error: insertError } = await supabase.from("attendances").insert({
-                        user_id: permission.user_id,
-                        status: "IZIN",
-                        notes: permission.reason,
-                        date: tanggal,
-                    });
-
-                    if (insertError) {
-                        toast.error("Gagal menyimpan ke absensi.");
-                        return false;
-                    }
+            
+                if (attendanceInserts.length > 0) {
+                    await supabase.from("attendances").insert(attendanceInserts);
                 }
-            }
-
+            }            
+            
             toast.success("Status berhasil diperbarui.");
             return true;
         } catch (error: unknown) {
