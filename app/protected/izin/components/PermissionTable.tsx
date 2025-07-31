@@ -194,8 +194,8 @@ export default function PermissionTable({
             <tr className="bg-blue-600 text-white uppercase tracking-wider">
               <th className="px-4 py-3 rounded-l-xl">NO</th>
               <th className="px-4 py-3">Nama</th>
-              <th className="px-4 py-3">Waktu Keluar</th>
-              <th className="px-4 py-3">Waktu Masuk</th>
+              <th className="px-4 py-3">Mulai Izin</th>
+              <th className="px-4 py-3">Selesai Izin</th>
               <th className="px-4 py-3">Jenis</th>
               <th className="px-4 py-3">Alasan</th>
               <th className="px-4 py-3">Status</th>
