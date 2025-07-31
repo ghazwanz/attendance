@@ -10,51 +10,42 @@ export default function UpdateForm({
   onDone: () => void;
 }) {
   const supabase = createClient();
+
+  // Fungsi untuk mengubah date ISO menjadi HH:mm lokal
+  const getLocalTime = (isoString: string) => {
+    const d = new Date(isoString);
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
+  };
+
   const [form, setForm] = useState({
     ...attendance,
-    check_in: attendance.check_in
-      ? (() => {
-          try {
-            const d = new Date(attendance.check_in);
-            return d.toISOString().slice(11, 16);
-          } catch {
-            return "";
-          }
-        })()
-      : "",
-    check_out: attendance.check_out
-      ? (() => {
-          try {
-            const d = new Date(attendance.check_out);
-            return d.toISOString().slice(11, 16);
-          } catch {
-            return "";
-          }
-        })()
-      : "",
+    check_in: attendance.check_in ? getLocalTime(attendance.check_in) : "",
+    check_out: attendance.check_out ? getLocalTime(attendance.check_out) : "",
   });
 
   const [showToast, setShowToast] = useState(false);
   const [timeError, setTimeError] = useState<string | null>(null);
 
+  // Fungsi untuk menggabungkan date + time jadi Date lokal
+  const localDateTime = (date: string, time: string) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    const dt = new Date(date);
+    dt.setHours(hours);
+    dt.setMinutes(minutes);
+    dt.setSeconds(0);
+    dt.setMilliseconds(0);
+    return dt;
+  };
+
   const handleUpdate = async (e: any) => {
     e.preventDefault();
-
     setTimeError(null);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const checkInTime = form.check_in ? localDateTime(form.date, form.check_in) : null;
+    const checkOutTime = form.check_out ? localDateTime(form.date, form.check_out) : null;
 
-    const checkInTime = form.check_in
-      ? new Date(`${form.date}T${form.check_in}:00`)
-      : null;
-
-    const checkOutTime = form.check_out
-      ? new Date(`${form.date}T${form.check_out}:00`)
-      : null;
-
-    // ✅ Validasi waktu check-out harus lebih besar dari check-in
     if (checkInTime && checkOutTime && checkOutTime < checkInTime) {
       setTimeError("❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!");
       return;
@@ -75,7 +66,7 @@ export default function UpdateForm({
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-        onDone(); // Tutup modal dan refresh
+        onDone(); // Tutup modal & refresh
       }, 2000);
     } else {
       alert("❌ " + error.message);
@@ -84,7 +75,7 @@ export default function UpdateForm({
 
   return (
     <>
-      {/* ✅ Pop-up sukses */}
+      {/* Notifikasi Sukses */}
       {showToast && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
@@ -131,7 +122,7 @@ export default function UpdateForm({
           <input
             type="text"
             placeholder="Contoh: Hadir tepat waktu"
-            value={form.notes ? form.notes : ""}
+            value={form.notes || ""}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -150,7 +141,7 @@ export default function UpdateForm({
             <option value="HADIR">HADIR</option>
             <option value="IZIN">IZIN</option>
           </select>
-          {/* ❌ Notifikasi error waktu */}
+
           {timeError && (
             <p className="text-[#ff4d4f] text-sm mt-4 font-semibold">
               {timeError}
