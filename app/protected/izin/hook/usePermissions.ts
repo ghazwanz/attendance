@@ -20,6 +20,7 @@ export function usePermissions() {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
 
     // Modal states
     const [showForm, setShowForm] = useState(false);
@@ -90,7 +91,7 @@ export function usePermissions() {
             const exit = new Date(form.exit_time);
             const reentry = new Date(form.reentry_time);
             if (reentry < exit) {
-                alert("Waktu Masuk Kembali harus sama atau setelah Mulai Izin.");
+                setErrorMessage("Waktu Masuk Kembali harus sama atau setelah Mulai Izin.");
                 return;
             }
         }
@@ -197,5 +198,9 @@ export function usePermissions() {
             if (!show) resetForm();
         },
         setShowConfirmModal,
+
+        // Error notification
+        errorMessage,
+        setErrorMessage,
     };
 }
