@@ -706,7 +706,9 @@ export default function Page() {
                     onChange={e => setSelected({ ...selected, status: e.target.value })}
                   >
                     <option value="HADIR">HADIR</option>
+                    <option value="TERLAMBAT">TERLAMBAT</option>
                     <option value="IZIN">IZIN</option>
+                    <option value="TANPA KETERANGAN">TANPA KETERANGAN</option>
                   </select>
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
