@@ -46,6 +46,8 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   const [izinStart, setIzinStart] = useState('');
   const [izinEnd, setIzinEnd] = useState('');
   const [sudahIzinPulang, setSudahIzinPulang] = useState(false);
+  const [showChoiceBesokModal, setShowChoiceBesokModal] = useState(false);
+
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
   const startScan = async () => {
@@ -142,11 +144,34 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
                 setShowPulangModal(true);
               } else {
-                showToast({
-                  type: "info",
-                  message: "Kamu sudah absen masuk dan pulang hari ini.",
-                });
+                // Cek apakah sudah punya izin untuk besok
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+                const { data: izinBesok } = await supabase
+                  .from("permissions")
+                  .select("*")
+                  .eq("user_id", userData.id)
+                  .eq("date", tomorrowStr)
+                  .maybeSingle();
+
+                if (!izinBesok) {
+                  toast.dismiss("scan-process");
+                  showToast({
+                    type: "info",
+                    message: "Hari ini Anda sudah pulang. Apakah ingin izin untuk besok?"
+                  });
+                  setShowChoiceBesokModal(true); // <- modal baru
+                } else {
+                  showToast({
+                    type: "info",
+                    message: "Anda sudah mengajukan izin untuk besok."
+                  });
+                }
               }
+
+
             } else {
               if (izinHariIni) {
                 setShowIzinToHadirModal(true);
@@ -687,7 +712,40 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           </div>
         </div>
       )}
+      {showChoiceBesokModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold mb-4 text-center">Ajukan Izin Besok</h2>
+            <p className="text-sm text-center mb-4">
+              Anda sudah pulang hari ini. Ingin mengajukan izin untuk <b>besok</b>?
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  const besokStr = tomorrow.toISOString().split("T")[0];
 
+                  setShowChoiceBesokModal(false);
+                  setIsIzinPulang(false);
+                  setShowIzinForm(true);
+                  setIzinStart(besokStr);
+                  setIzinEnd(besokStr);
+                }}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-md"
+              >
+                📝 Izin Tidak Hadir Besok
+              </button>
+              <button
+                onClick={() => setShowChoiceBesokModal(false)}
+                className="px-4 py-2 bg-gray-400 text-white rounded-md"
+              >
+                ❌ Batal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -12,15 +12,23 @@ export default function UpdateForm({
   const supabase = createClient();
 
   // Fungsi untuk mengubah date ISO menjadi HH:mm lokal
+     // Konversi ISO ke waktu lokal (HH:mm)
   const getLocalTime = (isoString: string) => {
+    if (!isoString) return "";
     const d = new Date(isoString);
-    const hh = String(d.getHours()).padStart(2, "0");
-    const mm = String(d.getMinutes()).padStart(2, "0");
-    return `${hh}:${mm}`;
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+  };
+
+  // Konversi ISO ke tanggal lokal (YYYY-MM-DD)
+  const getLocalDate = (isoString: string) => {
+    if (!isoString) return "";
+    const d = new Date(isoString);
+    return d.toISOString().split("T")[0];
   };
 
   const [form, setForm] = useState({
     ...attendance,
+    date: attendance.date ? getLocalDate(attendance.date) : "",
     check_in: attendance.check_in ? getLocalTime(attendance.check_in) : "",
     check_out: attendance.check_out ? getLocalTime(attendance.check_out) : "",
   });
@@ -29,34 +37,51 @@ export default function UpdateForm({
   const [timeError, setTimeError] = useState<string | null>(null);
 
   // Fungsi untuk menggabungkan date + time jadi Date lokal
-  const localDateTime = (date: string, time: string) => {
+  // Konversi tanggal (YYYY-MM-DD) dan time (HH:mm) ke ISO string UTC
+  const localDateTimeToISO = (date: string, time: string) => {
+    if (!date || !time) return null;
     const [hours, minutes] = time.split(":").map(Number);
     const dt = new Date(date);
     dt.setHours(hours);
     dt.setMinutes(minutes);
     dt.setSeconds(0);
     dt.setMilliseconds(0);
-    return dt;
+    return dt.toISOString();
   };
 
   const handleUpdate = async (e: any) => {
     e.preventDefault();
     setTimeError(null);
 
-    const checkInTime = form.check_in ? localDateTime(form.date, form.check_in) : null;
-    const checkOutTime = form.check_out ? localDateTime(form.date, form.check_out) : null;
+    const checkInISO = form.check_in ? localDateTimeToISO(form.date, form.check_in) : null;
+    const checkOutISO = form.check_out ? localDateTimeToISO(form.date, form.check_out) : null;
+    const dateISO = form.date ? new Date(form.date + 'T00:00:00Z').toISOString() : null;
 
-    if (checkInTime && checkOutTime && checkOutTime < checkInTime) {
+    if (checkInISO && checkOutISO && checkOutISO < checkInISO) {
       setTimeError("❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!");
+      return;
+    }
+
+    // Cek duplikasi absensi (user_id + date) selain id ini
+    const { data: dupe } = await supabase
+      .from("attendances")
+      .select("id")
+      .eq("user_id", form.user_id)
+      .eq("date", dateISO)
+      .neq("id", form.id)
+      .maybeSingle();
+    if (dupe) {
+      setTimeError("❌ Sudah ada absensi untuk tanggal ini!");
       return;
     }
 
     const { error } = await supabase
       .from("attendances")
       .update({
-        date: form.date,
-        check_in: checkInTime?.toISOString() || null,
-        check_out: checkOutTime?.toISOString() || null,
+        user_id: form.user_id,
+        date: dateISO,
+        check_in: checkInISO,
+        check_out: checkOutISO,
         notes: form?.notes,
         status: form.status,
       })
@@ -69,7 +94,7 @@ export default function UpdateForm({
         onDone(); // Tutup modal & refresh
       }, 2000);
     } else {
-      alert("❌ " + error.message);
+      alert("❌ Gagal update absensi: " + JSON.stringify(error));
     }
   };
 
@@ -91,27 +116,28 @@ export default function UpdateForm({
         <h2 className="text-lg font-semibold mb-2">✏️ Perbarui Absensi</h2>
 
         {/* Tanggal */}
+
         <input
           type="date"
           value={form.date}
-          disabled
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white cursor-not-allowed"
+          onChange={e => setForm({ ...form, date: e.target.value })}
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
         />
 
         {/* Check In */}
         <input
           type="time"
           value={form.check_in}
-          disabled
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white cursor-not-allowed"
+          onChange={e => setForm({ ...form, check_in: e.target.value })}
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
         />
 
         {/* Check Out */}
         <input
           type="time"
           value={form.check_out}
-          disabled
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white cursor-not-allowed"
+          onChange={e => setForm({ ...form, check_out: e.target.value })}
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
         />
 
         {/* Keterangan */}
