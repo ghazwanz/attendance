@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Permission } from "@/lib/type";
+import toast from "react-hot-toast";
 
 export default function PermissionTable() {
   const supabase = createClient();
@@ -173,6 +174,15 @@ useEffect(() => {
     setSelectedIdToDelete(null);
   };
 
+  const handleAddIzin = () => {
+    const today = new Date().toDateString();
+  
+    const isAlreadySubmitted = data.some(
+      (item) =>
+        item.user_id === currentUser?.id &&
+        new Date(item.created_at).toDateString() === today
+    );
+
   const filteredData = data.filter((item) => {
     const nama = item.users?.name?.toLowerCase() || "";
     const alasan = item.reason.toLowerCase();
@@ -337,15 +347,12 @@ useEffect(() => {
 
       {/* Tombol Tambah, Pencarian & Filter Waktu Mengisi */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <button
-          onClick={() => {
-            setShowForm((prev) => !prev);
-            resetForm();
-          }}
-          className="bg-blue-600 text-white font-semibold px-4 py-2 rounded w-fit"
-        >
-          {showForm ? "Tutup Form" : "Tambah Izin"}
-        </button>
+      <button
+  onClick={handleAddIzin}
+  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+>
+  ➕ Tambah Izin
+</button>
 
         <div className="flex flex-col md:flex-row gap-2 items-center">
           <input
@@ -534,4 +541,5 @@ useEffect(() => {
       </div>
     </div>
   );
+}
 }

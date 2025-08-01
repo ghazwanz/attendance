@@ -40,12 +40,6 @@ export default function PermissionPage() {
             <ErrorNotification message={errorMessage} onClose={() => setErrorMessage("")} />
             <h1 className="text-3xl font-bold mb-4">📋 Tabel Izin</h1>
 
-            {successMessage && (
-                <div className="mb-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-sm">
-                    {successMessage}
-                </div>
-            )}
-
             {/* Delete Confirmation Modal */}
             <DeleteConfirmModal
                 isOpen={showConfirmModal}
