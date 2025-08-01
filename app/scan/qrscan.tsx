@@ -573,6 +573,22 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               >
                 🚪 Izin Pulang Awal
               </button>
+              <button
+                onClick={() => {
+                  const besok = new Date();
+                  besok.setDate(besok.getDate() + 1);
+                  const besokStr = besok.toISOString().split('T')[0];
+
+                  setIzinStart(besokStr);
+                  setIzinEnd(besokStr);
+                  setIsIzinPulang(false);
+                  setShowPulangModal(false);
+                  setShowIzinForm(true);
+                }}
+                className="w-full px-4 py-2 bg-teal-600 text-white rounded-md"
+              >
+                📅 Izin Besok
+              </button>
 
               {sudahIzinPulang && (
                 <p className="text-xs text-center text-red-500 mt-1">
