@@ -142,9 +142,39 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
                 setShowPulangModal(true);
               } else {
-                // Sudah absen masuk & pulang, tapi tetap boleh izin untuk hari lain
-                setShowChoiceModal(true);
+                // Cek apakah sudah punya izin untuk besok
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+                const { data: izinBesok } = await supabase
+                  .from("permissions")
+                  .select("*")
+                  .eq("user_id", userData.id)
+                  .eq("date", tomorrowStr)
+                  .maybeSingle();
+
+                if (!izinBesok) {
+                  showToast({
+                    type: "info",
+                    message: "Hari ini Anda sudah pulang. Apakah ingin izin untuk besok?"
+                  });
+
+                  // Tampilkan form izin dengan tanggal default besok
+                  setIsIzinPulang(false);
+                  setShowIzinForm(true);
+                  setIzinReason('');
+                  setBalikLagi(false);
+                  setIzinStart(tomorrowStr);
+                  setIzinEnd(tomorrowStr);
+                } else {
+                  showToast({
+                    type: "info",
+                    message: "Anda sudah mengajukan izin untuk besok."
+                  });
+                }
               }
+
 
             } else {
               if (izinHariIni) {
