@@ -595,49 +595,53 @@ export default function Page() {
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  const { id } = selected;
-                  const { date, check_in, check_out, notes, status } = selected;
-                  let updateObj = {
-                    date: selected.date,
-                    check_in: selected.check_in,
-                    check_out: selected.check_out,
-                    notes: selected.notes,
-                    status: selected.status,
-                  };
-                  // Format waktu jika diubah
-                  // Jika check_in sudah ISO string, gunakan substring jam-menit, jika string jam-menit, langsung
-                  if (check_in) {
-                    if (typeof check_in === "string" && check_in.length <= 5 && date) {
-                      updateObj.check_in = new Date(`${date}T${check_in}`).toISOString();
-                    } else if (typeof check_in === "string" && check_in.length > 5) {
-                      updateObj.check_in = check_in;
-                    } else if (check_in instanceof Date) {
-                      updateObj.check_in = check_in.toISOString();
-                    } else {
-                      updateObj.check_in = null;
-                    }
+                  const { id, user_id, notes, status } = selected;
+                  let { date, check_in, check_out } = selected;
+                  // Pastikan date ISO string
+                  let dateISO = date && date.length === 10 ? new Date(date + 'T00:00:00Z').toISOString() : date;
+                  // Format waktu check_in/check_out ke ISO
+                  let checkInISO = check_in && check_in.length <= 5 && date ? new Date(date + 'T' + check_in).toISOString() : check_in;
+                  let checkOutISO = check_out && check_out.length <= 5 && date ? new Date(date + 'T' + check_out).toISOString() : check_out;
+
+                  // Validasi jam
+                  if (checkInISO && checkOutISO && checkOutISO < checkInISO) {
+                    alert("❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!");
+                    return;
                   }
-                  if (check_out) {
-                    if (typeof check_out === "string" && check_out.length <= 5 && date) {
-                      updateObj.check_out = new Date(`${date}T${check_out}`).toISOString();
-                    } else if (typeof check_out === "string" && check_out.length > 5) {
-                      updateObj.check_out = check_out;
-                    } else if (check_out instanceof Date) {
-                      updateObj.check_out = check_out.toISOString();
-                    } else {
-                      updateObj.check_out = null;
-                    }
+
+                  // Validasi duplikasi absensi (user_id + date) selain id ini
+                  const { data: dupe, error: dupeError } = await supabase
+                    .from("attendances")
+                    .select("id")
+                    .eq("user_id", user_id)
+                    .eq("date", dateISO)
+                    .neq("id", id)
+                    .maybeSingle();
+                  if (dupeError) {
+                    alert("❌ Gagal cek duplikasi absensi: " + JSON.stringify(dupeError));
+                    return;
                   }
+                  if (dupe) {
+                    alert("❌ Sudah ada absensi untuk tanggal ini!");
+                    return;
+                  }
+
                   const { error } = await supabase
                     .from("attendances")
-                    .update(updateObj)
+                    .update({
+                      date: dateISO,
+                      check_in: checkInISO,
+                      check_out: checkOutISO,
+                      notes: notes || null,
+                      status,
+                    })
                     .eq("id", id);
                   if (!error) {
                     setSelected(null);
                     fetchData();
                     showSuccessToast("Absensi berhasil diperbarui!");
                   } else {
-                    alert("Gagal update absensi!");
+                    alert("Gagal update absensi! " + (error.message || ""));
                   }
                 }}
                 className="space-y-4"
@@ -659,18 +663,19 @@ export default function Page() {
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                     value={
                       selected.check_in
-                        ? new Date(selected.check_in).toLocaleTimeString("en-GB", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        })
+                        ? (selected.check_in.length > 5
+                          ? new Date(selected.check_in).toLocaleTimeString("en-GB", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          })
+                          : selected.check_in)
                         : ""
                     }
                     onChange={(e) =>
                       setSelected({ ...selected, check_in: e.target.value })
                     }
                   />
-
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Check-out</label>
@@ -679,18 +684,19 @@ export default function Page() {
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                     value={
                       selected.check_out
-                        ? new Date(selected.check_out).toLocaleTimeString("en-GB", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        })
+                        ? (selected.check_out.length > 5
+                          ? new Date(selected.check_out).toLocaleTimeString("en-GB", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                          })
+                          : selected.check_out)
                         : ""
                     }
                     onChange={(e) =>
                       setSelected({ ...selected, check_out: e.target.value })
                     }
                   />
-
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Status</label>
