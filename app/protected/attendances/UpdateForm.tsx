@@ -5,21 +5,20 @@ import { createClient } from "@/lib/supabase/client";
 export default function UpdateForm({
   attendance,
   onDone,
+  userRole,
 }: {
   attendance: any;
   onDone: () => void;
+  userRole?: string;
 }) {
   const supabase = createClient();
 
-  // Fungsi untuk mengubah date ISO menjadi HH:mm lokal
-     // Konversi ISO ke waktu lokal (HH:mm)
   const getLocalTime = (isoString: string) => {
     if (!isoString) return "";
     const d = new Date(isoString);
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
   };
 
-  // Konversi ISO ke tanggal lokal (YYYY-MM-DD)
   const getLocalDate = (isoString: string) => {
     if (!isoString) return "";
     const d = new Date(isoString);
@@ -36,8 +35,6 @@ export default function UpdateForm({
   const [showToast, setShowToast] = useState(false);
   const [timeError, setTimeError] = useState<string | null>(null);
 
-  // Fungsi untuk menggabungkan date + time jadi Date lokal
-  // Konversi tanggal (YYYY-MM-DD) dan time (HH:mm) ke ISO string UTC
   const localDateTimeToISO = (date: string, time: string) => {
     if (!date || !time) return null;
     const [hours, minutes] = time.split(":").map(Number);
@@ -62,7 +59,6 @@ export default function UpdateForm({
       return;
     }
 
-    // Cek duplikasi absensi (user_id + date) selain id ini
     const { data: dupe } = await supabase
       .from("attendances")
       .select("id")
@@ -70,6 +66,7 @@ export default function UpdateForm({
       .eq("date", dateISO)
       .neq("id", form.id)
       .maybeSingle();
+
     if (dupe) {
       setTimeError("❌ Sudah ada absensi untuk tanggal ini!");
       return;
@@ -83,7 +80,7 @@ export default function UpdateForm({
         check_in: checkInISO,
         check_out: checkOutISO,
         notes: form?.notes,
-        status: form.status,
+        status: userRole === "admin" ? form.status : form.status, // status hanya bisa diedit oleh admin
       })
       .eq("id", form.id);
 
@@ -91,7 +88,7 @@ export default function UpdateForm({
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-        onDone(); // Tutup modal & refresh
+        onDone();
       }, 2000);
     } else {
       alert("❌ Gagal update absensi: " + JSON.stringify(error));
@@ -100,7 +97,6 @@ export default function UpdateForm({
 
   return (
     <>
-      {/* Notifikasi Sukses */}
       {showToast && (
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
@@ -115,32 +111,39 @@ export default function UpdateForm({
       >
         <h2 className="text-lg font-semibold mb-2">✏️ Perbarui Absensi</h2>
 
-        {/* Tanggal */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Tanggal</label>
+          <input
+            type="date"
+            value={form.date}
+            onChange={e => setForm({ ...form, date: e.target.value })}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            disabled={userRole !== "admin"}
+          />
+        </div>
 
-        <input
-          type="date"
-          value={form.date}
-          onChange={e => setForm({ ...form, date: e.target.value })}
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Check-in</label>
+          <input
+            type="time"
+            value={form.check_in}
+            onChange={e => setForm({ ...form, check_in: e.target.value })}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            disabled={userRole !== "admin"}
+          />
+        </div>
 
-        {/* Check In */}
-        <input
-          type="time"
-          value={form.check_in}
-          onChange={e => setForm({ ...form, check_in: e.target.value })}
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-        />
+        <div>
+          <label className="block text-sm font-medium mb-1">Check-out</label>
+          <input
+            type="time"
+            value={form.check_out}
+            onChange={e => setForm({ ...form, check_out: e.target.value })}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            disabled={userRole !== "admin"}
+          />
+        </div>
 
-        {/* Check Out */}
-        <input
-          type="time"
-          value={form.check_out}
-          onChange={e => setForm({ ...form, check_out: e.target.value })}
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-        />
-
-        {/* Keterangan */}
         <div>
           <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
             📝 Keterangan
@@ -154,28 +157,29 @@ export default function UpdateForm({
           />
         </div>
 
-        {/* Status */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            📌 Status
-          </label>
-          <select
-            value={form.status}
-            onChange={(e) => setForm({ ...form, status: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="HADIR">HADIR</option>
-            <option value="IZIN">IZIN</option>
-          </select>
+        {/* Tampilkan status hanya untuk admin */}
+        {userRole === "admin" && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              📌 Status
+            </label>
+            <select
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="HADIR">HADIR</option>
+              <option value="IZIN">IZIN</option>
+            </select>
+          </div>
+        )}
 
-          {timeError && (
-            <p className="text-[#ff4d4f] text-sm mt-4 font-semibold">
-              {timeError}
-            </p>
-          )}
-        </div>
+        {timeError && (
+          <p className="text-[#ff4d4f] text-sm mt-4 font-semibold">
+            {timeError}
+          </p>
+        )}
 
-        {/* Tombol Simpan */}
         <button
           type="submit"
           className="w-full py-3 bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold rounded-lg hover:opacity-90 transition-all shadow-md hover:shadow-lg"
