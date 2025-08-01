@@ -142,11 +142,10 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
                 setShowPulangModal(true);
               } else {
-                showToast({
-                  type: "info",
-                  message: "Kamu sudah absen masuk dan pulang hari ini.",
-                });
+                // Sudah absen masuk & pulang, tapi tetap boleh izin untuk hari lain
+                setShowChoiceModal(true);
               }
+
             } else {
               if (izinHariIni) {
                 setShowIzinToHadirModal(true);
