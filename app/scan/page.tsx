@@ -142,7 +142,7 @@ export default function AttendancePage() {
           </div>
           <div className="hidden md:flex gap-3">
             <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition">Home</Link>
-            <Link href="/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition">Login</Link>
+            <Link href="/auth/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition">Login</Link>
           </div>
         </div>
         {menuOpen && (
