@@ -708,7 +708,7 @@ export default function Page() {
                     <option value="HADIR">HADIR</option>
                     <option value="TERLAMBAT">TERLAMBAT</option>
                     <option value="IZIN">IZIN</option>
-                    <option value="TANPA KETERANGAN">TANPA KETERANGAN</option>
+                    <option value="ALPA">ALPA</option>
                   </select>
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
