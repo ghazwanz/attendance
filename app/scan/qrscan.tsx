@@ -164,10 +164,12 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                   });
                   setShowChoiceBesokModal(true); // <- modal baru
                 } else {
+                  toast.dismiss("izin-besok"); // pastikan hanya muncul satu
                   showToast({
                     type: "info",
-                    message: "Anda sudah mengajukan izin untuk besok."
+                    message: "Hari ini Anda sudah pulang. Apakah ingin izin untuk besok?"
                   });
+
                 }
               }
 
