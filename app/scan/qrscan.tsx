@@ -164,10 +164,12 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                   });
                   setShowChoiceBesokModal(true); // <- modal baru
                 } else {
+                  toast.dismiss("izin-besok"); // pastikan hanya muncul satu
                   showToast({
                     type: "info",
-                    message: "Anda sudah mengajukan izin untuk besok."
+                    message: "Hari ini Anda sudah pulang. Apakah ingin izin untuk besok?"
                   });
+
                 }
               }
 
@@ -570,6 +572,22 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                   }`}
               >
                 🚪 Izin Pulang Awal
+              </button>
+              <button
+                onClick={() => {
+                  const besok = new Date();
+                  besok.setDate(besok.getDate() + 1);
+                  const besokStr = besok.toISOString().split('T')[0];
+
+                  setIzinStart(besokStr);
+                  setIzinEnd(besokStr);
+                  setIsIzinPulang(false);
+                  setShowPulangModal(false);
+                  setShowIzinForm(true);
+                }}
+                className="w-full px-4 py-2 bg-teal-600 text-white rounded-md"
+              >
+                📅 Izin Besok
               </button>
 
               {sudahIzinPulang && (
