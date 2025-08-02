@@ -8,7 +8,7 @@ import { ThemeSwitcher } from '@/components/theme-switcher';
 import { hasEnvVars } from '@/lib/utils';
 import { QRForm } from '@/components/QRForm';
 import { AuthButton } from '@/components/auth-button';
-import {UserLocationMap} from '@/components/userlocationmap';
+import { UserLocationMap } from '@/components/userlocationmap';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -100,7 +100,7 @@ export default async function Home() {
             <div className="w-full h-[440px] rounded-xl overflow-hidden border-4 border-blue-200 dark:border-slate-700 shadow-lg hover:shadow-2xl transition duration-300">
               <iframe
                 title="Lokasi Mahative Studio Malang"
-                src="https://maps.google.com/maps?q=-8.0033,112.6116&z=17&output=embed"
+                src="https://maps.google.com/maps?q=-8.0017804,112.6075698&z=18&output=embed"
                 width="100%"
                 height="100%"
                 allowFullScreen
