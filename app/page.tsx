@@ -8,6 +8,7 @@ import { ThemeSwitcher } from '@/components/theme-switcher';
 import { hasEnvVars } from '@/lib/utils';
 import { QRForm } from '@/components/QRForm';
 import { AuthButton } from '@/components/auth-button';
+import {UserLocationMap} from '@/components/userlocationmap';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -87,7 +88,7 @@ export default async function Home() {
           <Hero />
           <QRForm users={users ?? []} encryptedQRData={null} />
 
-          {/* GOOGLE MAPS */}
+          {/* GOOGLE MAPS: Lokasi Mahative Studio */}
           <section className="mt-16 bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
             <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2">
               <span className="text-red-500 text-3xl">📍</span>
@@ -108,6 +109,17 @@ export default async function Home() {
                 referrerPolicy="no-referrer-when-downgrade"
               />
             </div>
+          </section>
+
+          {/* GOOGLE MAPS: Lokasi pengguna */}
+          <section className="mt-16 bg-white/70 dark:bg-slate-800 rounded-3xl shadow-2xl p-8 max-w-6xl w-full">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-gray-900 dark:text-white mb-4">
+              🌍 Lokasi Anda Sekarang
+            </h2>
+            <p className="text-center text-gray-600 dark:text-gray-300 mb-4 text-sm sm:text-base">
+              Lokasi real-time Anda akan ditampilkan di bawah jika diizinkan oleh browser.
+            </p>
+            <UserLocationMap />
           </section>
         </div>
 
