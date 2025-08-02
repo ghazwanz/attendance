@@ -8,11 +8,15 @@ export default function EditModal({
   item,
   onClose,
   onSave,
+  isAdmin,
 }: {
   item: Schedule;
   onClose: () => void;
   onSave: (updatedItem: Schedule) => void;
+  isAdmin: boolean;
 }) {
+  if (!isAdmin) return null;
+
   const [day, setDay] = useState(item.day);
   const [start, setStart] = useState(item.start_time);
   const [end, setEnd] = useState(item.end_time);
