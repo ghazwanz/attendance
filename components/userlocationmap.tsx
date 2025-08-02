@@ -21,7 +21,7 @@ const RADIUS_METER = 1000;
 
 const iconUser = new L.Icon({
   iconUrl: '/marker-icon.png',
-  iconSize: [25, 41],
+  iconSize: [25, 25],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
 });
