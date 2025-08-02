@@ -400,8 +400,9 @@ export default function Page() {
                       onChange={(e) => setAddForm({ ...addForm, status: e.target.value })}
                     >
                       <option value="HADIR">HADIR</option>
+                      <option value="TERLAMBAT">TERLAMBAT</option>
                       <option value="IZIN">IZIN</option>
-                      <option value="TANPA KETERANGAN">TANPA KETERANGAN</option>
+                      <option value="TANPA ALPA">ALPA</option>
                     </select>
                   </div>
 
