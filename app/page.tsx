@@ -8,7 +8,7 @@ import { ThemeSwitcher } from '@/components/theme-switcher';
 import { hasEnvVars } from '@/lib/utils';
 import { QRForm } from '@/components/QRForm';
 import { AuthButton } from '@/components/auth-button';
-import { UserLocationMap } from '@/components/userlocationmap';
+import UserLocationSection from '@/components/UserLocationSection';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -111,16 +111,8 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* GOOGLE MAPS: Lokasi pengguna */}
-          <section className="mt-16 bg-white/70 dark:bg-slate-800 rounded-3xl shadow-2xl p-8 max-w-6xl w-full">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-center text-gray-900 dark:text-white mb-4">
-              🌍 Lokasi Anda Sekarang
-            </h2>
-            <p className="text-center text-gray-600 dark:text-gray-300 mb-4 text-sm sm:text-base">
-              Lokasi real-time Anda akan ditampilkan di bawah jika diizinkan oleh browser.
-            </p>
-            <UserLocationMap />
-          </section>
+          {/* LOKASI PENGGUNA */}
+          <UserLocationSection />
         </div>
 
         {/* FOOTER */}
