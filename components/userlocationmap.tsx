@@ -125,7 +125,7 @@ export function UserLocationMap() {
 
           <Circle
             center={mahativeStudio}
-            radius={RADIUS_METER}
+            radius={1000}
             options={{
               fillColor: isOutside ? '#f87171aa' : '#40A57888',
               strokeColor: isOutside ? '#ef4444' : '#006769',
