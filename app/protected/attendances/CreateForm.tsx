@@ -21,7 +21,7 @@ export default function CreateForm({
   const [izinReason, setIzinReason] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
-  const allowedIP = ["125.166.12.91", "125.166.1.71"]; // Ganti sesuai IP kantor
+  // const allowedIP = ["125.166.12.91", "125.166.1.71"]; // Ganti sesuai IP kantor
 
   useEffect(() => {
     const init = async () => {
@@ -52,20 +52,6 @@ export default function CreateForm({
 
   const handleCheckIn = async (status: string, notes: string | null = null) => {
     try {
-      const res = await fetch("https://api.ipify.org?format=json");
-      const ipData = await res.json();
-      const currentIP = ipData.ip;
-      console.log("Current IP:", currentIP);
-
-      if (
-        currentIP !== allowedIP[0] &&
-        currentIP !== allowedIP[1] &&
-        status !== "IZIN"
-      ) {
-        setShowError(true);
-        setTimeout(() => setShowError(false), 3000);
-        return;
-      }
 
       const now = new Date();
       const nowISO = now.toISOString();
@@ -74,7 +60,7 @@ export default function CreateForm({
       batasMasuk.setHours(8, 0, 0, 0);
 
       let finalStatus = status;
-      if (status === "HADIR" && now > batasMasuk) {
+      if (status && now > batasMasuk) {
         finalStatus = "TERLAMBAT";
       }
 
@@ -119,15 +105,6 @@ export default function CreateForm({
         <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
             ✅ Absensi berhasil disimpan!
-          </div>
-        </div>
-      )}
-
-      {/* ❌ Notifikasi Error IP */}
-      {showError && (
-        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
-            ❌ Absensi hanya bisa dilakukan di jaringan kantor!
           </div>
         </div>
       )}
