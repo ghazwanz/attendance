@@ -66,6 +66,13 @@ export default function AttendancePage() {
     });
   };
 
+  const variants: any = {
+    hadir: 'bg-green-100 text-green-800',
+    terlambat: 'bg-red-100 text-red-800',
+    izin: 'bg-yellow-100 text-yellow-800',
+    alpa: 'bg-gray-100 text-gray-800',
+  }
+
   return (
     <div className="min-h-screen py-10">
       <div className="w-full mx-auto">
@@ -82,7 +89,7 @@ export default function AttendancePage() {
 
         {/* Grid Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          
+
           {/* QR Scanner */}
           <div className="bg-white dark:bg-slate-800 shadow-md rounded-xl p-6">
             <h2 className="text-2xl font-bold text-center mb-6">📷 QR Scanner</h2>
@@ -113,30 +120,11 @@ export default function AttendancePage() {
                   >
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">{record.users?.name || 'Pengguna Tidak Diketahui'}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{['hadir','terlambat'].includes(record.status.toLowerCase()) ? formatTimestamp(record.check_in) : formatTimestamp(record.created_at)}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{['hadir', 'terlambat'].includes(record.status.toLowerCase()) ? formatTimestamp(record.check_in) : formatTimestamp(record.created_at)}</p>
                     </div>
-                    {(() => {
-                      let statusLabel = record.status;
-                      let statusColor = 'bg-green-100 text-green-800';
-                      if (record.status.toLowerCase() === 'hadir' && record.check_in) {
-                        const jamMenit = new Date(record.check_in);
-                        const jam = jamMenit.getHours();
-                        const menit = jamMenit.getMinutes();
-                        if (jam > 8 || (jam === 8 && menit > 0)) {
-                          statusLabel = 'TERLAMBAT';
-                          statusColor = 'bg-red-100 text-red-800';
-                        }
-                      } else if (record.status.toLowerCase() === 'izin') {
-                        statusColor = 'bg-yellow-100 text-yellow-800';
-                      } else if (record.status.toLowerCase() === 'terlambat') {
-                        statusColor = 'bg-red-100 text-red-800';
-                      }
-                      return (
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColor}`}>
-                          {statusLabel}
-                        </span>
-                      );
-                    })()}
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${variants[record.status.toLowerCase()]}`}>
+                      {record.status}
+                    </span>
                   </div>
                 ))}
               </div>
