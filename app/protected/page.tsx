@@ -10,7 +10,7 @@ type Attendance = BaseAttendance & {
   users?: {
     name?: string;
   },
-  user?:{
+  user?: {
     id?: string;
     name?: string;
     role?: string;
@@ -139,7 +139,12 @@ export default function ProtectedPage() {
     setShowScanner(true);
   };
 
-  const qrData = JSON.stringify({ user_id: userId });
+  const qrExpiry = Date.now() + 5 * 60 * 1000; // 5 menit dari sekarang
+  const qrData = JSON.stringify({ user_id: userId, expires_at: qrExpiry });
+
+  // QR code expiry check should be handled when scanning/reading the QR, not here.
+  // Remove this block to fix the error.
+
 
   const dashboardCards = [
     {
