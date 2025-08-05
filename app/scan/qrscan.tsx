@@ -547,7 +547,17 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
       {/* Modal Pulang / Izin Pulang */}
       {showPulangModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+          <div className="relative bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+
+            {/* Tombol silang di pojok kanan atas */}
+            <button
+              onClick={() => setShowPulangModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-xl font-bold"
+              aria-label="Tutup"
+            >
+              &times;
+            </button>
+
             <h2 className="text-lg font-semibold mb-2 text-center">Sudah Hadir</h2>
 
             {/* Deskripsi warna kuning */}
