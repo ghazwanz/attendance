@@ -29,13 +29,13 @@ export default function Tabeljadwal() {
   const fetchCurrentUser = async () => {
     const { data: authData } = await supabase.auth.getUser();
     if (authData.user) {
-      const { data: profile } = await supabase
-        .from("profiles")
+      const { data: users } = await supabase
+        .from("users")
         .select("id, role")
         .eq("id", authData.user.id)
         .single();
 
-      if (profile) setCurrentUser(profile);
+      if (users) setCurrentUser(users);
     }
   };
 
@@ -132,6 +132,15 @@ export default function Tabeljadwal() {
                     >
                       ✏️ Edit
                     </button>
+                    <button
+                      onClick={() => {
+                        setSelectedItem(schedule);
+                        setShowDelete(true);
+                      }}
+                      className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                    >
+                      🗑️ Delete
+                    </button>
                   </td>
                 )}
               </tr>
@@ -154,6 +163,14 @@ export default function Tabeljadwal() {
           onClose={() => setShowEdit(false)}
           onSave={handleUpdate}
           isAdmin={true}
+        />
+      )}
+      {/* DeleteModal hanya admin */}
+      {showDelete && selectedItem && currentUser?.role === "admin" && (
+        <DeleteModal
+          item={selectedItem}
+          onClose={() => setShowDelete(false)}
+          onDelete={handleDelete}
         />
       )}
     </>
