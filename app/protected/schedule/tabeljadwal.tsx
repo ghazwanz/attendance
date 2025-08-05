@@ -29,13 +29,13 @@ export default function Tabeljadwal() {
   const fetchCurrentUser = async () => {
     const { data: authData } = await supabase.auth.getUser();
     if (authData.user) {
-      const { data: profile } = await supabase
-        .from("profiles")
+      const { data: users } = await supabase
+        .from("users")
         .select("id, role")
         .eq("id", authData.user.id)
         .single();
 
-      if (profile) setCurrentUser(profile);
+      if (users) setCurrentUser(users);
     }
   };
 
@@ -69,6 +69,7 @@ export default function Tabeljadwal() {
         end_time: updatedItem.end_time,
         mulai_istirahat: updatedItem.mulai_istirahat,
         selesai_istirahat: updatedItem.selesai_istirahat,
+        
       })
       .eq("id", updatedItem.id);
 
@@ -92,6 +93,7 @@ export default function Tabeljadwal() {
               <th className="px-6 py-4 text-left">Jam Pulang</th>
               <th className="px-6 py-4 text-left">Mulai Istirahat</th>
               <th className="px-6 py-4 text-left">Selesai Istirahat</th>
+              <th className="px-6 py-4 text-left">Aktif</th>
               {currentUser?.role === "admin" && (
                 <th className="px-6 py-4 text-left">Action</th>
               )}
@@ -121,6 +123,13 @@ export default function Tabeljadwal() {
                 <td className="px-6 py-4 text-orange-500 font-semibold">
                   {formatTime(schedule.selesai_istirahat) || "12:30"}
                 </td>
+                <td className="px-6 py-4">
+                  {schedule.is_active ? (
+                    <span className="text-green-600 font-semibold">Aktif</span>
+                  ) : (
+                    <span className="text-red-600 font-semibold">Tidak Aktif</span>
+                  )}
+                </td>
                 {currentUser?.role === "admin" && (
                   <td className="px-6 py-4 space-x-2">
                     <button
@@ -132,13 +141,22 @@ export default function Tabeljadwal() {
                     >
                       ✏️ Edit
                     </button>
+                    <button
+                      onClick={() => {
+                        setSelectedItem(schedule);
+                        setShowDelete(true);
+                      }}
+                      className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                    >
+                      🗑️ Delete
+                    </button>
                   </td>
                 )}
               </tr>
             ))}
             {data.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center text-gray-400 py-6">
+                <td colSpan={8} className="text-center text-gray-400 py-6">
                   Tidak ada data jadwal.
                 </td>
               </tr>
@@ -154,6 +172,14 @@ export default function Tabeljadwal() {
           onClose={() => setShowEdit(false)}
           onSave={handleUpdate}
           isAdmin={true}
+        />
+      )}
+      {/* DeleteModal hanya admin */}
+      {showDelete && selectedItem && currentUser?.role === "admin" && (
+        <DeleteModal
+          item={selectedItem}
+          onClose={() => setShowDelete(false)}
+          onDelete={handleDelete}
         />
       )}
     </>

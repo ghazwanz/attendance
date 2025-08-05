@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
+import { QRScannerProps } from '@/lib/type';
 
 const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'warning'; message: string }) => {
   const baseStyle = {
@@ -23,12 +24,7 @@ const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'wa
   toast(`${icon} ${message}`, { style: { ...baseStyle, background, color } });
 };
 
-type QRScannerProps = {
-  onScanSuccess?: () => void;
-  onScanError?: (error: string) => void;
-};
-
-export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps) {
+export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRScannerProps) {
   const supabase = createClient();
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
@@ -77,6 +73,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           toast.dismiss();
           toast.loading("⏳ Memproses scan...", { id: "scan-process" });
 
+          await stopScan();
           try {
             const data = JSON.parse(decodedText);
 
@@ -92,8 +89,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               user_id: data.user_id,
               name: userData.name,
             };
-
-            await stopScan();
 
             const today = new Date().toISOString().split("T")[0];
 
@@ -114,7 +109,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               .eq("status", "pending")
               .eq("date", today) // ✅ Hanya ambil izin untuk hari ini
               .maybeSingle();
-
 
             if (attendanceToday) {
               if (
@@ -173,7 +167,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 }
               }
 
-
             } else {
               if (izinHariIni) {
                 setShowIzinToHadirModal(true);
@@ -214,6 +207,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
   const handleAbsenHadir = async () => {
     if (!scanUserRef.current) return;
+    if(isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
     try {
       const { user_id, name } = scanUserRef.current;
       const nowDate = new Date();
@@ -353,7 +347,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
   const handlePulang = async () => {
     if (!scanUserRef.current) return;
-
+    if(isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
     try {
       const { user_id, name } = scanUserRef.current;
       const now = new Date();
@@ -549,8 +543,24 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       {/* Modal Pulang / Izin Pulang */}
       {showPulangModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
-            <h2 className="text-lg font-semibold mb-4 text-center">Sudah Hadir</h2>
+          <div className="relative bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+
+            {/* Tombol silang di pojok kanan atas */}
+            <button
+              onClick={() => setShowPulangModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-red-500 text-xl font-bold"
+              aria-label="Tutup"
+            >
+              &times;
+            </button>
+
+            <h2 className="text-lg font-semibold mb-2 text-center">Sudah Hadir</h2>
+
+            {/* Deskripsi warna kuning */}
+            <p className="text-sm text-yellow-500 text-center mb-4">
+              Belum bisa pulang sebelum 8 jam.
+            </p>
+
             <div className="flex flex-col gap-3">
               <button
                 onClick={handlePulang}
@@ -573,6 +583,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               >
                 🚪 Izin Pulang Awal
               </button>
+
               <button
                 onClick={() => {
                   const besok = new Date();
@@ -596,7 +607,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 </p>
               )}
             </div>
-
           </div>
         </div>
       )}

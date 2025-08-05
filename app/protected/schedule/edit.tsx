@@ -23,6 +23,7 @@ export default function EditModal({
   const [breakStart, setBreakStart] = useState(item.mulai_istirahat);
   const [breakEnd, setBreakEnd] = useState(item.selesai_istirahat);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isActive, setIsActive] = useState(item.is_active); // Tambahkan state
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +48,7 @@ export default function EditModal({
       end_time: end,
       mulai_istirahat: breakStart,
       selesai_istirahat: breakEnd,
+      is_active: isActive, // Kirim status aktif
     });
   };
 
@@ -114,6 +116,20 @@ export default function EditModal({
             onChange={(e) => setBreakEnd(e.target.value)}
             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Status Jadwal
+          </label>
+          <select
+            value={isActive ? "aktif" : "tidak"}
+            onChange={(e) => setIsActive(e.target.value === "aktif")}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="aktif">Aktif</option>
+            <option value="tidak">Tidak Aktif</option>
+          </select>
         </div>
 
         {errorMsg && (

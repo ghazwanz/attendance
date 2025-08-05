@@ -13,6 +13,7 @@ export type Schedule = {
     end_time: string;
     mulai_istirahat?: string;
   selesai_istirahat?: string;
+    is_active: boolean; // New field to indicate if the schedule is active
 }
 
 export type Attendance = {
@@ -40,4 +41,21 @@ export type Permission = {
     end_date: string; // ISO 8601 format, e.g., "2023-10-01"
     status: "pending" | "diterima" | "ditolak";
     created_at: string; // ISO 8601 format
+}
+
+export interface UserLocationMapProps {
+  isOutside: boolean;
+  setIsOutside: (isOutside: boolean) => void;
+}
+
+export interface UserLocationSectionProps {
+  isOutside: boolean;
+  setIsOutside: (isOutside: boolean) => void;
+}
+
+export interface QRScannerProps {
+  onScanSuccess: () => void;
+  onScanError: (error: string) => void;
+  isOutside: boolean; // Add this prop
+  setIsOutside: (isOutside: boolean) => void;
 }
