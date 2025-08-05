@@ -111,8 +111,7 @@ export default async function Home() {
             </div>
           </section>
 
-          {/* LOKASI PENGGUNA */}
-          <UserLocationSection />
+          
         </div>
 
         {/* FOOTER */}
