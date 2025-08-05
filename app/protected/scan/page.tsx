@@ -47,8 +47,8 @@ export default function AttendancePage() {
     }
   };
 
-  const handleScanSuccess = (userId: string) => {
-    console.log('Attendance recorded for user:', userId);
+  const handleScanSuccess = () => {
+    // console.log('Attendance recorded for user:', userId);
     loadRecentAttendance();
   };
 
