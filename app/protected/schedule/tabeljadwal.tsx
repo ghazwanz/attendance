@@ -93,7 +93,7 @@ export default function Tabeljadwal() {
               <th className="px-6 py-4 text-left">Jam Pulang</th>
               <th className="px-6 py-4 text-left">Mulai Istirahat</th>
               <th className="px-6 py-4 text-left">Selesai Istirahat</th>
-              <th className="px-6 py-4 text-left">Aktif</th>
+              <th className="px-6 py-4 text-left">status jadwal</th>
               {currentUser?.role === "admin" && (
                 <th className="px-6 py-4 text-left">Action</th>
               )}
@@ -141,7 +141,7 @@ export default function Tabeljadwal() {
                     >
                       ✏️ Edit
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         setSelectedItem(schedule);
                         setShowDelete(true);
@@ -149,7 +149,7 @@ export default function Tabeljadwal() {
                       className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                     >
                       🗑️ Delete
-                    </button>
+                    </button> */}
                   </td>
                 )}
               </tr>
