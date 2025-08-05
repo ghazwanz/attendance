@@ -547,59 +547,66 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
         </div>
       )}
       {/* Modal Pulang / Izin Pulang */}
-      {showPulangModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
-            <h2 className="text-lg font-semibold mb-4 text-center">Sudah Hadir</h2>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handlePulang}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md"
-              >
-                🏁 Pulang
-              </button>
+{showPulangModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+      <h2 className="text-lg font-semibold mb-2 text-center">Sudah Hadir</h2>
 
-              <button
-                onClick={() => {
-                  if (!sudahIzinPulang) {
-                    setShowPulangModal(false);
-                    setIsIzinPulang(true);
-                    setShowIzinForm(true);
-                  }
-                }}
-                disabled={sudahIzinPulang}
-                className={`w-full px-4 py-2 text-white rounded-md ${sudahIzinPulang ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500'
-                  }`}
-              >
-                🚪 Izin Pulang Awal
-              </button>
-              <button
-                onClick={() => {
-                  const besok = new Date();
-                  besok.setDate(besok.getDate() + 1);
-                  const besokStr = besok.toISOString().split('T')[0];
+      {/* Deskripsi warna kuning */}
+      <p className="text-sm text-yellow-500 text-center mb-4">
+        Belum bisa pulang sebelum 8 jam.
+      </p>
 
-                  setIzinStart(besokStr);
-                  setIzinEnd(besokStr);
-                  setIsIzinPulang(false);
-                  setShowPulangModal(false);
-                  setShowIzinForm(true);
-                }}
-                className="w-full px-4 py-2 bg-teal-600 text-white rounded-md"
-              >
-                📅 Izin Besok
-              </button>
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={handlePulang}
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md"
+        >
+          🏁 Pulang
+        </button>
 
-              {sudahIzinPulang && (
-                <p className="text-xs text-center text-red-500 mt-1">
-                  Anda sudah izin pulang awal hari ini.
-                </p>
-              )}
-            </div>
+        <button
+          onClick={() => {
+            if (!sudahIzinPulang) {
+              setShowPulangModal(false);
+              setIsIzinPulang(true);
+              setShowIzinForm(true);
+            }
+          }}
+          disabled={sudahIzinPulang}
+          className={`w-full px-4 py-2 text-white rounded-md ${
+            sudahIzinPulang ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500'
+          }`}
+        >
+          🚪 Izin Pulang Awal
+        </button>
 
-          </div>
-        </div>
-      )}
+        <button
+          onClick={() => {
+            const besok = new Date();
+            besok.setDate(besok.getDate() + 1);
+            const besokStr = besok.toISOString().split('T')[0];
+
+            setIzinStart(besokStr);
+            setIzinEnd(besokStr);
+            setIsIzinPulang(false);
+            setShowPulangModal(false);
+            setShowIzinForm(true);
+          }}
+          className="w-full px-4 py-2 bg-teal-600 text-white rounded-md"
+        >
+          📅 Izin Besok
+        </button>
+
+        {sudahIzinPulang && (
+          <p className="text-xs text-center text-red-500 mt-1">
+            Anda sudah izin pulang awal hari ini.
+          </p>
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Form Izin */}
       {showIzinForm && (
