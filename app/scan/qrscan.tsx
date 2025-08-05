@@ -45,10 +45,6 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
   const [showChoiceBesokModal, setShowChoiceBesokModal] = useState(false);
 
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
-  useEffect(() => {
-    // React to isOutside changes
-    showToast({ type :'info' , message: `Status lokasi: ${isOutside ? 'Di luar area' : 'Di dalam area'}`})
-  }, [isOutside]); // Runs when isOutside changes
 
   const startScan = async () => {
     if (!scannerRef.current || isScanning) return;
@@ -211,7 +207,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
 
   const handleAbsenHadir = async () => {
     if (!scanUserRef.current) return;
-    if(isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' }); 
+    if(isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
     try {
       const { user_id, name } = scanUserRef.current;
       const nowDate = new Date();

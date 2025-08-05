@@ -172,7 +172,12 @@ export default function AttendancePage() {
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
               QR Scanner
             </h2>
-            <QRScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} isOutside={isOutside} setIsOutside={setIsOutside}/>
+            <QRScanner 
+              onScanSuccess={handleScanSuccess} 
+              onScanError={handleScanError} 
+              isOutside={isOutside} 
+              setIsOutside={setIsOutside}
+            />
           </div>
 
           {/* RIWAYAT ABSENSI */}
