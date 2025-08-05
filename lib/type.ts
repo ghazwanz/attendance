@@ -42,3 +42,20 @@ export type Permission = {
     status: "pending" | "diterima" | "ditolak";
     created_at: string; // ISO 8601 format
 }
+
+export interface UserLocationMapProps {
+  isOutside: boolean;
+  setIsOutside: (isOutside: boolean) => void;
+}
+
+export interface UserLocationSectionProps {
+  isOutside: boolean;
+  setIsOutside: (isOutside: boolean) => void;
+}
+
+export interface QRScannerProps {
+  onScanSuccess: () => void;
+  onScanError: (error: string) => void;
+  isOutside: boolean; // Add this prop
+  setIsOutside: (isOutside: boolean) => void;
+}

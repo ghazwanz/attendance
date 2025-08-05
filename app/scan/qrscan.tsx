@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
+import { QRScannerProps } from '@/lib/type';
 
 const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'warning'; message: string }) => {
   const baseStyle = {
@@ -23,12 +24,7 @@ const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'wa
   toast(`${icon} ${message}`, { style: { ...baseStyle, background, color } });
 };
 
-type QRScannerProps = {
-  onScanSuccess?: () => void;
-  onScanError?: (error: string) => void;
-};
-
-export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps) {
+export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRScannerProps) {
   const supabase = createClient();
   const scannerRef = useRef<HTMLDivElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
@@ -49,6 +45,10 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   const [showChoiceBesokModal, setShowChoiceBesokModal] = useState(false);
 
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
+  useEffect(() => {
+    // React to isOutside changes
+    showToast({ type :'info' , message: `Status lokasi: ${isOutside ? 'Di luar area' : 'Di dalam area'}`})
+  }, [isOutside]); // Runs when isOutside changes
 
   const startScan = async () => {
     if (!scannerRef.current || isScanning) return;
@@ -77,6 +77,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
           toast.dismiss();
           toast.loading("⏳ Memproses scan...", { id: "scan-process" });
 
+          await stopScan();
           try {
             const data = JSON.parse(decodedText);
 
@@ -92,8 +93,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               user_id: data.user_id,
               name: userData.name,
             };
-
-            await stopScan();
 
             const today = new Date().toISOString().split("T")[0];
 
@@ -114,7 +113,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               .eq("status", "pending")
               .eq("date", today) // ✅ Hanya ambil izin untuk hari ini
               .maybeSingle();
-
 
             if (attendanceToday) {
               if (
@@ -173,7 +171,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
                 }
               }
 
-
             } else {
               if (izinHariIni) {
                 setShowIzinToHadirModal(true);
@@ -214,6 +211,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
   const handleAbsenHadir = async () => {
     if (!scanUserRef.current) return;
+    if(isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' }); 
     try {
       const { user_id, name } = scanUserRef.current;
       const nowDate = new Date();
@@ -353,7 +351,7 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
   const handlePulang = async () => {
     if (!scanUserRef.current) return;
-
+    if(isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
     try {
       const { user_id, name } = scanUserRef.current;
       const now = new Date();
@@ -547,66 +545,65 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
         </div>
       )}
       {/* Modal Pulang / Izin Pulang */}
-{showPulangModal && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
-      <h2 className="text-lg font-semibold mb-2 text-center">Sudah Hadir</h2>
+      {showPulangModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold mb-2 text-center">Sudah Hadir</h2>
 
-      {/* Deskripsi warna kuning */}
-      <p className="text-sm text-yellow-500 text-center mb-4">
-        Belum bisa pulang sebelum 8 jam.
-      </p>
+            {/* Deskripsi warna kuning */}
+            <p className="text-sm text-yellow-500 text-center mb-4">
+              Belum bisa pulang sebelum 8 jam.
+            </p>
 
-      <div className="flex flex-col gap-3">
-        <button
-          onClick={handlePulang}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md"
-        >
-          🏁 Pulang
-        </button>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handlePulang}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md"
+              >
+                🏁 Pulang
+              </button>
 
-        <button
-          onClick={() => {
-            if (!sudahIzinPulang) {
-              setShowPulangModal(false);
-              setIsIzinPulang(true);
-              setShowIzinForm(true);
-            }
-          }}
-          disabled={sudahIzinPulang}
-          className={`w-full px-4 py-2 text-white rounded-md ${
-            sudahIzinPulang ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500'
-          }`}
-        >
-          🚪 Izin Pulang Awal
-        </button>
+              <button
+                onClick={() => {
+                  if (!sudahIzinPulang) {
+                    setShowPulangModal(false);
+                    setIsIzinPulang(true);
+                    setShowIzinForm(true);
+                  }
+                }}
+                disabled={sudahIzinPulang}
+                className={`w-full px-4 py-2 text-white rounded-md ${sudahIzinPulang ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500'
+                  }`}
+              >
+                🚪 Izin Pulang Awal
+              </button>
 
-        <button
-          onClick={() => {
-            const besok = new Date();
-            besok.setDate(besok.getDate() + 1);
-            const besokStr = besok.toISOString().split('T')[0];
+              <button
+                onClick={() => {
+                  const besok = new Date();
+                  besok.setDate(besok.getDate() + 1);
+                  const besokStr = besok.toISOString().split('T')[0];
 
-            setIzinStart(besokStr);
-            setIzinEnd(besokStr);
-            setIsIzinPulang(false);
-            setShowPulangModal(false);
-            setShowIzinForm(true);
-          }}
-          className="w-full px-4 py-2 bg-teal-600 text-white rounded-md"
-        >
-          📅 Izin Besok
-        </button>
+                  setIzinStart(besokStr);
+                  setIzinEnd(besokStr);
+                  setIsIzinPulang(false);
+                  setShowPulangModal(false);
+                  setShowIzinForm(true);
+                }}
+                className="w-full px-4 py-2 bg-teal-600 text-white rounded-md"
+              >
+                📅 Izin Besok
+              </button>
 
-        {sudahIzinPulang && (
-          <p className="text-xs text-center text-red-500 mt-1">
-            Anda sudah izin pulang awal hari ini.
-          </p>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+              {sudahIzinPulang && (
+                <p className="text-xs text-center text-red-500 mt-1">
+                  Anda sudah izin pulang awal hari ini.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Form Izin */}
       {showIzinForm && (

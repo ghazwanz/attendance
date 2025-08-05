@@ -11,6 +11,7 @@ import {
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { UserLocationMapProps } from '@/lib/type';
 
 const mahativeStudio = {
   lat: -8.0017804,
@@ -46,11 +47,11 @@ function SetMapView({ location }: { location: { lat: number; lng: number } }) {
   return null;
 }
 
-function UserLocationMap() {
+function UserLocationMap({ isOutside, setIsOutside }: UserLocationMapProps) {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
-  const [isOutside, setIsOutside] = useState(false);
+  // const [isOutside, setIsOutside] = useState(false);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -88,7 +89,7 @@ function UserLocationMap() {
     }, {
       enableHighAccuracy: true,
       timeout: 30000,
-      maximumAge: 1000,
+      // maximumAge: 100000,
     });
 
     return () => navigator.geolocation.clearWatch(watchId);
@@ -136,7 +137,7 @@ function UserLocationMap() {
         <p className="text-center text-sm mt-2 text-gray-600 dark:text-gray-300">
           Jarak dari Mahative Studio:{' '}
           <strong className={isOutside ? 'text-red-600' : 'text-green-600'}>
-            {Math.round(distance)} meter
+            {Math.round(distance)/1000} KM
           </strong>
         </p>
       )}

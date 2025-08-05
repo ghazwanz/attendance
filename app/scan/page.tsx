@@ -25,6 +25,8 @@ export default function AttendancePage() {
   const [recentAttendance, setRecentAttendance] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isOutside, setIsOutside] = useState<boolean>(false);
+
   const supabase = createClient();
 
   useEffect(() => {
@@ -170,7 +172,7 @@ export default function AttendancePage() {
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
               QR Scanner
             </h2>
-            <QRScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} />
+            <QRScanner onScanSuccess={handleScanSuccess} onScanError={handleScanError} isOutside={isOutside} setIsOutside={setIsOutside}/>
           </div>
 
           {/* RIWAYAT ABSENSI */}
@@ -221,8 +223,8 @@ export default function AttendancePage() {
             )}
           </div>
         </div>
-{/* LOKASI PENGGUNA */}
-          <UserLocationSection />
+        {/* LOKASI PENGGUNA */}
+          <UserLocationSection setIsOutside={setIsOutside} isOutside={isOutside} />
         {/* TIPS */}
         <div className="mt-12 bg-blue-100 dark:bg-slate-700/40 p-6 rounded-xl">
           <h3 className="text-lg font-semibold text-blue-900 dark:text-white mb-4">
