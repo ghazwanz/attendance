@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import QRScanner from './qrscan';
+import UserLocationSection from '@/components/UserLocationSection';
 
 interface AttendanceRecord {
   id: string;
@@ -220,7 +221,8 @@ export default function AttendancePage() {
             )}
           </div>
         </div>
-
+{/* LOKASI PENGGUNA */}
+          <UserLocationSection />
         {/* TIPS */}
         <div className="mt-12 bg-blue-100 dark:bg-slate-700/40 p-6 rounded-xl">
           <h3 className="text-lg font-semibold text-blue-900 dark:text-white mb-4">

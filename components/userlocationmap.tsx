@@ -103,11 +103,11 @@ function UserLocationMap() {
   }
 
   return (
-    <div className="relative h-[440px] w-full rounded-xl overflow-hidden border-4 border-blue-200 dark:border-slate-700 shadow-lg">
+    <div className="relative w-full rounded-xl overflow-hidden border-4 border-blue-200 dark:border-slate-700 shadow-lg">
       <MapContainer
         center={[location.lat, location.lng]}
         zoom={18}
-        style={{ height: '100%', width: '100%' }}
+        className={'w-full h-96'}
       >
         <SetMapView location={location} />
         <TileLayer
@@ -117,7 +117,7 @@ function UserLocationMap() {
         <Marker position={[location.lat, location.lng]} icon={iconUser}>
           <Popup>📍 Lokasi Anda</Popup>
         </Marker>
-        <Marker position={[mahativeStudio.lat, mahativeStudio.lng]}>
+        <Marker position={[mahativeStudio.lat, mahativeStudio.lng]} icon={iconUser}>
           <Popup>🏢 Mahative Studio</Popup>
         </Marker>
         <Circle
