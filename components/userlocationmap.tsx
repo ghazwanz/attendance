@@ -117,7 +117,7 @@ function UserLocationMap() {
         <Marker position={[location.lat, location.lng]} icon={iconUser}>
           <Popup>📍 Lokasi Anda</Popup>
         </Marker>
-        <Marker position={[mahativeStudio.lat, mahativeStudio.lng]}>
+        <Marker position={[mahativeStudio.lat, mahativeStudio.lng]} icon={iconUser}>
           <Popup>🏢 Mahative Studio</Popup>
         </Marker>
         <Circle
