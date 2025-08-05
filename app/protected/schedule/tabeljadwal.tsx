@@ -69,6 +69,7 @@ export default function Tabeljadwal() {
         end_time: updatedItem.end_time,
         mulai_istirahat: updatedItem.mulai_istirahat,
         selesai_istirahat: updatedItem.selesai_istirahat,
+        
       })
       .eq("id", updatedItem.id);
 
@@ -92,6 +93,7 @@ export default function Tabeljadwal() {
               <th className="px-6 py-4 text-left">Jam Pulang</th>
               <th className="px-6 py-4 text-left">Mulai Istirahat</th>
               <th className="px-6 py-4 text-left">Selesai Istirahat</th>
+              <th className="px-6 py-4 text-left">Aktif</th>
               {currentUser?.role === "admin" && (
                 <th className="px-6 py-4 text-left">Action</th>
               )}
@@ -121,6 +123,13 @@ export default function Tabeljadwal() {
                 <td className="px-6 py-4 text-orange-500 font-semibold">
                   {formatTime(schedule.selesai_istirahat) || "12:30"}
                 </td>
+                <td className="px-6 py-4">
+                  {schedule.is_active ? (
+                    <span className="text-green-600 font-semibold">Aktif</span>
+                  ) : (
+                    <span className="text-red-600 font-semibold">Tidak Aktif</span>
+                  )}
+                </td>
                 {currentUser?.role === "admin" && (
                   <td className="px-6 py-4 space-x-2">
                     <button
@@ -147,7 +156,7 @@ export default function Tabeljadwal() {
             ))}
             {data.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center text-gray-400 py-6">
+                <td colSpan={8} className="text-center text-gray-400 py-6">
                   Tidak ada data jadwal.
                 </td>
               </tr>

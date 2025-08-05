@@ -13,6 +13,7 @@ export type Schedule = {
     end_time: string;
     mulai_istirahat?: string;
   selesai_istirahat?: string;
+    is_active: boolean; // New field to indicate if the schedule is active
 }
 
 export type Attendance = {
