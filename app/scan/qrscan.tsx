@@ -559,13 +559,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
 
       <div className="flex flex-col gap-3">
         <button
-          onClick={handlePulang}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded-md"
-        >
-          🏁 Pulang
-        </button>
-
-        <button
           onClick={() => {
             if (!sudahIzinPulang) {
               setShowPulangModal(false);
