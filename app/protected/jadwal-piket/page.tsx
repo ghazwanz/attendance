@@ -9,7 +9,7 @@ interface JadwalPiket {
   user_id: string;
   created_at: string;
   users?: { name: string };
-  schedules?:{day:string}
+  schedules?: { day: string };
 }
 
 interface User {
@@ -22,8 +22,11 @@ export default function JadwalPiketPage() {
   const [data, setData] = useState<JadwalPiket[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [form, setForm] = useState({ user_id: "", hari: "Selasa" });
-  const [showForm, setShowForm] = useState(false);
+
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -39,9 +42,7 @@ export default function JadwalPiketPage() {
   async function fetchData() {
     const { data: schedules } = await supabase
       .from("piket")
-      .select("*, users(name), schedules(day)")
-      // .order("jadwal", { ascending: true });
-    console.log(schedules)
+      .select("*, users(name), schedules(day)");
     setData(schedules || []);
   }
 
@@ -77,29 +78,39 @@ export default function JadwalPiketPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const {data:jadwalData} = await supabase.from("schedules").select("id,day").eq("day",form.hari.toLowerCase()).single()
+    const { data: jadwalData } = await supabase
+      .from("schedules")
+      .select("id, day")
+      .eq("day", form.hari.toLowerCase())
+      .single();
+
     if (editingId) {
-      await supabase.from("piket").update({
-        user_id: form.user_id,
-        jadwal_id:jadwalData?.id,
-        updated_at: new Date().toISOString()      
-      }).eq("id", editingId);
+      await supabase
+        .from("piket")
+        .update({
+          user_id: form.user_id,
+          jadwal_id: jadwalData?.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", editingId);
       toast.success("Jadwal berhasil diperbarui!");
+      setShowEditForm(false);
     } else {
       await supabase.from("piket").insert({
         user_id: form.user_id,
         created_at: new Date().toISOString(),
-        jadwal_id: jadwalData?.id
+        jadwal_id: jadwalData?.id,
       });
       toast.success("Jadwal berhasil ditambahkan!");
+      setShowAddForm(false);
     }
+
     resetForm();
-    setShowForm(false);
     fetchData();
   }
 
   function handleEdit(item: JadwalPiket) {
-    setShowForm(true);
+    setShowEditForm(true);
     setEditingId(item.id);
     setForm({
       user_id: item.user_id,
@@ -126,7 +137,9 @@ export default function JadwalPiketPage() {
     const name = item.users?.name?.toLowerCase() || "";
     const hari = item.schedules?.day?.toLowerCase() || "";
     return (
-      (!searchTerm || name.includes(searchTerm.toLowerCase()) || hari.includes(searchTerm.toLowerCase()))
+      !searchTerm ||
+      name.includes(searchTerm.toLowerCase()) ||
+      hari.includes(searchTerm.toLowerCase())
     );
   });
 
@@ -138,7 +151,7 @@ export default function JadwalPiketPage() {
         <button
           onClick={() => {
             resetForm();
-            setShowForm(!showForm);
+            setShowAddForm(true);
           }}
           className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
         >
@@ -162,81 +175,89 @@ export default function JadwalPiketPage() {
         </div>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="grid md:grid-cols-4 gap-4 mb-6 bg-white/90 dark:bg-gray-900 p-6 rounded-2xl shadow-xl animate-fade-in">
-          <select
-            name="user_id"
-            value={form.user_id}
-            onChange={handleChange}
-            required
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">👤 Pilih User</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>{u.name}</option>
-            ))}
-          </select>
-          <select
-            name="hari"
-            value={form.hari}
-            onChange={handleChange}
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="Senin">Senin</option>
-            <option value="Selasa">Selasa</option>
-            <option value="Rabu">Rabu</option>
-            <option value="Kamis">Kamis</option>
-            <option value="Jumat">Jumat</option>
-            <option value="Sabtu">Sabtu</option>
-            <option value="Minggu">Minggu</option>
-          </select>
-          <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
-            💾 Simpan
-          </button>
-        </form>
+      {/* Modal Tambah Jadwal */}
+      {showAddForm && (
+        <ModalForm
+          title="➕ Tambah Jadwal"
+          buttonLabel="💾 Simpan"
+          buttonColor="bg-green-600 hover:bg-green-700"
+          onClose={() => setShowAddForm(false)}
+          onSubmit={handleSubmit}
+          users={users}
+          form={form}
+          handleChange={handleChange}
+        />
       )}
 
+      {/* Modal Edit Jadwal */}
+      {showEditForm && (
+        <ModalForm
+          title="✏️ Edit Jadwal"
+          buttonLabel="💾 Update"
+          buttonColor="bg-yellow-500 hover:bg-yellow-600"
+          onClose={() => setShowEditForm(false)}
+          onSubmit={handleSubmit}
+          users={users}
+          form={form}
+          handleChange={handleChange}
+        />
+      )}
+
+      {/* TABEL */}
       <div className="overflow-x-auto">
         <table className="w-full border-separate text-center border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
           <thead>
             <tr className="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm uppercase">
               <th className="px-6 py-3 rounded-l-xl">No.</th>
               <th className="px-6 py-3">👤 Nama</th>
-              <th className="px-6 py-3">⏰ Hari</th>
+              <th className="px-6 py-3">📅 Hari</th>
               <th className="px-6 py-3 rounded-r-xl">⚙️ Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item,idx) => (
-              <tr
-                key={item.id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-md transition-transform hover:scale-[1.01] hover:shadow-lg"
-              >
-                <td className="px-6 py-3 rounded-l-xl">{idx+1}</td>
-                <td className="px-6 py-3">{item.users?.name || "-"}</td>
-                <td className="px-6 py-3">{item.schedules?.day.toUpperCase()||"-"}</td>
-                <td className="px-6 py-3 flex gap-2 items-center justify-center rounded-r-xl">
-                  <button
-                    onClick={() => handleEdit(item)}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-3 py-1 rounded-lg text-xs transition"
-                  >
-                    ✏️ Edit
-                  </button>
-                  {currentUser?.role === "admin" && (
+            {filteredData.length > 0 ? (
+              filteredData.map((item, idx) => (
+                <tr
+                  key={item.id}
+                  className="bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors shadow rounded-xl"
+                >
+                  <td className="px-6 py-4 rounded-l-xl font-semibold">{idx + 1}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">👤</span>
+                      <span>{item.users?.name || "-"}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-white">
+                      {item.schedules?.day?.toUpperCase() || "-"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 rounded-r-xl flex items-center justify-center gap-2">
                     <button
-                      onClick={() => confirmDelete(item.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 rounded-lg text-xs transition"
+                      onClick={() => handleEdit(item)}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-3 py-1 rounded-lg text-xs shadow"
                     >
-                      🗑️ Hapus
+                      ✏️ Edit
                     </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {filteredData.length === 0 && (
+                    {currentUser?.role === "admin" && (
+                      <button
+                        onClick={() => confirmDelete(item.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 rounded-lg text-xs shadow"
+                      >
+                        🗑️ Hapus
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
               <tr>
-                <td colSpan={4} className="text-center text-gray-500 dark:text-gray-400 py-6">
-                  😕 Tidak ada jadwal piket.
+                <td colSpan={4} className="py-10 text-center text-gray-500 dark:text-gray-400">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-4xl">📭</div>
+                    <div className="text-sm">Belum ada jadwal piket.</div>
+                  </div>
                 </td>
               </tr>
             )}
@@ -244,12 +265,11 @@ export default function JadwalPiketPage() {
         </table>
       </div>
 
+      {/* MODAL KONFIRMASI DELETE */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-xl w-full max-w-sm text-black dark:text-white shadow-xl">
-            <h2 className="text-xl font-bold mb-3 text-red-600 flex items-center gap-2">
-              🗑️ Konfirmasi Hapus
-            </h2>
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-xl w-full max-w-sm shadow-xl">
+            <h2 className="text-xl font-bold mb-3 text-red-600 flex items-center gap-2">🗑️ Konfirmasi Hapus</h2>
             <p className="mb-5">Apakah kamu yakin ingin menghapus jadwal ini?</p>
             <div className="flex justify-end gap-3">
               <button
@@ -268,6 +288,70 @@ export default function JadwalPiketPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ✅ Komponen Modal Form (Reusable untuk Tambah & Edit)
+function ModalForm({
+  title,
+  onClose,
+  onSubmit,
+  users,
+  form,
+  handleChange,
+  buttonLabel,
+  buttonColor,
+}: {
+  title: string;
+  onClose: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+  users: User[];
+  form: { user_id: string; hari: string };
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  buttonLabel: string;
+  buttonColor: string;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+      <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl w-full max-w-lg shadow-2xl animate-fade-in">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-blue-600 dark:text-blue-400">{title}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-red-500 text-xl font-bold">✖️</button>
+        </div>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <select
+            name="user_id"
+            value={form.user_id}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">👤 Pilih User</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>{u.name}</option>
+            ))}
+          </select>
+          <select
+            name="hari"
+            value={form.hari}
+            onChange={handleChange}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500"
+          >
+            {["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"].map((day) => (
+              <option key={day} value={day}>{day}</option>
+            ))}
+          </select>
+          <div className="flex justify-end gap-3 mt-4">
+            <button type="submit" className={`${buttonColor} text-white font-semibold py-2 px-6 rounded-lg`}>
+              {buttonLabel}
+            </button>
+            <button type="button" onClick={onClose} className="border border-gray-300 dark:border-gray-600 px-6 py-2 rounded-lg">
+              Batal
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
