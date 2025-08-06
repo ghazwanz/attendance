@@ -197,23 +197,25 @@ export default function JadwalPiketPage() {
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full border-separate border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
+        <table className="w-full border-separate text-center border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
           <thead>
             <tr className="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm uppercase">
-              <th className="px-6 py-3 rounded-l-xl text-left">👤 Nama</th>
-              <th className="px-6 py-3 text-left">⏰ Hari</th>
-              <th className="px-6 py-3 rounded-r-xl text-left">⚙️ Aksi</th>
+              <th className="px-6 py-3 rounded-l-xl">No.</th>
+              <th className="px-6 py-3">👤 Nama</th>
+              <th className="px-6 py-3">⏰ Hari</th>
+              <th className="px-6 py-3 rounded-r-xl">⚙️ Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item) => (
+            {filteredData.map((item,idx) => (
               <tr
                 key={item.id}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-md transition-transform hover:scale-[1.01] hover:shadow-lg"
               >
-                <td className="px-6 py-3 rounded-l-xl">{item.users?.name || "-"}</td>
+                <td className="px-6 py-3 rounded-l-xl">{idx+1}</td>
+                <td className="px-6 py-3">{item.users?.name || "-"}</td>
                 <td className="px-6 py-3">{item.schedules?.day.toUpperCase()||"-"}</td>
-                <td className="px-6 py-3 flex gap-2 rounded-r-xl">
+                <td className="px-6 py-3 flex gap-2 items-center justify-center rounded-r-xl">
                   <button
                     onClick={() => handleEdit(item)}
                     className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-3 py-1 rounded-lg text-xs transition"
@@ -233,7 +235,7 @@ export default function JadwalPiketPage() {
             ))}
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan={3} className="text-center text-gray-500 dark:text-gray-400 py-6">
+                <td colSpan={4} className="text-center text-gray-500 dark:text-gray-400 py-6">
                   😕 Tidak ada jadwal piket.
                 </td>
               </tr>
