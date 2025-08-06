@@ -78,10 +78,10 @@ export default function JadwalPiketPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (editingId) {
-      await supabase.from("schedules").update(form).eq("id", editingId);
+      await supabase.from("piket").update(form).eq("id", editingId);
       toast.success("Jadwal berhasil diperbarui!");
     } else {
-      await supabase.from("schedules").insert(form);
+      await supabase.from("piket").insert(form);
       toast.success("Jadwal berhasil ditambahkan!");
     }
     resetForm();
@@ -106,7 +106,7 @@ export default function JadwalPiketPage() {
 
   async function handleDeleteConfirm() {
     if (deleteId) {
-      await supabase.from("schedules").delete().eq("id", deleteId);
+      await supabase.from("piket").delete().eq("id", deleteId);
       toast.success("Jadwal berhasil dihapus!");
       setDeleteId(null);
       setShowConfirmModal(false);
