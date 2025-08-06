@@ -4,13 +4,12 @@ import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import toast from "react-hot-toast";
 
-interface Schedule {
+interface JadwalPiket {
   id: string;
   user_id: string;
-  date: string;
-  shift: string;
   created_at: string;
   users?: { name: string };
+  schedules?:{day:string}
 }
 
 interface User {
@@ -20,9 +19,9 @@ interface User {
 
 export default function JadwalPiketPage() {
   const supabase = createClient();
-  const [data, setData] = useState<Schedule[]>([]);
+  const [data, setData] = useState<JadwalPiket[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [form, setForm] = useState({ user_id: "", date: "", shift: "Pagi" });
+  const [form, setForm] = useState({ user_id: "", hari: "Selasa" });
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,7 +40,8 @@ export default function JadwalPiketPage() {
     const { data: schedules } = await supabase
       .from("piket")
       .select("*, users(name), schedules(day)")
-      .order("date", { ascending: true });
+      // .order("jadwal", { ascending: true });
+    console.log(schedules)
     setData(schedules || []);
   }
 
@@ -66,7 +66,7 @@ export default function JadwalPiketPage() {
   }
 
   function resetForm() {
-    setForm({ user_id: "", date: "", shift: "Pagi" });
+    setForm({ user_id: "", hari: "Selasa" });
     setEditingId(null);
   }
 
@@ -77,11 +77,20 @@ export default function JadwalPiketPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const {data:jadwalData} = await supabase.from("schedules").select("id,day").eq("day",form.hari.toLowerCase()).single()
     if (editingId) {
-      await supabase.from("piket").update(form).eq("id", editingId);
+      await supabase.from("piket").update({
+        user_id: form.user_id,
+        jadwal_id:jadwalData?.id,
+        updated_at: new Date().toISOString()      
+      }).eq("id", editingId);
       toast.success("Jadwal berhasil diperbarui!");
     } else {
-      await supabase.from("piket").insert(form);
+      await supabase.from("piket").insert({
+        user_id: form.user_id,
+        created_at: new Date().toISOString(),
+        jadwal_id: jadwalData?.id
+      });
       toast.success("Jadwal berhasil ditambahkan!");
     }
     resetForm();
@@ -89,13 +98,12 @@ export default function JadwalPiketPage() {
     fetchData();
   }
 
-  function handleEdit(item: Schedule) {
+  function handleEdit(item: JadwalPiket) {
     setShowForm(true);
     setEditingId(item.id);
     setForm({
       user_id: item.user_id,
-      date: item.date,
-      shift: item.shift,
+      hari: item.schedules?.day || "",
     });
   }
 
@@ -116,10 +124,9 @@ export default function JadwalPiketPage() {
 
   const filteredData = data.filter((item) => {
     const name = item.users?.name?.toLowerCase() || "";
-    const shift = item.shift?.toLowerCase() || "";
+    const hari = item.schedules?.day?.toLowerCase() || "";
     return (
-      (!searchTerm || name.includes(searchTerm.toLowerCase()) || shift.includes(searchTerm.toLowerCase())) &&
-      (!filterDate || item.date === filterDate)
+      (!searchTerm || name.includes(searchTerm.toLowerCase()) || hari.includes(searchTerm.toLowerCase()))
     );
   });
 
@@ -141,7 +148,7 @@ export default function JadwalPiketPage() {
         <div className="flex gap-3 w-full md:w-auto">
           <input
             type="text"
-            placeholder="🔍 Cari nama/shift..."
+            placeholder="🔍 Cari nama/hari..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full md:w-56 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -169,17 +176,9 @@ export default function JadwalPiketPage() {
               <option key={u.id} value={u.id}>{u.name}</option>
             ))}
           </select>
-          <input
-            type="date"
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-            required
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500"
-          />
           <select
-            name="shift"
-            value={form.shift}
+            name="hari"
+            value={form.hari}
             onChange={handleChange}
             className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500"
           >
@@ -202,7 +201,6 @@ export default function JadwalPiketPage() {
           <thead>
             <tr className="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm uppercase">
               <th className="px-6 py-3 rounded-l-xl text-left">👤 Nama</th>
-              <th className="px-6 py-3 text-left">📆 Tanggal</th>
               <th className="px-6 py-3 text-left">⏰ Hari</th>
               <th className="px-6 py-3 rounded-r-xl text-left">⚙️ Aksi</th>
             </tr>
@@ -214,8 +212,7 @@ export default function JadwalPiketPage() {
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-md transition-transform hover:scale-[1.01] hover:shadow-lg"
               >
                 <td className="px-6 py-3 rounded-l-xl">{item.users?.name || "-"}</td>
-                <td className="px-6 py-3">{item.date}</td>
-                <td className="px-6 py-3">{item.shift}</td>
+                <td className="px-6 py-3">{item.schedules?.day.toUpperCase()||"-"}</td>
                 <td className="px-6 py-3 flex gap-2 rounded-r-xl">
                   <button
                     onClick={() => handleEdit(item)}
@@ -236,7 +233,7 @@ export default function JadwalPiketPage() {
             ))}
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan={4} className="text-center text-gray-500 dark:text-gray-400 py-6">
+                <td colSpan={3} className="text-center text-gray-500 dark:text-gray-400 py-6">
                   😕 Tidak ada jadwal piket.
                 </td>
               </tr>
