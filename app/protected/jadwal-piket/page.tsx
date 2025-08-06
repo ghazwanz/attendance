@@ -78,11 +78,30 @@ export default function JadwalPiketPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
     const { data: jadwalData } = await supabase
       .from("schedules")
       .select("id, day")
       .eq("day", form.hari.toLowerCase())
       .single();
+
+    const { data: existing } = await supabase
+      .from("piket")
+      .select("*")
+      .eq("user_id", form.user_id)
+      .eq("jadwal_id", jadwalData?.id);
+
+    // Jika tambah dan user sudah terdaftar
+    if (!editingId && existing && existing.length > 0) {
+      toast.error("User sudah terdaftar di hari tersebut.");
+      return;
+    }
+
+    // Jika edit dan user ingin ubah ke hari yang sudah dipakai user lain
+    if (editingId && existing && existing.length > 0 && existing[0].id !== editingId) {
+      toast.error("User sudah memiliki jadwal di hari tersebut.");
+      return;
+    }
 
     if (editingId) {
       await supabase
@@ -175,7 +194,7 @@ export default function JadwalPiketPage() {
         </div>
       </div>
 
-      {/* Modal Tambah Jadwal */}
+      {/* Modal Tambah */}
       {showAddForm && (
         <ModalForm
           title="➕ Tambah Jadwal"
@@ -189,7 +208,7 @@ export default function JadwalPiketPage() {
         />
       )}
 
-      {/* Modal Edit Jadwal */}
+      {/* Modal Edit */}
       {showEditForm && (
         <ModalForm
           title="✏️ Edit Jadwal"
@@ -203,7 +222,7 @@ export default function JadwalPiketPage() {
         />
       )}
 
-      {/* TABEL */}
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-separate text-center border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
           <thead>
@@ -265,7 +284,7 @@ export default function JadwalPiketPage() {
         </table>
       </div>
 
-      {/* MODAL KONFIRMASI DELETE */}
+      {/* Modal Konfirmasi Hapus */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-900 p-6 rounded-xl w-full max-w-sm shadow-xl">
@@ -292,7 +311,7 @@ export default function JadwalPiketPage() {
   );
 }
 
-// ✅ Komponen Modal Form (Reusable untuk Tambah & Edit)
+// Modal Form Komponen Reusable
 function ModalForm({
   title,
   onClose,
