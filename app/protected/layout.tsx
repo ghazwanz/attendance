@@ -7,9 +7,10 @@ import {
   CalendarClock,
   QrCodeIcon,
   QrCode,
+  CalendarDays,
 } from "lucide-react";
 import { EnvVarWarning } from "@/components/env-var-warning";
-import {AuthButton} from "@/components/auth-button"; // ✅ diperbaiki di sini
+import { AuthButton } from "@/components/auth-button"; // ✅ diperbaiki di sini
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
 import Image from "next/image";
@@ -65,6 +66,9 @@ export default function ProtectedLayout({
                   </Link>
                   <Link href="/protected/schedule" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
                     <CalendarClock size={16} /> Schedule
+                  </Link>
+                  <Link href="/protected/jadwal-piket" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
+                    <CalendarDays size={16} /> Picket Schedule
                   </Link>
                 </div>
               </div>
