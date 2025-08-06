@@ -49,7 +49,7 @@ export type Reminder = {
   message: string;
   created_at: string;
   jadwal: string;
-  type: "reminder" | "alert";
+  type: string;
 };
 
 export interface UserLocationMapProps {
