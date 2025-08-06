@@ -52,7 +52,7 @@ export default function ProtectedLayout({
                   <Link href="/protected/" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
                     <Home size={16} /> Home
                   </Link>
-                  <Link href="/protected/scan" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
+                  <Link href="/scan" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
                     <QrCode size={16} /> Scan
                   </Link>
                   <Link href="/protected/users" className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
