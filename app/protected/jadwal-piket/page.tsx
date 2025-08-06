@@ -31,7 +31,6 @@ export default function JadwalPiketPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Fetch schedule & users
   useEffect(() => {
     fetchData();
     fetchUsers();
@@ -40,8 +39,8 @@ export default function JadwalPiketPage() {
 
   async function fetchData() {
     const { data: schedules } = await supabase
-      .from("schedules")
-      .select("*, users(name)")
+      .from("piket")
+      .select("*, users(name), schedules(day)")
       .order("date", { ascending: true });
     setData(schedules || []);
   }
@@ -128,7 +127,6 @@ export default function JadwalPiketPage() {
     <div className="w-full max-w-screen-xl mx-auto px-6 py-8 text-black dark:text-white">
       <h1 className="text-4xl font-bold mb-8 text-blue-700 dark:text-blue-400">📅 Jadwal Piket</h1>
 
-      {/* Filter & Tambah */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <button
           onClick={() => {
@@ -157,7 +155,6 @@ export default function JadwalPiketPage() {
         </div>
       </div>
 
-      {/* Form Tambah/Edit */}
       {showForm && (
         <form onSubmit={handleSubmit} className="grid md:grid-cols-4 gap-4 mb-6 bg-white/90 dark:bg-gray-900 p-6 rounded-2xl shadow-xl animate-fade-in">
           <select
@@ -196,7 +193,6 @@ export default function JadwalPiketPage() {
         </form>
       )}
 
-      {/* Tabel Jadwal */}
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
           <thead>
@@ -245,7 +241,6 @@ export default function JadwalPiketPage() {
         </table>
       </div>
 
-      {/* Modal Konfirmasi Hapus */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-900 p-6 rounded-xl w-full max-w-sm text-black dark:text-white shadow-xl">
