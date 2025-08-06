@@ -5,6 +5,8 @@ import { Html5Qrcode, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 import { QRScannerProps } from '@/lib/type';
+import { handleAbsenHadir } from './actions/AbsensiMasukAction';
+import ClockInModal from './components/ModalAbsensi';
 
 const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'warning'; message: string }) => {
   const baseStyle = {
@@ -205,88 +207,13 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
     }
   };
 
-  const handleAbsenHadir = async () => {
+  const handleHadirSelection = async () => {
     if (!scanUserRef.current) return;
-    if(isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
-    try {
-      const { user_id, name } = scanUserRef.current;
-      const nowDate = new Date();
-      const now = nowDate.toISOString();
-
-      // Ambil hari ini (misalnya 'Monday', 'Tuesday')
-      const options = { weekday: 'long' } as const;
-      const todayName = nowDate.toLocaleDateString('id-ID', options).toLowerCase(); // misalnya: 'Monday'
-
-      // Ambil jadwal hari ini dari tabel schedules
-      const { data: jadwalHariIni, error: jadwalError } = await supabase
-        .from('schedules')
-        .select('start_time')
-        .eq('day', todayName)
-        .single();
-
-      if (jadwalError || !jadwalHariIni) {
-        throw new Error(`Jadwal hari ${todayName} tidak ditemukan`);
-      }
-
-      const [jamJadwal, menitJadwal] = jadwalHariIni.start_time.split(':').map(Number);
-
-      // Konversi ke waktu lokal
-      const local = new Date(nowDate.getTime() - nowDate.getTimezoneOffset() * 60000);
-      const jamNow = local.getHours();
-      const menitNow = local.getMinutes();
-
-      let status = 'HADIR';
-      if (jamNow > jamJadwal || (jamNow === jamJadwal && menitNow > menitJadwal)) {
-        status = 'TERLAMBAT';
-      }
-
-      const today = local.toISOString().split('T')[0];
-
-      // Cek kehadiran hari ini
-      const { data: existing } = await supabase
-        .from('attendances')
-        .select('id, check_in, status')
-        .eq('user_id', user_id)
-        .eq('date', today)
-        .limit(1)
-        .single();
-
-      if (existing && existing.id) {
-        let updateStatus = status;
-        if (existing.status === 'TERLAMBAT' || updateStatus === 'TERLAMBAT') {
-          updateStatus = 'TERLAMBAT';
-        }
-
-        const { error } = await supabase
-          .from('attendances')
-          .update({
-            check_in: now,
-            status: updateStatus,
-          })
-          .eq('id', existing.id);
-
-        if (error) throw new Error('Gagal update kehadiran');
-      } else {
-        const { error } = await supabase.from('attendances').insert({
-          user_id,
-          date: today,
-          check_in: now,
-          check_out: null,
-          notes: '',
-          created_at: now,
-          status,
-        });
-
-        if (error) throw new Error('Gagal menyimpan kehadiran');
-      }
-
-      showToast({ type: 'success', message: `Berhasil hadir (${status}) untuk ${name}` });
-      if (onScanSuccess) onScanSuccess();
-    } catch (err) {
-      showToast({ type: 'error', message: (err as Error).message });
-    } finally {
-      setShowChoiceModal(false);
+    const success = await handleAbsenHadir(scanUserRef.current, isOutside, showToast);
+    if (success && onScanSuccess) {
+      onScanSuccess();
     }
+    setShowChoiceModal(false);
   };
 
 
@@ -347,7 +274,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
 
   const handlePulang = async () => {
     if (!scanUserRef.current) return;
-    if(isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
+    if (isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
     try {
       const { user_id, name } = scanUserRef.current;
       const now = new Date();
@@ -465,17 +392,12 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
         </button>
       </div>
       {/* Modal Pilih Hadir / Izin */}
-      {showChoiceModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
-            <h2 className="text-lg font-semibold mb-4 text-center">Pilih Kehadiran</h2>
-            <div className="flex flex-col gap-3">
-              <button onClick={handleAbsenHadir} className="w-full px-4 py-2 bg-green-600 text-white rounded-md">✅ Hadir</button>
-              <button onClick={handleAbsenIzin} className="w-full px-4 py-2 bg-yellow-500 text-white rounded-md">📝 Izin Tidak Hadir</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ClockInModal
+        isOpen={showChoiceModal}
+        onClose={() => setShowChoiceModal(false)}
+        onSelectHadir={handleHadirSelection}
+        onSelectIzin={handleAbsenIzin}
+      />
       {/* Modal Ubah dari Izin ke Hadir */}
       {showIzinToHadirModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
@@ -488,7 +410,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
               <button
                 onClick={() => {
                   setShowIzinToHadirModal(false);
-                  handleAbsenHadir(); // langsung ubah jadi hadir
+                  handleHadirSelection(); // langsung ubah jadi hadir
                 }}
                 className="px-4 py-2 bg-green-600 text-white rounded-md"
               >
@@ -517,8 +439,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
                               .eq("date", today)
                               .eq("status", "pending");
                           }
-
-                          handleAbsenHadir(); // lanjutkan absen hadir
+                          handleHadirSelection(); // lanjutkan absen hadir
                         }}
                         className="px-4 py-2 bg-green-600 text-white rounded-md"
                       >
@@ -534,8 +455,6 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
                   </div>
                 </div>
               )}
-
-
             </div>
           </div>
         </div>
