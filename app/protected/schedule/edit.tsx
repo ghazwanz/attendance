@@ -1,7 +1,7 @@
 // components/EditModal.tsx
 "use client";
 import React, { useState } from "react";
-import { X, Save } from "lucide-react";
+// import { X, Save } from "lucide-react";
 import { Schedule } from "@/lib/type";
 
 export default function EditModal({
@@ -15,15 +15,17 @@ export default function EditModal({
   onSave: (updatedItem: Schedule) => void;
   isAdmin: boolean;
 }) {
-  if (!isAdmin) return null;
-
+  // 🟢 Panggil semua hook terlebih dahulu tanpa kondisi
   const [day, setDay] = useState(item.day);
   const [start, setStart] = useState(item.start_time);
   const [end, setEnd] = useState(item.end_time);
   const [breakStart, setBreakStart] = useState(item.mulai_istirahat);
   const [breakEnd, setBreakEnd] = useState(item.selesai_istirahat);
   const [errorMsg, setErrorMsg] = useState("");
-  const [isActive, setIsActive] = useState(item.is_active); // Tambahkan state
+  const [isActive, setIsActive] = useState(item.is_active);
+
+  // 🟥 Lalu jika bukan admin, baru return null
+  if (!isAdmin) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +50,7 @@ export default function EditModal({
       end_time: end,
       mulai_istirahat: breakStart,
       selesai_istirahat: breakEnd,
-      is_active: isActive, // Kirim status aktif
+      is_active: isActive,
     });
   };
 
