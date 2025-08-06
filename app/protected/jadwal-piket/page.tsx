@@ -183,9 +183,13 @@ export default function JadwalPiketPage() {
             onChange={handleChange}
             className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500"
           >
-            <option value="Pagi">🌅 Pagi</option>
-            <option value="Siang">🌞 Siang</option>
-            <option value="Sore">🌇 Sore</option>
+            <option value="Senin">Senin</option>
+            <option value="Selasa">Selasa</option>
+            <option value="Rabu">Rabu</option>
+            <option value="Kamis">Kamis</option>
+            <option value="Jumat">Jumat</option>
+            <option value="Sabtu">Sabtu</option>
+            <option value="Minggu">Minggu</option>
           </select>
           <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">
             💾 Simpan
@@ -199,7 +203,7 @@ export default function JadwalPiketPage() {
             <tr className="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm uppercase">
               <th className="px-6 py-3 rounded-l-xl text-left">👤 Nama</th>
               <th className="px-6 py-3 text-left">📆 Tanggal</th>
-              <th className="px-6 py-3 text-left">⏰ Shift</th>
+              <th className="px-6 py-3 text-left">⏰ Hari</th>
               <th className="px-6 py-3 rounded-r-xl text-left">⚙️ Aksi</th>
             </tr>
           </thead>
