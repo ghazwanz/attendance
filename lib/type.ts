@@ -43,6 +43,15 @@ export type Permission = {
     created_at: string; // ISO 8601 format
 }
 
+export type Reminder = {
+  id: string;
+  title: string;
+  message: string;
+  created_at: string;
+  jadwal: string;
+  type: "reminder" | "alert";
+};
+
 export interface UserLocationMapProps {
   isOutside: boolean;
   setIsOutside: (isOutside: boolean) => void;
