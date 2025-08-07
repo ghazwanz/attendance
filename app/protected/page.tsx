@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { QrCode, CalendarCheck, UserCheck, Clock9, Ban, Home, UserX } from "lucide-react";
+import {
+  QrCode, CalendarCheck, UserCheck, Clock9, Ban, Home, UserX
+} from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { createClient } from '@/lib/supabase/client';
 import { Attendance as BaseAttendance } from "@/lib/type";
+import { toast } from "react-hot-toast";
 
 type Attendance = BaseAttendance & {
   users?: {
@@ -37,9 +40,11 @@ export default function ProtectedPage() {
   const [countAlpha, setCountAlpha] = useState(0);
   const [pendingIzin, setPendingIzin] = useState<Attendance[]>([]);
   const [recentAttendance, setRecentAttendance] = useState<Attendance[] | any[]>([]);
+  const [isPiketToday, setIsPiketToday] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
+
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -47,8 +52,33 @@ export default function ProtectedPage() {
         return;
       }
 
+      // Hanya satu kali set
       setUserId(user.id);
 
+      // Cek apakah user piket hari ini
+      const { data: piketToday, error: piketError } = await supabase
+        .from('piket')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (piketToday) {
+        setIsPiketToday(true);
+
+        // ✅ Pastikan hanya tampilkan toast jika belum pernah muncul
+        toast.dismiss(); // Buang semua toast aktif sebelumnya
+        toast(
+          <div>
+            <div className="font-bold">📢 Anda piket hari ini</div>
+            <div>Jangan lupa laksanakan tugas piket dengan baik.</div>
+          </div>,
+          { duration: 6000, id: 'piket-toast' } // 🔑 ID untuk mencegah duplikat
+        );
+      } else {
+        setIsPiketToday(false);
+      }
+
+      // Lanjut ambil data statistik
       const { count: countAbsensis } = await supabase
         .from('attendances')
         .select('*', { count: 'exact', head: true })
@@ -93,17 +123,14 @@ export default function ProtectedPage() {
 
       const { data: pending } = await supabase
         .from('permissions')
-        .select(`
-                *,
-                user:users!permissions_user_id_fkey(id, name, role),
-                approver:users!permissions_approved_by_fkey(id, name, role)`)
-        .eq('status', 'pending')
-
+        .select(`*, user:users!permissions_user_id_fkey(id, name, role), approver:users!permissions_approved_by_fkey(id, name, role)`)
+        .eq('status', 'pending');
       setPendingIzin(pending || []);
     };
 
     fetchData();
 
+    // real-time attendance handler
     const channel = supabase
       .channel("realtime:attendances")
       .on(
@@ -115,17 +142,15 @@ export default function ProtectedPage() {
         },
         (payload) => {
           const newRecord = payload.new;
-          if (newRecord.user_id === userId) {
-            setRecentAttendance((prev) => {
-              const updated = [newRecord, ...prev];
-              return updated
-                .filter((v, i, self) => self.findIndex(x => x.id === v.id) === i)
-                .sort((a, b) =>
-                  new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-                )
-                .slice(0, 6);
-            });
-          }
+          setRecentAttendance((prev) => {
+            const updated = [newRecord, ...prev];
+            return updated
+              .filter((v, i, self) => self.findIndex(x => x.id === v.id) === i)
+              .sort((a, b) =>
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+              )
+              .slice(0, 6);
+          });
         }
       )
       .subscribe();
@@ -133,50 +158,21 @@ export default function ProtectedPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, []);
 
   const handleShowQR = () => {
     setShowScanner(true);
   };
 
-  const qrExpiry = Date.now() + 5 * 60 * 1000; // 5 menit dari sekarang
+  const qrExpiry = Date.now() + 5 * 60 * 1000;
   const qrData = JSON.stringify({ user_id: userId, expires_at: qrExpiry });
 
-  // QR code expiry check should be handled when scanning/reading the QR, not here.
-  // Remove this block to fix the error.
-
-
   const dashboardCards = [
-    {
-      title: 'Jumlah Absensi',
-      value: countAbsensi,
-      icon: <CalendarCheck className="w-8 h-8" />,
-      bg: 'bg-sky-500 dark:bg-blue-800',
-    },
-    {
-      title: 'Kehadiran',
-      value: countHadir,
-      icon: <UserCheck className="w-8 h-8" />,
-      bg: 'bg-green-500 dark:bg-green-600',
-    },
-    {
-      title: 'Izin',
-      value: countIzin,
-      icon: <Ban className="w-8 h-8" />,
-      bg: 'bg-yellow-500 dark:bg-yellow-600',
-    },
-    {
-      title: 'Terlambat',
-      value: countTerlambat,
-      icon: <Clock9 className="w-8 h-8" />,
-      bg: 'bg-red-500 dark:bg-red-600',
-    },
-    {
-      title: 'Alpa',
-      value: countAlpha,
-      icon: <UserX className="w-8 h-8" />,
-      bg: 'bg-red-700 dark:bg-red-800',
-    },
+    { title: 'Jumlah Absensi', value: countAbsensi, icon: <CalendarCheck className="w-8 h-8" />, bg: 'bg-sky-500 dark:bg-blue-800' },
+    { title: 'Kehadiran', value: countHadir, icon: <UserCheck className="w-8 h-8" />, bg: 'bg-green-500 dark:bg-green-600' },
+    { title: 'Izin', value: countIzin, icon: <Ban className="w-8 h-8" />, bg: 'bg-yellow-500 dark:bg-yellow-600' },
+    { title: 'Terlambat', value: countTerlambat, icon: <Clock9 className="w-8 h-8" />, bg: 'bg-red-500 dark:bg-red-600' },
+    { title: 'Alpa', value: countAlpha, icon: <UserX className="w-8 h-8" />, bg: 'bg-red-700 dark:bg-red-800' },
   ];
 
   return (
