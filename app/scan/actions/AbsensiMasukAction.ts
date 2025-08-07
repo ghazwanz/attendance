@@ -40,7 +40,7 @@ export const handleAbsenHadir = async (
         const [jamJadwal, menitJadwal] = jadwalHariIni.start_time.split(':').map(Number);
 
         // Convert to local time
-        const local = new Date(nowDate.getTime() - nowDate.getTimezoneOffset() * 60000);
+        const local = new Date();
         const jamNow = local.getHours();
         const menitNow = local.getMinutes();
         console.log(`local : ${local}\njamNow : ${jamNow}\nmenitNow : ${menitNow}`)

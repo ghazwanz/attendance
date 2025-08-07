@@ -7,6 +7,10 @@ import toast from 'react-hot-toast';
 import { QRScannerProps } from '@/lib/type';
 import { handleAbsenHadir } from './actions/AbsensiMasukAction';
 import ClockInModal from './components/ModalAbsensi';
+import getMessage from './actions/getMessage';
+import getPiket from './actions/getPiket';
+import ReminderModal from './components/ReminderModal';
+import { handlePulangAction } from './actions/AbsensiPulangAction';
 
 const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'warning'; message: string }) => {
   const baseStyle = {
@@ -45,6 +49,8 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
   const [izinEnd, setIzinEnd] = useState('');
   const [sudahIzinPulang, setSudahIzinPulang] = useState(false);
   const [showChoiceBesokModal, setShowChoiceBesokModal] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifData, setNotifData] = useState<{ title: string, message: string, type: "piket_reminder" | "piket_out_reminder" | "clock_out_reminder" } | null>({ title: "", message: "", type: "clock_out_reminder" })
 
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
@@ -212,8 +218,16 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
     const success = await handleAbsenHadir(scanUserRef.current, isOutside, showToast);
     if (success && onScanSuccess) {
       onScanSuccess();
+      setShowChoiceModal(false);
+      const isPiket = await getPiket({ user_id: scanUserRef.current.user_id })
+      const type = isPiket ? "piket_reminder" : null
+      if (!type) return
+      const msg = await getMessage(type)
+      if (msg) {
+        setNotifData({ title: msg?.title, message: msg?.message, type })
+        setNotifOpen((prev) => !prev)
+      }
     }
-    setShowChoiceModal(false);
   };
 
 
@@ -274,50 +288,32 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
 
   const handlePulang = async () => {
     if (!scanUserRef.current) return;
-    if (isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
-    try {
-      const { user_id, name } = scanUserRef.current;
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-
-      const { data: attendanceToday, error: fetchError } = await supabase
-        .from('attendances')
-        .select('*')
-        .eq('user_id', user_id)
-        .eq('date', today)
-        .single();
-
-      if (fetchError || !attendanceToday) {
-        throw new Error('Data kehadiran tidak ditemukan');
-      }
-
-      const checkInTime = new Date(attendanceToday.check_in);
-      const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
-
-      if (hoursDiff < 8) {
-        showToast({
-          type: 'warning',
-          message: `Belum bisa pulang. Baru ${hoursDiff.toFixed(1)} jam, minimal 8 jam.`,
-        });
-        return;
-      }
-
-      const { error: updateError } = await supabase
-        .from('attendances')
-        .update({ check_out: now.toISOString() })
-        .eq('user_id', user_id)
-        .eq('date', today);
-
-      if (updateError) throw new Error('Gagal mencatat pulang');
-
-      showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
-      if (onScanSuccess) onScanSuccess();
-    } catch (err) {
-      showToast({ type: 'error', message: (err as Error).message });
-    } finally {
-      setShowPulangModal(false);
+    // if (isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
+    const { user_id, name } = scanUserRef.current
+    const isPiket = await getPiket({ user_id })
+    const type = isPiket ? "piket_out_reminder" : "clock_out_reminder"
+    const msg = await getMessage(type)
+    console.log(msg)
+    if (msg) {
+      setNotifData({ title: msg?.title, message: msg?.message, type })
+      setNotifOpen((prev) => !prev)
     }
   };
+
+  const handleConfirmPulang = async () => {
+    if (!scanUserRef.current) return;
+    const { user_id, name }  = scanUserRef.current
+
+    try {
+      await handlePulangAction({user_id,name},isOutside)
+      showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
+      setShowPulangModal(false);
+    } catch (error : any) {
+      showToast({ type: 'info', message: error.message });
+    } finally {
+    }
+
+  }
 
   const handleIzinPulang = async () => {
     if (!izinReason.trim() || !scanUserRef.current) {
@@ -693,6 +689,16 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
           </div>
         </div>
       )}
+
+      <ReminderModal
+        title={notifData?.title}
+        message={notifData?.message || ""}
+        isOpen={notifOpen}
+        onConfirm={handleConfirmPulang}
+        onClose={() => setNotifOpen((prev) => !prev)}
+        type={notifData?.type || ""}
+      />
+
     </div>
   );
 }
