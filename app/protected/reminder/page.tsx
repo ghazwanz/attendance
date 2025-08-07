@@ -2,13 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { title } from "process";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+interface Reminder {
+  id: string;
+  title: string;
+  message: string;
+  jadwal: string;
+  type: string;
+  created_at?: string;
+}
 
 export default function ReminderPage() {
-  const [reminders, setReminders] = useState<any[]>([]);
+  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState<any | null>(null);
+  const [editing, setEditing] = useState<Reminder | undefined>(undefined);
 
   const supabase = createClient();
 
@@ -20,9 +30,9 @@ export default function ReminderPage() {
         .order("jadwal", { ascending: true });
 
       if (error) {
-        console.error("Error fetching:", error);
+        toast.error("Gagal mengambil data reminder");
       } else {
-        setReminders(data);
+        setReminders(data || []);
       }
 
       setLoading(false);
@@ -32,51 +42,65 @@ export default function ReminderPage() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    await supabase.from("reminder").delete().eq("id", id);
-    setReminders((prev) => prev.filter((r) => r.id !== id));
+    const { error } = await supabase.from("reminder").delete().eq("id", id);
+
+    if (error) {
+      toast.error("Gagal menghapus reminder");
+    } else {
+      setReminders((prev) => prev.filter((r) => r.id !== id));
+      toast.success("Reminder berhasil dihapus");
+    }
   };
 
-  const handleSave = async (data: any, id?: string) => {
-    console.log("Saving data:", data, "ID:", id);
+  const handleSave = async (
+    data: Omit<Reminder, "id" | "created_at">,
+    id?: string
+  ) => {
     if (id) {
-      const { error } = await supabase
-        .from("reminder")
-        .update(data)
-        .eq("id", id);
-      if (error) return console.error("Update error:", error);
+      const { error } = await supabase.from("reminder").update(data).eq("id", id);
+
+      if (error) {
+        toast.error("Gagal mengupdate reminder");
+        return;
+      }
+
       setReminders((prev) =>
         prev.map((r) => (r.id === id ? { ...r, ...data } : r))
       );
+      toast.success("Reminder berhasil diperbarui");
     } else {
-      const { data: newReminder, error } = await supabase
+      const { data: inserted, error } = await supabase
         .from("reminder")
-        .insert([
-          {
-            title: data.title,
-            message: data.message,
-            jadwal: data.jadwal,
-            type: data.type,
-            created_at: new Date().toISOString(),
-          },
-        ]);
-      if (error) return console.error("Insert error:", error);
-      setReminders((prev) => [...prev, newReminder]);
+        .insert([{ ...data, created_at: new Date().toISOString() }])
+        .select();
+
+      if (error) {
+        toast.error("Gagal menambahkan reminder");
+        return;
+      }
+
+      if (inserted && inserted.length > 0) {
+        setReminders((prev) => [...prev, inserted[0]]);
+        toast.success("Reminder berhasil ditambahkan");
+      }
     }
 
     setShowModal(false);
-    setEditing(null);
+    setEditing(undefined);
   };
 
   return (
     <div className="p-6">
+      <ToastContainer position="top-center" autoClose={3000} />
+
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Reminder List</h1>
         <button
           onClick={() => {
-            setEditing(null);
+            setEditing(undefined);
             setShowModal(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded border border-blue-600"
+          className="bg-blue-600 text-white px-4 py-2 rounded"
         >
           + Tambah
         </button>
@@ -115,15 +139,15 @@ export default function ReminderPage() {
                         setEditing(r);
                         setShowModal(true);
                       }}
-                      className="text-blue-500 hover:underline"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                     >
-                      Edit
+                      ✏️ Edit
                     </button>
                     <button
                       onClick={() => handleDelete(r.id)}
-                      className="text-red-500 hover:underline"
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                     >
-                      Hapus
+                      🗑 Delete
                     </button>
                   </td>
                 </tr>
@@ -135,10 +159,10 @@ export default function ReminderPage() {
 
       {showModal && (
         <ReminderModal
-          initialData={editing ?? undefined}
+          initialData={editing}
           onClose={() => {
             setShowModal(false);
-            setEditing(null);
+            setEditing(undefined);
           }}
           onSave={handleSave}
         />
@@ -152,16 +176,27 @@ function ReminderModal({
   onClose,
   onSave,
 }: {
-  initialData?: any;
+  initialData?: Reminder;
   onClose: () => void;
-  onSave: (data: Omit<any, "id" | "created_at">, id?: string) => void;
+  onSave: (data: Omit<Reminder, "id" | "created_at">, id?: string) => void;
 }) {
   const [form, setForm] = useState({
-    title: initialData?.title || "",
-    message: initialData?.message || "",
-    jadwal: initialData?.jadwal?.slice(0, 16) || "",
-    type: initialData?.type || "reminder",
+    title: "",
+    message: "",
+    jadwal: "",
+    type: "reminder",
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        title: initialData.title,
+        message: initialData.message,
+        jadwal: initialData.jadwal?.slice(0, 5),
+        type: initialData.type,
+      });
+    }
+  }, [initialData]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -170,14 +205,7 @@ function ReminderModal({
   };
 
   const handleSubmit = () => {
-    const payload = {
-      title: form.title,
-      message: form.message,
-      jadwal: form.jadwal, // ✅ kirim langsung "08:00"
-      type: form.type,
-    };
-
-    onSave(payload, initialData?.id);
+    onSave(form, initialData?.id);
   };
 
   return (
@@ -188,35 +216,47 @@ function ReminderModal({
         </h2>
 
         <div className="space-y-3">
+          <label className="block text-sm font-medium text-white -mb-1">
+            Judul
+          </label>
           <input
             name="title"
             value={form.title}
             onChange={handleChange}
             placeholder="Judul"
-            className="w-full border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           />
+          <label className="block text-sm font-medium text-white -mb-1">
+            Pesan
+          </label>
           <input
             name="message"
             value={form.message}
             onChange={handleChange}
             placeholder="Pesan"
-            className="w-full border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           />
+          <label className="block text-sm font-medium text-white -mb-1">
+            Waktu (HH:MM)
+          </label>
           <input
             name="jadwal"
             type="time"
             value={form.jadwal}
             onChange={handleChange}
-            className="w-full border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white px-3 py-2 rounded"
+            className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           />
+          <label className="block text-sm font-medium text-white -mb-1">
+            Tipe
+          </label>
           <select
             name="type"
             value={form.type}
             onChange={handleChange}
-            className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           >
             <option value="reminder">Reminder</option>
-            <option value="alert">Alert</option>
+            <option value="izin">Alert</option>
           </select>
         </div>
 
