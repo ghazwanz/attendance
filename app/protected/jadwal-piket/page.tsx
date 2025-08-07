@@ -79,48 +79,75 @@ export default function JadwalPiketPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (!form.user_id || !form.hari) {
+      toast.error("❌ Lengkapi semua field terlebih dahulu.");
+      return;
+    }
+
     const { data: jadwalData } = await supabase
       .from("schedules")
       .select("id, day")
       .eq("day", form.hari.toLowerCase())
       .single();
 
-    const { data: existing } = await supabase
-      .from("piket")
-      .select("*")
-      .eq("user_id", form.user_id)
-      .eq("jadwal_id", jadwalData?.id);
-
-    // Jika tambah dan user sudah terdaftar
-    if (!editingId && existing && existing.length > 0) {
-      toast.error("User sudah terdaftar di hari tersebut.");
+    if (!jadwalData?.id) {
+      toast.error("❌ Hari yang dipilih tidak valid.");
       return;
     }
 
-    // Jika edit dan user ingin ubah ke hari yang sudah dipakai user lain
-    if (editingId && existing && existing.length > 0 && existing[0].id !== editingId) {
-      toast.error("User sudah memiliki jadwal di hari tersebut.");
+    const { data: existing, error: existingError } = await supabase
+      .from("piket")
+      .select("*")
+      .eq("user_id", form.user_id);
+
+    if (existingError) {
+      toast.error("❌ Gagal memeriksa data user.");
+      return;
+    }
+
+    // Cek jika user sudah punya jadwal lain
+    if (!editingId && existing && existing.length > 0) {
+      toast.error("❌ User sudah memiliki jadwal piket.");
+      return;
+    }
+
+    if (editingId && existing && existing.some((j) => j.id !== editingId)) {
+      toast.error("❌ User hanya boleh memiliki satu jadwal piket.");
       return;
     }
 
     if (editingId) {
-      await supabase
+      const { error: updateError } = await supabase
         .from("piket")
         .update({
           user_id: form.user_id,
-          jadwal_id: jadwalData?.id,
+          jadwal_id: jadwalData.id,
           updated_at: new Date().toISOString(),
         })
         .eq("id", editingId);
-      toast.success("Jadwal berhasil diperbarui!");
+
+      if (updateError) {
+        toast.error("❌ Gagal memperbarui jadwal.");
+        return;
+      }
+
+      toast.success("✅ Jadwal berhasil diperbarui!");
       setShowEditForm(false);
     } else {
-      await supabase.from("piket").insert({
-        user_id: form.user_id,
-        created_at: new Date().toISOString(),
-        jadwal_id: jadwalData?.id,
-      });
-      toast.success("Jadwal berhasil ditambahkan!");
+      const { error: insertError } = await supabase
+        .from("piket")
+        .insert({
+          user_id: form.user_id,
+          jadwal_id: jadwalData.id,
+          created_at: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        toast.error("❌ Gagal menambahkan jadwal.");
+        return;
+      }
+
+      toast.success("✅ Jadwal berhasil ditambahkan!");
       setShowAddForm(false);
     }
 
@@ -194,7 +221,6 @@ export default function JadwalPiketPage() {
         </div>
       </div>
 
-      {/* Modal Tambah */}
       {showAddForm && (
         <ModalForm
           title="➕ Tambah Jadwal"
@@ -208,7 +234,6 @@ export default function JadwalPiketPage() {
         />
       )}
 
-      {/* Modal Edit */}
       {showEditForm && (
         <ModalForm
           title="✏️ Edit Jadwal"
@@ -222,7 +247,6 @@ export default function JadwalPiketPage() {
         />
       )}
 
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-separate text-center border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
           <thead>
@@ -284,7 +308,6 @@ export default function JadwalPiketPage() {
         </table>
       </div>
 
-      {/* Modal Konfirmasi Hapus */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-900 p-6 rounded-xl w-full max-w-sm shadow-xl">
@@ -311,7 +334,6 @@ export default function JadwalPiketPage() {
   );
 }
 
-// Modal Form Komponen Reusable
 function ModalForm({
   title,
   onClose,
