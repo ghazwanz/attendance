@@ -8,6 +8,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { createClient } from '@/lib/supabase/client';
 import { Attendance as BaseAttendance } from "@/lib/type";
 import { toast } from "react-hot-toast";
+import { useRef } from "react";
 
 type Attendance = BaseAttendance & {
   users?: {
@@ -41,6 +42,31 @@ export default function ProtectedPage() {
   const [pendingIzin, setPendingIzin] = useState<Attendance[]>([]);
   const [recentAttendance, setRecentAttendance] = useState<Attendance[] | any[]>([]);
   const [isPiketToday, setIsPiketToday] = useState(false);
+  const qrRef = useRef<SVGSVGElement | null>(null);
+
+  const handleDownloadQR = () => {
+    const svg = qrRef.current;
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+
+      const pngFile = canvas.toDataURL('image/png');
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pngFile;
+      downloadLink.download = 'qr-code.png';
+      downloadLink.click();
+    };
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+  };
+
 
   useEffect(() => {
     const supabase = createClient();
@@ -305,27 +331,36 @@ export default function ProtectedPage() {
         </div>
       </div>
 
-      {showScanner && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-          <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xl w-full max-w-xs sm:max-w-md relative">
-            <button
-              onClick={() => setShowScanner(false)}
-              className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-lg"
-            >
-              ✖
-            </button>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-              📷 QR Anda
-            </h2>
-            <div className="text-center text-sm text-gray-600 mb-4">
-              Tunjukkan QR ini ke scanner untuk absensi.
-            </div>
-            <div className="flex justify-center">
-              <QRCodeSVG value={qrData} size={200} />
-            </div>
-          </div>
-        </div>
-      )}
+     {showScanner && (
+  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+    <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xl w-full max-w-xs sm:max-w-md relative">
+      <button
+        onClick={() => setShowScanner(false)}
+        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-lg"
+      >
+        ✖
+      </button>
+      <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+        📷 QR Anda
+      </h2>
+      <div className="text-center text-sm text-gray-600 mb-4">
+        Tunjukkan QR ini ke scanner untuk absensi.
+      </div>
+      <div className="flex justify-center">
+        <QRCodeSVG value={qrData} size={200} ref={qrRef} />
+      </div>
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={handleDownloadQR}
+          className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
+        >
+          Download QR
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
