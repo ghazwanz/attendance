@@ -245,64 +245,65 @@ export default function ProtectedPage() {
           )}
         </div>
 
-        <div className="w-full max-w-md sm:max-w-none bg-white dark:bg-slate-900 shadow-2xl rounded-2xl p-6 sm:p-8 space-y-6 sm:space-y-8">
-          <div className="text-center space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
-              🏠 Beranda Absensi
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              Tekan tombol untuk menampilkan QR Absensi.
-            </p>
-          </div>
+        <div className="flex flex-col gap-5 w-full items-stretch">
+          <div className="w-full max-w-md sm:max-w-none h-full bg-white dark:bg-slate-900 shadow-2xl rounded-2xl p-6 sm:p-8 space-y-6 sm:space-y-8">
+            <div className="text-center space-y-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
+                🏠 Beranda Absensi
+              </h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                Tekan tombol untuk menampilkan QR Absensi.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            <button
-              onClick={handleShowQR}
-              className="group relative flex items-center justify-center gap-3 w-full px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold text-base shadow-md hover:shadow-lg transition-all duration-300"
-            >
-              <QrCode className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
-              <span className="tracking-wide">QR Scan</span>
-            </button>
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                onClick={handleShowQR}
+                className="group relative flex items-center justify-center gap-3 w-full px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold text-base shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <QrCode className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                <span className="tracking-wide">QR Scan</span>
+              </button>
+            </div>
           </div>
+          {pendingIzin.length > 0 && (
+            <div className=" w-full h-full bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-semibold text-yellow-700 dark:text-yellow-400 mb-4 flex items-center gap-2">
+                <Clock9 className="w-5 h-5" />
+                Izin Belum Di-ACC Admin
+              </h2>
+              <div className="overflow-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700 text-sm">
+                  <thead className="bg-yellow-100 dark:bg-yellow-800 text-yellow-900 dark:text-yellow-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold">Nama</th>
+                      <th className="px-4 py-3 text-left font-semibold">Tanggal Pengajuan</th>
+                      <th className="px-4 py-3 text-left font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                    {pendingIzin.map((izin) => (
+                      <tr key={izin.id} className="hover:bg-yellow-50 dark:hover:bg-slate-700 transition">
+                        <td className="px-4 py-3 text-gray-800 dark:text-white">
+                          {izin.user?.name || 'Tidak Diketahui'}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                          {formatTimestamp(izin.created_at)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block bg-yellow-200 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
+                            Menunggu ACC
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {pendingIzin.length > 0 && (
-        <div className="mt-10 w-full bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-yellow-700 dark:text-yellow-400 mb-4 flex items-center gap-2">
-            <Clock9 className="w-5 h-5" />
-            Izin Belum Di-ACC Admin
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700 text-sm">
-              <thead className="bg-yellow-100 dark:bg-yellow-800 text-yellow-900 dark:text-yellow-100">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Nama</th>
-                  <th className="px-4 py-3 text-left font-semibold">Tanggal Pengajuan</th>
-                  <th className="px-4 py-3 text-left font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
-                {pendingIzin.map((izin) => (
-                  <tr key={izin.id} className="hover:bg-yellow-50 dark:hover:bg-slate-700 transition">
-                    <td className="px-4 py-3 text-gray-800 dark:text-white">
-                      {izin.user?.name || 'Tidak Diketahui'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                      {formatTimestamp(izin.created_at)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="inline-block bg-yellow-200 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
-                        Menunggu ACC
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       {showScanner && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
