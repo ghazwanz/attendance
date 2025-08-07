@@ -41,15 +41,38 @@ export default function ReminderPage() {
     fetchReminders();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("reminder").delete().eq("id", id);
-
-    if (error) {
-      toast.error("Gagal menghapus reminder");
-    } else {
-      setReminders((prev) => prev.filter((r) => r.id !== id));
-      toast.success("Reminder berhasil dihapus");
-    }
+  const handleDelete = (id: string) => {
+    toast(
+      ({ closeToast }) => (
+        <div>
+          <p>Yakin ingin menghapus reminder ini?</p>
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={async () => {
+                const { error } = await supabase.from("reminder").delete().eq("id", id);
+                if (error) {
+                  toast.error("Gagal menghapus reminder");
+                } else {
+                  setReminders((prev) => prev.filter((r) => r.id !== id));
+                  toast.success("Reminder berhasil dihapus");
+                }
+                closeToast?.();
+              }}
+              className="bg-red-600 text-white px-3 py-1 rounded"
+            >
+              Ya, Hapus
+            </button>
+            <button
+              onClick={closeToast}
+              className="bg-gray-300 px-3 py-1 rounded"
+            >
+              Batal
+            </button>
+          </div>
+        </div>
+      ),
+      { autoClose: false }
+    );
   };
 
   const handleSave = async (
