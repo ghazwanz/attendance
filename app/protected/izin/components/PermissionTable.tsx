@@ -206,7 +206,10 @@ export default function PermissionTable({
           </thead>
           <tbody>
             {filteredData.map((item, idx) => (
-              <tr key={item.id} className="rounded-xl shadow-sm bg-white dark:bg-slate-800">
+              <tr key={item.id}  className={`transition duration-150 ${idx % 2 === 0
+                      ? "bg-white dark:bg-slate-800"
+                      : "bg-blue-50 dark:bg-slate-700"
+                      } hover:bg-gray-100 dark:hover:bg-slate-600`}>
                 <td className="px-4 py-3">{idx + 1}</td>
                 <td className="px-4 py-3 rounded-l-xl">{item.user?.name || "-"}</td>
                 <td className="px-4 py-3">{item.exit_time ? formatDateTime(item.exit_time) : "-"}</td>
