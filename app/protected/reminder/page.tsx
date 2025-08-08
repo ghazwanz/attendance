@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+
 interface Reminder {
   id: string;
   title: string;
@@ -19,13 +20,12 @@ export default function ReminderPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Reminder | undefined>(undefined);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const supabase = createClient();
 
   useEffect(() => {
-    const fetchData = async () => {
-      // Ambil data reminder
+    const fetchReminders = async () => {
       const { data, error } = await supabase
         .from("reminder")
         .select("*")
@@ -37,27 +37,23 @@ export default function ReminderPage() {
         setReminders(data || []);
       }
 
-      // Cek role user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-
-        if (profile?.role === "admin") {
-          setIsAdmin(true);
-        }
-      }
-
       setLoading(false);
     };
 
-    fetchData();
+    const fetchUserRole = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      if (!userId) return;
+      const { data: userInfo } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", userId)
+        .single();
+      setUserRole(userInfo?.role || null);
+    };
+
+    fetchReminders();
+    fetchUserRole();
   }, []);
 
   const handleDelete = (id: string) => {
@@ -68,10 +64,7 @@ export default function ReminderPage() {
           <div className="flex gap-2 mt-2">
             <button
               onClick={async () => {
-                const { error } = await supabase
-                  .from("reminder")
-                  .delete()
-                  .eq("id", id);
+                const { error } = await supabase.from("reminder").delete().eq("id", id);
                 if (error) {
                   toast.error("Gagal menghapus reminder");
                 } else {
@@ -102,10 +95,7 @@ export default function ReminderPage() {
     id?: string
   ) => {
     if (id) {
-      const { error } = await supabase
-        .from("reminder")
-        .update(data)
-        .eq("id", id);
+      const { error } = await supabase.from("reminder").update(data).eq("id", id);
 
       if (error) {
         toast.error("Gagal mengupdate reminder");
@@ -143,7 +133,7 @@ export default function ReminderPage() {
 
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Reminder List</h1>
-        {isAdmin && (
+        {userRole === "admin" && (
           <button
             onClick={() => {
               setEditing(undefined);
@@ -167,16 +157,13 @@ export default function ReminderPage() {
               <th className="py-3 px-4">Message</th>
               <th className="py-3 px-4">Jadwal</th>
               <th className="py-3 px-4">Type</th>
-              {isAdmin && <th className="py-3 px-4 rounded-tr-lg">Aksi</th>}
+              {userRole === "admin" && <th className="py-3 px-4 rounded-tr-lg">Aksi</th>}
             </tr>
           </thead>
           <tbody>
             {reminders.length === 0 ? (
               <tr>
-                <td
-                  colSpan={isAdmin ? 5 : 4}
-                  className="text-center py-4 text-gray-500"
-                >
+                <td colSpan={userRole === "admin" ? 5 : 4} className="text-center py-4 text-gray-500">
                   🚫 Tidak ada notifikasi
                 </td>
               </tr>
@@ -192,7 +179,7 @@ export default function ReminderPage() {
                   <td className="border px-4 py-2">{r.message}</td>
                   <td className="border px-4 py-2">{r.jadwal?.slice(0, 5)}</td>
                   <td className="border px-4 py-2">{r.type}</td>
-                  {isAdmin && (
+                  {userRole === "admin" && (
                     <td className="border px-4 py-2 space-x-2">
                       <button
                         onClick={() => {
@@ -232,6 +219,7 @@ export default function ReminderPage() {
     </div>
   );
 }
+
 
 function ReminderModal({
   initialData,
@@ -278,7 +266,7 @@ function ReminderModal({
         </h2>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-white -mb-1">
+          <label className="block text-sm font-medium text-black dark:text-white -mb-1">
             Judul
           </label>
           <input
@@ -288,7 +276,7 @@ function ReminderModal({
             placeholder="Judul"
             className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           />
-          <label className="block text-sm font-medium text-white -mb-1">
+          <label className="block text-sm font-medium text-black dark:text-white -mb-1">
             Pesan
           </label>
           <input
@@ -298,7 +286,7 @@ function ReminderModal({
             placeholder="Pesan"
             className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           />
-          <label className="block text-sm font-medium text-white -mb-1">
+          <label className="block text-sm font-medium text-black dark:text-white -mb-1">
             Waktu (HH:MM)
           </label>
           <input
@@ -308,7 +296,7 @@ function ReminderModal({
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           />
-          <label className="block text-sm font-medium text-white -mb-1">
+          <label className="block text-sm font-medium text-black dark:text-white -mb-1">
             Tipe
           </label>
           <select
@@ -336,4 +324,4 @@ function ReminderModal({
       </div>
     </div>
   );
-}
+}  
