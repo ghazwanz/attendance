@@ -1,24 +1,17 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
-  QrCode, CalendarCheck, UserCheck, Clock9, Ban, Home, UserX
+  QrCode, CalendarCheck, UserCheck, Clock9, Ban, UserX, Home
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { createClient } from '@/lib/supabase/client';
 import { Attendance as BaseAttendance } from "@/lib/type";
 import { toast } from "react-hot-toast";
-import { useRef } from "react";
 
 type Attendance = BaseAttendance & {
-  users?: {
-    name?: string;
-  },
-  user?: {
-    id?: string;
-    name?: string;
-    role?: string;
-  }
+  users?: { name?: string };
+  user?: { id?: string; name?: string; role?: string };
 };
 
 const formatTimestamp = (timestamp: string) => {
@@ -32,7 +25,7 @@ const formatTimestamp = (timestamp: string) => {
 };
 
 export default function ProtectedPage() {
-  const [userId, setUserId] = useState<string | undefined>();
+  const [userId, setUserId] = useState<string>();
   const [showScanner, setShowScanner] = useState(false);
   const [countAbsensi, setCountAbsensi] = useState(0);
   const [countIzin, setCountIzin] = useState(0);
@@ -40,24 +33,21 @@ export default function ProtectedPage() {
   const [countTerlambat, setCountTerlambat] = useState(0);
   const [countAlpha, setCountAlpha] = useState(0);
   const [pendingIzin, setPendingIzin] = useState<Attendance[]>([]);
-  const [recentAttendance, setRecentAttendance] = useState<Attendance[] | any[]>([]);
+  const [recentAttendance, setRecentAttendance] = useState<Attendance[]>([]);
   const [isPiketToday, setIsPiketToday] = useState(false);
   const qrRef = useRef<SVGSVGElement | null>(null);
 
   const handleDownloadQR = () => {
     const svg = qrRef.current;
     if (!svg) return;
-
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-
     const img = new Image();
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
       ctx?.drawImage(img, 0, 0);
-
       const pngFile = canvas.toDataURL('image/png');
       const downloadLink = document.createElement('a');
       downloadLink.href = pngFile;
@@ -66,7 +56,6 @@ export default function ProtectedPage() {
     };
     img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
   };
-
 
   useEffect(() => {
     const supabase = createClient();
@@ -77,34 +66,38 @@ export default function ProtectedPage() {
         window.location.href = '/auth/login';
         return;
       }
-
-      // Hanya satu kali set
       setUserId(user.id);
 
-      // Cek apakah user piket hari ini
+      // Nama hari sekarang (lowercase)
+      const todayName = new Date().toLocaleDateString("id-ID", {
+        weekday: "long",
+      }).toLowerCase();
+
+      // ✅ Cek piket berdasarkan hari
       const { data: piketToday, error: piketError } = await supabase
         .from('piket')
-        .select('user_id')
+        .select('user_id, schedules!inner(day)')
         .eq('user_id', user.id)
+        .eq('schedules.day', todayName)
         .maybeSingle();
+
+      if (piketError) console.error("Error cek piket:", piketError);
 
       if (piketToday) {
         setIsPiketToday(true);
-
-        // ✅ Pastikan hanya tampilkan toast jika belum pernah muncul
-        toast.dismiss(); // Buang semua toast aktif sebelumnya
+        toast.dismiss();
         toast(
           <div>
             <div className="font-bold">📢 Anda piket hari ini</div>
             <div>Jangan lupa laksanakan tugas piket dengan baik.</div>
           </div>,
-          { duration: 6000, id: 'piket-toast' } // 🔑 ID untuk mencegah duplikat
+          { duration: 6000, id: 'piket-toast' }
         );
       } else {
         setIsPiketToday(false);
       }
 
-      // Lanjut ambil data statistik
+      // Statistik absensi
       const { count: countAbsensis } = await supabase
         .from('attendances')
         .select('*', { count: 'exact', head: true })
@@ -156,25 +149,23 @@ export default function ProtectedPage() {
 
     fetchData();
 
-    // real-time attendance handler
+    // Real-time attendance listener
     const channel = supabase
       .channel("realtime:attendances")
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "attendances",
-        },
+        { event: "INSERT", schema: "public", table: "attendances" },
         (payload) => {
-          const newRecord = payload.new;
+          const rawRecord = payload.new as any;
+          const newRecord: Attendance = {
+            ...rawRecord,
+            users: rawRecord.users || { name: '' },
+          };
           setRecentAttendance((prev) => {
             const updated = [newRecord, ...prev];
             return updated
               .filter((v, i, self) => self.findIndex(x => x.id === v.id) === i)
-              .sort((a, b) =>
-                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-              )
+              .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
               .slice(0, 6);
           });
         }
@@ -186,10 +177,6 @@ export default function ProtectedPage() {
     };
   }, []);
 
-  const handleShowQR = () => {
-    setShowScanner(true);
-  };
-
   const qrExpiry = Date.now() + 5 * 60 * 1000;
   const qrData = JSON.stringify({ user_id: userId, expires_at: qrExpiry });
 
@@ -200,6 +187,11 @@ export default function ProtectedPage() {
     { title: 'Terlambat', value: countTerlambat, icon: <Clock9 className="w-8 h-8" />, bg: 'bg-red-500 dark:bg-red-600' },
     { title: 'Alpa', value: countAlpha, icon: <UserX className="w-8 h-8" />, bg: 'bg-red-700 dark:bg-red-800' },
   ];
+
+  // Show QR handler
+  const handleShowQR = () => {
+    setShowScanner(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col gap-12 items-center justify-start bg-gradient-to-br from-blue-100 to-blue-300 dark:from-slate-900 dark:to-slate-800 px-4 sm:px-6 py-10">
