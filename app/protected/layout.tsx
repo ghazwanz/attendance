@@ -8,6 +8,7 @@ import {
   QrCodeIcon,
   QrCode,
   CalendarDays,
+  ClipboardCheckIcon,
 } from "lucide-react";
 import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button"; // ✅ diperbaiki di sini
@@ -17,6 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Toaster } from "react-hot-toast";
 import { DeployButton } from "@/components/deploy-button";
+import ReminderPage from "./reminder/page";
 
 export default function ProtectedLayout({
   children,
@@ -106,21 +108,21 @@ export default function ProtectedLayout({
                     <div className="absolute hidden group-hover:flex flex-col bg-white dark:bg-slate-800 shadow-lg rounded-md mt-2 min-w-[180px] z-50">
                       <Link
                         href="/protected/schedule"
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
+                        className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
                       >
-                        📆 Main Schedule
+                        <CalendarClock size={16} /> Schedule
                       </Link>
                       <Link
                         href="/protected/jadwal-piket"
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
+                        className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
                       >
-                        🗓️ Picket Schedule
+                        <ClipboardList size={16} /> Piket Schedule
                       </Link>
                       <Link
                         href="/protected/reminder"
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
+                        className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
                       >
-                        🔔 Reminder
+                        <ClipboardCheckIcon size={16} /> Reminder
                       </Link>
                     </div>
                   </div>
@@ -169,6 +171,18 @@ export default function ProtectedLayout({
                 className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition"
               >
                 <CalendarClock size={16} /> Schedule
+              </Link>
+              <Link
+                href="/protected/jadwal-piket"
+                className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition"
+              >
+                <CalendarClock size={16} /> Jadwal Piket
+              </Link>
+              <Link
+                href="/protected/reminder"
+                className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition"
+              >
+                <CalendarClock size={16} /> Reminder
               </Link>
               <div className="flex items-center gap-3 px-2">
                 <ThemeSwitcher />
