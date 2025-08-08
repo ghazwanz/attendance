@@ -19,11 +19,13 @@ export default function ReminderPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Reminder | undefined>(undefined);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const supabase = createClient();
 
   useEffect(() => {
-    const fetchReminders = async () => {
+    const fetchData = async () => {
+      // Ambil data reminder
       const { data, error } = await supabase
         .from("reminder")
         .select("*")
@@ -35,10 +37,27 @@ export default function ReminderPage() {
         setReminders(data || []);
       }
 
+      // Cek role user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+
+        if (profile?.role === "admin") {
+          setIsAdmin(true);
+        }
+      }
+
       setLoading(false);
     };
 
-    fetchReminders();
+    fetchData();
   }, []);
 
   const handleDelete = (id: string) => {
@@ -49,7 +68,10 @@ export default function ReminderPage() {
           <div className="flex gap-2 mt-2">
             <button
               onClick={async () => {
-                const { error } = await supabase.from("reminder").delete().eq("id", id);
+                const { error } = await supabase
+                  .from("reminder")
+                  .delete()
+                  .eq("id", id);
                 if (error) {
                   toast.error("Gagal menghapus reminder");
                 } else {
@@ -80,7 +102,10 @@ export default function ReminderPage() {
     id?: string
   ) => {
     if (id) {
-      const { error } = await supabase.from("reminder").update(data).eq("id", id);
+      const { error } = await supabase
+        .from("reminder")
+        .update(data)
+        .eq("id", id);
 
       if (error) {
         toast.error("Gagal mengupdate reminder");
@@ -118,15 +143,17 @@ export default function ReminderPage() {
 
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Reminder List</h1>
-        <button
-          onClick={() => {
-            setEditing(undefined);
-            setShowModal(true);
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          + Tambah
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => {
+              setEditing(undefined);
+              setShowModal(true);
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            + Tambah
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -139,13 +166,16 @@ export default function ReminderPage() {
               <th className="py-3 px-4">Message</th>
               <th className="py-3 px-4">Jadwal</th>
               <th className="py-3 px-4">Type</th>
-              <th className="py-3 px-4 rounded-tr-lg">Aksi</th>
+              {isAdmin && <th className="py-3 px-4 rounded-tr-lg">Aksi</th>}
             </tr>
           </thead>
           <tbody>
             {reminders.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-4 text-gray-500">
+                <td
+                  colSpan={isAdmin ? 5 : 4}
+                  className="text-center py-4 text-gray-500"
+                >
                   🚫 Tidak ada notifikasi
                 </td>
               </tr>
@@ -156,23 +186,25 @@ export default function ReminderPage() {
                   <td className="border px-4 py-2">{r.message}</td>
                   <td className="border px-4 py-2">{r.jadwal?.slice(0, 5)}</td>
                   <td className="border px-4 py-2">{r.type}</td>
-                  <td className="border px-4 py-2 space-x-2">
-                    <button
-                      onClick={() => {
-                        setEditing(r);
-                        setShowModal(true);
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(r.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                    >
-                      🗑 Delete
-                    </button>
-                  </td>
+                  {isAdmin && (
+                    <td className="border px-4 py-2 space-x-2">
+                      <button
+                        onClick={() => {
+                          setEditing(r);
+                          setShowModal(true);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(r.id)}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                      >
+                        🗑 Delete
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
