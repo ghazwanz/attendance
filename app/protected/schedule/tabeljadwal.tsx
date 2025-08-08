@@ -83,7 +83,7 @@ export default function Tabeljadwal() {
 
   return (
     <>
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
         <table className="min-w-full text-sm">
           <thead className="bg-blue-600 text-white text-xs uppercase tracking-wide">
             <tr>
@@ -103,11 +103,10 @@ export default function Tabeljadwal() {
             {data?.map((schedule, index) => (
               <tr
                 key={schedule.id}
-                className={`${
-                  index % 2 === 0
-                    ? "bg-white dark:bg-inherit"
-                    : "bg-gray-50 dark:bg-gray-900"
-                } border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
+                className={`transition duration-150 ${index % 2 === 0
+                      ? "bg-white dark:bg-slate-800"
+                      : "bg-blue-50 dark:bg-slate-700"
+                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
               >
                 <td className="px-6 py-4 font-medium">{index + 1}</td>
                 <td className="px-6 py-4">{schedule.day.toUpperCase()}</td>

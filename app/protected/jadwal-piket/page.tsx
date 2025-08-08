@@ -247,6 +247,7 @@ export default function JadwalPiketPage() {
         />
       )}
 
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
       <div className="overflow-x-auto">
         <table className="w-full border-separate text-center border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
           <thead>
@@ -262,7 +263,10 @@ export default function JadwalPiketPage() {
               filteredData.map((item, idx) => (
                 <tr
                   key={item.id}
-                  className="bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors shadow rounded-xl"
+                   className={`transition duration-150 ${idx % 2 === 0
+                      ? "bg-white dark:bg-slate-800"
+                      : "bg-blue-50 dark:bg-slate-700"
+                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
                 >
                   <td className="px-6 py-4 rounded-l-xl font-semibold">{idx + 1}</td>
                   <td className="px-6 py-4">
@@ -306,6 +310,7 @@ export default function JadwalPiketPage() {
             )}
           </tbody>
         </table>
+      </div>
       </div>
 
       {showConfirmModal && (
