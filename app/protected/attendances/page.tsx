@@ -242,9 +242,9 @@ export default function Page() {
               <div className="flex justify-end mt-4">
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="bg-blue-700 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow font-semibold"
-                >
-                  Tambah Absen
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
+        >
+                  ➕ Tambah Absen
                 </button>
               </div>
             )}
