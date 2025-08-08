@@ -149,6 +149,7 @@ export default function ReminderPage() {
       {loading ? (
         <p>Loading...</p>
       ) : (
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
         <table className="min-w-full text-sm border-separate border-spacing-y-2">
           <thead>
             <tr className="bg-blue-600 text-white text-xs uppercase">
@@ -167,8 +168,13 @@ export default function ReminderPage() {
                 </td>
               </tr>
             ) : (
-              reminders.map((r) => (
-                <tr key={r.id}>
+              reminders.map((r,idx) => (
+                <tr key={r.id} 
+                   className={`transition duration-150 ${idx % 2 === 0
+                      ? "bg-white dark:bg-slate-800"
+                      : "bg-blue-50 dark:bg-slate-700"
+                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                >
                   <td className="border px-4 py-2">{r.title}</td>
                   <td className="border px-4 py-2">{r.message}</td>
                   <td className="border px-4 py-2">{r.jadwal?.slice(0, 5)}</td>
@@ -197,6 +203,7 @@ export default function ReminderPage() {
             )}
           </tbody>
         </table>
+        </div>
       )}
 
       {showModal && (

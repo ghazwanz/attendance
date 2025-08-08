@@ -26,11 +26,13 @@ export default function AttendancePage() {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isOutside, setIsOutside] = useState<boolean>(false);
+  const [user, setUser] = useState<any>()
 
   const supabase = createClient();
 
   useEffect(() => {
     loadRecentAttendance();
+    getUser()
 
     const channel = supabase
       .channel('attendance-realtime')
@@ -100,6 +102,11 @@ export default function AttendancePage() {
     }
   };
 
+  const getUser = async () => {
+    const { data } = await supabase.auth.getUser()
+    setUser(data.user)
+  }
+
   const handleScanSuccess = () => {
     loadRecentAttendance();
   };
@@ -144,14 +151,26 @@ export default function AttendancePage() {
             </button>
           </div>
           <div className="hidden md:flex gap-3">
+            {user ?
+            <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition">Dashboard</Link>
+            :
+            <>
             <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition">Home</Link>
             <Link href="/auth/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition">Login</Link>
+            </>
+          }
           </div>
         </div>
         {menuOpen && (
           <div className="md:hidden flex flex-col items-end px-5 pb-3 gap-2">
+            {user?
+            <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition w-full text-center">Dashboard</Link>
+            :
+            <>
             <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition w-full text-center">Home</Link>
-            <Link href="/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition w-full text-center">Login</Link>
+            <Link href="/auth/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition w-full text-center">Login</Link>
+            </>
+            }
           </div>
         )}
       </nav>
@@ -172,10 +191,10 @@ export default function AttendancePage() {
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
               QR Scanner
             </h2>
-            <QRScanner 
-              onScanSuccess={handleScanSuccess} 
-              onScanError={handleScanError} 
-              isOutside={isOutside} 
+            <QRScanner
+              onScanSuccess={handleScanSuccess}
+              onScanError={handleScanError}
+              isOutside={isOutside}
               setIsOutside={setIsOutside}
             />
           </div>
@@ -212,13 +231,12 @@ export default function AttendancePage() {
                       </p>
                     </div>
                     <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        (record.status.toLowerCase() === 'izin' || (record.notes && record.notes.toLowerCase().includes('izin keluar')))
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${(record.status.toLowerCase() === 'izin' || (record.notes && record.notes.toLowerCase().includes('izin keluar')))
                           ? 'bg-yellow-100 text-yellow-800'
                           : record.status.toLowerCase() === 'hadir'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
                     >
                       {record.status.toUpperCase()}
                     </span>
@@ -229,7 +247,7 @@ export default function AttendancePage() {
           </div>
         </div>
         {/* LOKASI PENGGUNA */}
-          <UserLocationSection setIsOutside={setIsOutside} isOutside={isOutside} />
+        <UserLocationSection setIsOutside={setIsOutside} isOutside={isOutside} />
         {/* TIPS */}
         <div className="mt-12 bg-blue-100 dark:bg-slate-700/40 p-6 rounded-xl">
           <h3 className="text-lg font-semibold text-blue-900 dark:text-white mb-4">

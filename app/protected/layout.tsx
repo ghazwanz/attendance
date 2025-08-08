@@ -135,7 +135,7 @@ export default function ProtectedLayout({
               </div>
             </div>
 
-            <div className="peer-checked:flex hidden flex-col gap-4 py-4 lg:hidden text-sm border-t border-gray-200 dark:border-slate-700">
+            <div className="lg:peer-checked:hidden peer-checked:flex hidden flex-col gap-4 py-4 lg:hidden text-sm border-t border-gray-200 dark:border-slate-700">
               <Link
                 href="/protected/"
                 className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition"
