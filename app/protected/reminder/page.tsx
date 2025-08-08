@@ -259,7 +259,7 @@ function ReminderModal({
         </h2>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-white -mb-1">
+          <label className="block text-sm font-medium text-black dark:text-white -mb-1">
             Judul
           </label>
           <input
@@ -269,7 +269,7 @@ function ReminderModal({
             placeholder="Judul"
             className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           />
-          <label className="block text-sm font-medium text-white -mb-1">
+          <label className="block text-sm font-medium text-black dark:text-white -mb-1">
             Pesan
           </label>
           <input
@@ -279,7 +279,7 @@ function ReminderModal({
             placeholder="Pesan"
             className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           />
-          <label className="block text-sm font-medium text-white -mb-1">
+          <label className="block text-sm font-medium text-black dark:text-white -mb-1">
             Waktu (HH:MM)
           </label>
           <input
@@ -289,7 +289,7 @@ function ReminderModal({
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           />
-          <label className="block text-sm font-medium text-white -mb-1">
+          <label className="block text-sm font-medium text-black dark:text-white -mb-1">
             Tipe
           </label>
           <select
