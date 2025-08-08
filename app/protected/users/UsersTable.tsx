@@ -184,7 +184,7 @@ export default function UsersTable({
                           : "bg-blue-100 text-blue-600"
                       }`}
                     >
-                      {user.role}
+                      {user.role === "employee" ? "user": user.role}
                     </span>
                   </td>
                   <td className="px-6 py-4">
