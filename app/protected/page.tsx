@@ -40,39 +40,60 @@ export default function ProtectedPage() {
   const [isPiketToday, setIsPiketToday] = useState(false);
   const qrRef = useRef<SVGSVGElement | null>(null);
 
-  const handleDownloadQR = async () => {
-    const qrValue = userId || "";
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Set ukuran
-    const size = 200;
-    canvas.width = size;
-    canvas.height = size;
-
-    // Background putih
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, size, size);
-
-    // Generate QR langsung ke canvas
-    await QRCode.toCanvas(canvas, qrValue, {
-      width: size,
-      margin: 1,
-      color: {
-        dark: "#000000",
-        light: "#ffffff", // ini buat background putih
-      },
-    });
-
-    // Convert ke PNG & download
-    const pngFile = canvas.toDataURL("image/png");
-    const downloadLink = document.createElement("a");
-    downloadLink.href = pngFile;
-    downloadLink.download = `qr-${qrValue}.png`;
-    downloadLink.click();
+ 
+type QRModalProps = {
+  session: {
+    user?: {
+      id?: string;
+    };
   };
+};
+
+function QRModal({ session }: QRModalProps) {
+  // Simpan value QR di satu state untuk modal & download
+  const [qrValue] = useState(
+    JSON.stringify({ userId: session?.user?.id })
+  );
+
+  const handleDownloadQR = async () => {
+    if (!qrValue) return;
+
+    try {
+      // Generate PNG dengan background putih
+      const dataUrl = await QRCode.toDataURL(qrValue, {
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#FFFFFF"
+        }
+      });
+
+      // Buat link download & klik otomatis
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "qr-code.png";
+      link.click();
+    } catch (error) {
+      console.error("Gagal generate QR code:", error);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center gap-4 p-4">
+      {/* QR yang tampil di modal */}
+      <QRCodeSVG value={qrValue} size={200} />
+
+      {/* Tombol download */}
+      <button
+        onClick={handleDownloadQR}
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Download QR
+      </button>
+    </div>
+  );
+}
   useEffect(() => {
     const supabase = createClient();
 
@@ -207,6 +228,28 @@ export default function ProtectedPage() {
   // Show QR handler
   const handleShowQR = () => {
     setShowScanner(true);
+  };
+
+  // Download QR handler for modal QR
+  const handleDownloadQR = async () => {
+    if (!qrData) return;
+
+    try {
+      const dataUrl = await QRCode.toDataURL(qrData, {
+        margin: 2,
+        color: {
+          dark: "#000000",
+          light: "#FFFFFF"
+        }
+      });
+
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "qr-code.png";
+      link.click();
+    } catch (error) {
+      console.error("Gagal generate QR code:", error);
+    }
   };
 
   return (
