@@ -288,14 +288,15 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
 
   const handlePulang = async () => {
     if (!scanUserRef.current) return;
-    // if (isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
-    const { user_id, name } = scanUserRef.current
+    if (isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
+    const { user_id } = scanUserRef.current
     const isPiket = await getPiket({ user_id })
     const type = isPiket ? "piket_out_reminder" : "clock_out_reminder"
     const msg = await getMessage(type)
     console.log(msg)
     if (msg) {
       setNotifData({ title: msg?.title, message: msg?.message, type })
+      setShowPulangModal((prev)=>!prev);
       setNotifOpen((prev) => !prev)
     }
   };
@@ -307,10 +308,9 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
     try {
       await handlePulangAction({user_id,name},isOutside)
       showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
-      setShowPulangModal(false);
+      setNotifOpen((prev) => !prev)
     } catch (error : any) {
       showToast({ type: 'info', message: error.message });
-    } finally {
     }
 
   }

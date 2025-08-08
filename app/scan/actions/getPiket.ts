@@ -2,14 +2,16 @@ import { createClient } from '@/lib/supabase/client'
 import React from 'react'
 
 const getPiket = async ({user_id}:{user_id:string}): Promise<boolean> => {
-    console.log(user_id)
+    const day = new Date().toLocaleDateString("id-ID",{ weekday:"long" }).toLowerCase()
     const supabase = createClient()
-    const { data } = await supabase.from("piket")
-    .select("user_id,schedules(day)")
+
+    const { data:piketData } = await supabase.from("piket")
+    .select("user_id, schedules(day)")
+    .eq("schedules.day",day)
     .eq("user_id",user_id)
     .single()
 
-    if (data) return true
+    if (piketData?.schedules) return true
     return false
 }
 
