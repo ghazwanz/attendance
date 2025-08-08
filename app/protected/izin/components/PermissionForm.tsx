@@ -111,7 +111,7 @@ export default function PermissionFormComponent({
             </div>
             <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded w-full md:w-auto disabled:opacity-50"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
                 disabled={loading || !isTimeValid}
             >
                 {loading ? "Menambahkan..." : "Tambah"}

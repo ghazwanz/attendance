@@ -188,7 +188,7 @@ export default function PermissionTable({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto w-full p-2 bg-gray-100 dark:bg-[#0F172A]">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
         <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
             <tr className="bg-blue-600 text-white uppercase tracking-wider">

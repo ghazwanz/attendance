@@ -121,11 +121,10 @@ export default function UsersTable({
         {currentUser?.role === "admin" && (
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm font-medium"
+             className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
             disabled={isPending}
           >
-            <Plus className="w-4 h-4" />
-            Tambah Pengguna
+             ➕ Tambah Pengguna
           </button>
         )}
       </div>
@@ -142,7 +141,7 @@ export default function UsersTable({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
         <table className="min-w-full text-sm">
           <thead className="bg-inherit text-xs uppercase tracking-wide">
             <tr>
@@ -167,11 +166,10 @@ export default function UsersTable({
               users.map((user, index) => (
                 <tr
                   key={user.id}
-                  className={`${
-                    index % 2 === 0
-                      ? "bg-white dark:bg-inherit"
-                      : "bg-gray-50 dark:bg-gray-900"
-                  } border-t hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150`}
+                   className={`transition duration-150 ${index % 2 === 0
+                      ? "bg-white dark:bg-slate-800"
+                      : "bg-blue-50 dark:bg-slate-700"
+                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
                 >
                   <td className="px-6 py-4 font-medium">{index + 1}</td>
                   <td className="px-6 py-4">{user.name}</td>

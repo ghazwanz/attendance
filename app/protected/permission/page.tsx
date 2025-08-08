@@ -325,7 +325,7 @@ useEffect(() => {
               <div className="flex justify-end gap-3">
                 <button
                   type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
                 >
                   Simpan
                 </button>
@@ -349,7 +349,7 @@ useEffect(() => {
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <button
   onClick={handleAddIzin}
-  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
 >
   ➕ Tambah Izin
 </button>
