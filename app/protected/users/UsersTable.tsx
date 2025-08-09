@@ -98,12 +98,19 @@ export default function UsersTable({
   return (
     <>
       <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold">📋 Tabel User</h2>
-          <p className="text-gray-500 mt-1">
-            Data pengguna yang terdaftar di sistem
-          </p>
-        </div>
+        <form method="GET" className="mb-4 flex flex-wrap items-center gap-3">
+        <input
+          type="text"
+          name="search"
+          placeholder="Cari nama atau role..."
+          defaultValue={searchTerm || ''}
+          className="border px-3 py-1 rounded-md"
+        />
+        {/* Removed day filter dropdown as 'day' and 'dayNames' are not defined */}
+        <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded-md">
+          Filter
+        </button>
+      </form>
 
         <div className="flex-1 min-w-[220px] max-w-[320px] mx-auto">
           <div className="relative">
@@ -192,25 +199,23 @@ export default function UsersTable({
                     <td className="px-6 py-4 space-x-2">
                       <button
                         onClick={() => {
-                          setUserToDelete(user);
-                          setDeleteModalOpen(true);
-                        }}
-                        className="inline-flex items-center gap-1 bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-full text-xs transition"
-                        disabled={isPending}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Hapus
-                      </button>
-                      <button
-                        onClick={() => {
                           setSelectedUser(user);
                           setEditModalOpen(true);
                         }}
-                        className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-600 hover:bg-yellow-200 px-3 py-1.5 rounded-full text-xs transition"
+                        className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                         disabled={isPending}
                       >
-                        <LucidePencil className="w-4 h-4" />
-                        Edit
+                       ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setUserToDelete(user);
+                          setDeleteModalOpen(true);
+                        }}
+                         className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                        disabled={isPending}
+                      >
+                       🗑 Delete
                       </button>
                     </td>
                   )}
@@ -243,7 +248,7 @@ export default function UsersTable({
       {/* Delete User Modal */}
       {deleteModalOpen && userToDelete && (
         <DeleteUserModal
-          user={userToDelete}
+          user={userToDelete!}
           onClose={() => setDeleteModalOpen(false)}
           onSubmit={handleDeleteUser}
           isPending={isPending}

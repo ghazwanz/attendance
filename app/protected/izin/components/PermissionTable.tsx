@@ -71,6 +71,7 @@ export default function PermissionTable({
   const [statusLoading, setStatusLoading] = useState(false);
   const [selectedDay, setSelectedDay] = useState("all");
   const [searchName, setSearchName] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     setLocalData(data);
@@ -152,39 +153,53 @@ export default function PermissionTable({
 
   return (
     <div>
-      {/* Filter */}
-      <div className="flex flex-wrap gap-2 mb-4 items-end">
-        <input
-          type="text"
-          value={searchName}
-          onChange={(e) => setSearchName(e.target.value)}
-          placeholder="Cari nama..."
-          className="border rounded text-sm px-4 py-2 h-10"
-          style={{ minWidth: 150 }}
-        />
-        <select
-          value={selectedDay}
-          onChange={(e) => setSelectedDay(e.target.value)}
-          className="border rounded text-sm px-4 py-2 h-10"
-          style={{ minWidth: 170 }}
-        >
-          <option value="all">Semua Data</option>
-          <option value="today">Hari Ini</option>
-          <option value="yesterday">Kemarin</option>
-          <option value="last7">7 Hari Kemarin</option>
-          <option value="last30">Sebulan Kemarin</option>
-        </select>
-        {(selectedDay !== "all" || searchName) && (
-          <button
-            className="ml-2 bg-gray-300 hover:bg-gray-400 text-black rounded text-sm px-4 h-10"
-            onClick={() => {
-              setSearchName("");
-              setSelectedDay("all");
-            }}
+      {/* Header & Filter */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        {/* Judul */}
+        <h1 className="text-3xl font-bold mb-4">
+          <span role="img" aria-label="doc">📋 Tabel Izin</span>
+        </h1>
+
+        {/* Search & Filter & Button */}
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="text"
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
+            placeholder="Cari nama..."
+            className="bg-gray-800 text-white border border-gray-600 rounded-lg text-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+          />
+          <select
+            value={selectedDay}
+            onChange={(e) => setSelectedDay(e.target.value)}
+            className="bg-gray-800 text-white border border-gray-600 rounded-lg text-sm px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
           >
-            Reset
+            <option value="all">Semua Data</option>
+            <option value="today">Hari Ini</option>
+            <option value="yesterday">Kemarin</option>
+            <option value="last7">7 Hari Kemarin</option>
+            <option value="last30">Sebulan Kemarin</option>
+          </select>
+          {(selectedDay !== "all" || searchName) && (
+            <button
+              className="bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm px-4 py-2"
+              onClick={() => {
+                setSearchName("");
+                setSelectedDay("all");
+              }}
+            >
+              Reset
+            </button>
+          )}
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
+            disabled={showForm}
+            style={showForm ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+          >
+            ➕ Tambah Izin
           </button>
-        )}
+        </div>
       </div>
 
       {/* Table */}
@@ -206,10 +221,10 @@ export default function PermissionTable({
           </thead>
           <tbody>
             {filteredData.map((item, idx) => (
-              <tr key={item.id}  className={`transition duration-150 ${idx % 2 === 0
-                      ? "bg-white dark:bg-slate-800"
-                      : "bg-blue-50 dark:bg-slate-700"
-                      } hover:bg-gray-100 dark:hover:bg-slate-600`}>
+              <tr key={item.id} className={`transition duration-150 ${idx % 2 === 0
+                  ? "bg-white dark:bg-slate-800"
+                  : "bg-blue-50 dark:bg-slate-700"
+                } hover:bg-gray-100 dark:hover:bg-slate-600`}>
                 <td className="px-4 py-3">{idx + 1}</td>
                 <td className="px-4 py-3 rounded-l-xl">{item.user?.name || "-"}</td>
                 <td className="px-4 py-3">{item.exit_time ? formatDateTime(item.exit_time) : "-"}</td>

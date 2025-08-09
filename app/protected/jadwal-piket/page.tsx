@@ -283,7 +283,7 @@ export default function JadwalPiketPage() {
                   <td className="px-6 py-4 rounded-r-xl flex items-center justify-center gap-2">
                     <button
                       onClick={() => handleEdit(item)}
-                      className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold px-3 py-1 rounded-lg text-xs shadow"
+                     className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                     >
                       ✏️ Edit
                     </button>
@@ -292,7 +292,7 @@ export default function JadwalPiketPage() {
                         onClick={() => confirmDelete(item.id)}
                         className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 rounded-lg text-xs shadow"
                       >
-                        🗑️ Hapus
+                       🗑 Delete
                       </button>
                     )}
                   </td>

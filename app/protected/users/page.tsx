@@ -201,27 +201,13 @@ export default async function UsersPage({
   }
 
   return (
-    <div className="rounded-2xl shadow-lg dark:shadow-white/20 p-8">
-      <form method="GET" className="mb-4 flex flex-wrap items-center gap-3">
-        <input
-          type="text"
-          name="search"
-          placeholder="Cari nama atau role..."
-          defaultValue={search || ''}
-          className="border px-3 py-1 rounded-md"
-        />
-        <select name="day" defaultValue={day || ''} className="border px-3 py-1 rounded-md">
-          <option value="">Semua Hari</option>
-          {dayNames.map((dayOption) => (
-            <option key={dayOption} value={dayOption}>
-              {dayOption}
-            </option>
-          ))}
-        </select>
-        <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded-md">
-          Filter
-        </button>
-      </form>
+    <div>
+      <div>
+          <h2 className="text-3xl font-bold">📋 Tabel User</h2>
+          <p className="text-gray-500 mt-1">
+            Data pengguna yang terdaftar di sistem
+          </p>
+        </div>
 
       <UsersTable
         users={filteredUsers}

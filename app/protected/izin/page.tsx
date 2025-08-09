@@ -36,10 +36,9 @@ export default function PermissionPage() {
     } = usePermissions();
 
     return (
-        <div className="w-full max-w-screen-xl mx-auto px-6 py-6 border border-white/20 rounded-xl shadow-lg text-black dark:text-white">
+        <div>
             <ErrorNotification message={errorMessage} onClose={() => setErrorMessage("")} />
-            <h1 className="text-3xl font-bold mb-4">📋 Tabel Izin</h1>
-
+            
             {/* Delete Confirmation Modal */}
             <DeleteConfirmModal
                 isOpen={showConfirmModal}
@@ -59,18 +58,6 @@ export default function PermissionPage() {
                 onChange={handleFormChange}
                 onClose={() => setShowEditModal(false)}
             />
-
-            {/* Kontrol Header */}
-            <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <button
-                    onClick={() => setShowForm(true)}
-                    className="bg-blue-600 text-white font-semibold px-4 py-2 rounded w-fit"
-                    disabled={showForm}
-                    style={showForm ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                >
-                    Tambah Izin
-                </button>
-            </div>
 
             {/* Modal Tambah Izin */}
             {showForm && (
