@@ -191,7 +191,7 @@ export default function JadwalPiketPage() {
 
   return (
     <div className="w-full max-w-screen-xl mx-auto px-6 py-8 text-black dark:text-white">
-      <h1 className="text-4xl font-bold mb-8 text-blue-700 dark:text-blue-400">📅 Jadwal Piket</h1>
+      <h1 className="text-4xl font-bold mb-8 text-blue-700 dark:text-white">📅 Jadwal Piket</h1>
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <button
