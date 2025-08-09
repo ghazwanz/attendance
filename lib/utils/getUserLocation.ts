@@ -3,6 +3,7 @@
 // Deteksi lokasi awal
 import { useEffect } from "react";
 import { useLocationStores, useUserLocationStores } from "../stores/useLocationStores";
+import { showToast } from "./toast";
 
 const RADIUS_METER = 1000;
 const mahativeStudio = { lat: -8.0017804, lng: 112.6075698 };
@@ -44,6 +45,7 @@ export function useUserLocationEffect() {
 
         const handleError = (err: GeolocationPositionError) => {
             // Handle error as needed
+            showToast({type:"error", message:`Gagal mendapatkan Lokasi User: ${err.message}`})
             // setError(`Failed to detect location: ${err.message}`);
         };
 
