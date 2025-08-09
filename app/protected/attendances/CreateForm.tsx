@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useUserLocationEffect } from "@/lib/utils/getUserLocation";
+import { useLocationStores } from "@/lib/stores/useLocationStores";
+import { showToast } from "@/lib/utils/toast";
 
 export default function CreateForm({
   onRefresh,
@@ -19,9 +22,13 @@ export default function CreateForm({
   const [showError, setShowError] = useState(false);
   const [showIzinModal, setShowIzinModal] = useState(false);
   const [izinReason, setIzinReason] = useState("");
+  
 
   const today = new Date().toISOString().split("T")[0];
   // const allowedIP = ["125.166.12.91", "125.166.1.71"]; // Ganti sesuai IP kantor
+  const isOutside = useLocationStores(state=>state.isOutside)
+
+  useUserLocationEffect()
 
   useEffect(() => {
     const init = async () => {
@@ -52,7 +59,7 @@ export default function CreateForm({
 
   const handleCheckIn = async (status: string, notes: string | null = null) => {
     try {
-
+      if (isOutside) return showToast({type:"error", message:"Anda berada di luar area kantor"})
       const now = new Date();
       const nowISO = now.toISOString();
 

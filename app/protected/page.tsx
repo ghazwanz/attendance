@@ -40,8 +40,6 @@ export default function ProtectedPage() {
   const [isPiketToday, setIsPiketToday] = useState(false);
   const qrRef = useRef<SVGSVGElement | null>(null);
 
-
- 
 type QRModalProps = {
   session: {
     user?: {

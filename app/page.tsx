@@ -9,6 +9,8 @@ import { hasEnvVars } from '@/lib/utils';
 import { QRForm } from '@/components/QRForm';
 import { AuthButton } from '@/components/auth-button';
 import UserLocationSection from '@/components/UserLocationSection';
+import QRWrapper from '@/components/QRWrapper';
+import QRTips from '@/components/QRTips';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -110,8 +112,10 @@ export default async function Home() {
               />
             </div>
           </section>
-
-          
+          <div>
+            <QRWrapper />
+            <QRTips />
+          </div>
         </div>
 
         {/* FOOTER */}

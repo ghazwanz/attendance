@@ -63,8 +63,8 @@ export interface UserLocationSectionProps {
 }
 
 export interface QRScannerProps {
-  onScanSuccess: () => void;
-  onScanError: (error: string) => void;
+  onScanSuccess?: () => void;
+  onScanError?: (error: string) => void;
   isOutside: boolean; // Add this prop
-  setIsOutside: (isOutside: boolean) => void;
+  // setIsOutside: (isOutside: boolean) => void;
 }
