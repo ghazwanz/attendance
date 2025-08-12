@@ -57,6 +57,11 @@ export default function ReminderPage() {
   }, []);
 
   const handleDelete = (id: string) => {
+    if(userRole !== "admin") {
+      toast.error("Aksi tidak dapat dilakukan")
+      return
+    }
+    
     toast(
       ({ closeToast }) => (
         <div>
@@ -94,6 +99,12 @@ export default function ReminderPage() {
     data: Omit<Reminder, "id" | "created_at">,
     id?: string
   ) => {
+
+    if(userRole !== "admin") {
+      toast.error("Aksi tidak dapat dilakukan")
+      return
+    }
+
     if (id) {
       const { error } = await supabase.from("reminder").update(data).eq("id", id);
 
@@ -305,8 +316,9 @@ function ReminderModal({
             onChange={handleChange}
             className="w-full border px-3 py-2 rounded dark:border-slate-600 dark:bg-slate-700 dark:text-white"
           >
-            <option value="reminder">Reminder</option>
-            <option value="izin">Alert</option>
+            <option value="piket_out_reminder">Reminder Piket Pulang</option>
+            <option value="piket_reminder">Reminder Piket</option>
+            <option value="clock_out_reminder">Reminder Pulang</option>
           </select>
         </div>
 

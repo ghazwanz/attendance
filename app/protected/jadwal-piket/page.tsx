@@ -248,69 +248,71 @@ export default function JadwalPiketPage() {
       )}
 
       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
-      <div className="overflow-x-auto">
-        <table className="w-full border-separate text-center border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
-          <thead>
-            <tr className="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm uppercase">
-              <th className="px-6 py-3 rounded-l-xl">No.</th>
-              <th className="px-6 py-3">👤 Nama</th>
-              <th className="px-6 py-3">📅 Hari</th>
-              <th className="px-6 py-3 rounded-r-xl">⚙️ Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.length > 0 ? (
-              filteredData.map((item, idx) => (
-                <tr
-                  key={item.id}
-                   className={`transition duration-150 ${idx % 2 === 0
+        <div className="overflow-x-auto">
+          <table className="w-full border-separate text-center border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
+            <thead>
+              <tr className="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm uppercase">
+                <th className="px-6 py-3 rounded-l-xl">No.</th>
+                <th className="px-6 py-3">👤 Nama</th>
+                <th className="px-6 py-3">📅 Hari</th>
+                <th className="px-6 py-3 rounded-r-xl">⚙️ Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.length > 0 ? (
+                filteredData.map((item, idx) => (
+                  <tr
+                    key={item.id}
+                    className={`transition duration-150 ${idx % 2 === 0
                       ? "bg-white dark:bg-slate-800"
                       : "bg-blue-50 dark:bg-slate-700"
                       } hover:bg-gray-100 dark:hover:bg-slate-600`}
-                >
-                  <td className="px-6 py-4 rounded-l-xl font-semibold">{idx + 1}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">👤</span>
-                      <span>{item.users?.name || "-"}</span>
+                  >
+                    <td className="px-6 py-4 rounded-l-xl font-semibold">{idx + 1}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">👤</span>
+                        <span>{item.users?.name || "-"}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-white">
+                        {item.schedules?.day?.toUpperCase() || "-"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 rounded-r-xl flex items-center justify-center gap-2">
+                      {currentUser?.role === "admin" && (
+                        <>
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => confirmDelete(item.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 rounded-lg text-xs shadow"
+                          >
+                            🗑 Delete
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center text-gray-500 dark:text-gray-400">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="text-4xl">📭</div>
+                      <div className="text-sm">Belum ada jadwal piket.</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-white">
-                      {item.schedules?.day?.toUpperCase() || "-"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 rounded-r-xl flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => handleEdit(item)}
-                     className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                    >
-                      ✏️ Edit
-                    </button>
-                    {currentUser?.role === "admin" && (
-                      <button
-                        onClick={() => confirmDelete(item.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 rounded-lg text-xs shadow"
-                      >
-                       🗑 Delete
-                      </button>
-                    )}
-                  </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={4} className="py-10 text-center text-gray-500 dark:text-gray-400">
-                  <div className="flex flex-col items-center gap-2">
-                    <div className="text-4xl">📭</div>
-                    <div className="text-sm">Belum ada jadwal piket.</div>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {showConfirmModal && (
