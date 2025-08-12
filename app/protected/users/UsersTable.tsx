@@ -99,18 +99,18 @@ export default function UsersTable({
     <>
       <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
         <form method="GET" className="mb-4 flex flex-wrap items-center gap-3">
-        <input
-          type="text"
-          name="search"
-          placeholder="Cari nama atau role..."
-          defaultValue={searchTerm || ''}
-          className="border px-3 py-1 rounded-md"
-        />
-        {/* Removed day filter dropdown as 'day' and 'dayNames' are not defined */}
-        <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded-md">
-          Filter
-        </button>
-      </form>
+          <input
+            type="text"
+            name="search"
+            placeholder="Cari nama atau role..."
+            defaultValue={searchTerm || ''}
+            className="border px-3 py-1 rounded-md"
+          />
+          {/* Removed day filter dropdown as 'day' and 'dayNames' are not defined */}
+          <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded-md">
+            Filter
+          </button>
+        </form>
 
         <div className="flex-1 min-w-[220px] max-w-[320px] mx-auto">
           <div className="relative">
@@ -128,10 +128,10 @@ export default function UsersTable({
         {currentUser?.role === "admin" && (
           <button
             onClick={() => setCreateModalOpen(true)}
-             className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
             disabled={isPending}
           >
-             ➕ Tambah Pengguna
+            ➕ Tambah Pengguna
           </button>
         )}
       </div>
@@ -157,9 +157,7 @@ export default function UsersTable({
               <th className="px-6 py-4 text-left">Email</th>
               <th className="px-6 py-4 text-left">Role</th>
               <th className="px-6 py-4 text-left">Tanggal Buat</th>
-              {currentUser?.role === "admin" && (
-                <th className="px-6 py-4 text-left">Action</th>
-              )}
+              <th className="px-6 py-4 text-left">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -173,52 +171,51 @@ export default function UsersTable({
               users.map((user, index) => (
                 <tr
                   key={user.id}
-                   className={`transition duration-150 ${index % 2 === 0
-                      ? "bg-white dark:bg-slate-800"
-                      : "bg-blue-50 dark:bg-slate-700"
-                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                  className={`transition duration-150 ${index % 2 === 0
+                    ? "bg-white dark:bg-slate-800"
+                    : "bg-blue-50 dark:bg-slate-700"
+                    } hover:bg-gray-100 dark:hover:bg-slate-600`}
                 >
                   <td className="px-6 py-4 font-medium">{index + 1}</td>
                   <td className="px-6 py-4">{user.name}</td>
                   <td className="px-6 py-4">{user.email}</td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                        user.role === "admin"
-                          ? "bg-red-100 text-red-600"
-                          : "bg-blue-100 text-blue-600"
-                      }`}
+                      className={`px-3 py-1 text-xs font-semibold rounded-full ${user.role === "admin"
+                        ? "bg-red-100 text-red-600"
+                        : "bg-blue-100 text-blue-600"
+                        }`}
                     >
-                      {user.role === "employee" ? "user": user.role}
+                      {user.role === "employee" ? "user" : user.role}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     {new Date(user.created_at).toLocaleDateString("id-ID")}
                   </td>
-                  {currentUser?.role === "admin" && (
-                    <td className="px-6 py-4 space-x-2">
-                      <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setEditModalOpen(true);
-                        }}
-                        className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                        disabled={isPending}
-                      >
-                       ✏️ Edit
-                      </button>
+                  <td className="px-6 py-4 space-x-2">
+                    <button
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setEditModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                      disabled={isPending}
+                    >
+                      ✏️ Edit
+                    </button>
+                    {currentUser?.role === "admin" && (
                       <button
                         onClick={() => {
                           setUserToDelete(user);
                           setDeleteModalOpen(true);
                         }}
-                         className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                        className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                         disabled={isPending}
                       >
-                       🗑 Delete
+                        🗑 Delete
                       </button>
-                    </td>
-                  )}
+                    )}
+                  </td>
                 </tr>
               ))
             )}
@@ -242,6 +239,7 @@ export default function UsersTable({
           onClose={() => setEditModalOpen(false)}
           onSubmit={handleUpdateUser}
           isPending={isPending}
+          role={currentUser.role}
         />
       )}
 
@@ -340,11 +338,13 @@ function EditUserModal({
   onClose,
   onSubmit,
   isPending,
+  role
 }: {
   user: User;
   onClose: () => void;
   onSubmit: (formData: FormData) => void;
   isPending: boolean;
+  role: "admin" | "employee";
 }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -372,18 +372,20 @@ function EditUserModal({
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Role</label>
-            <select
-              name="role"
-              defaultValue={user.role}
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="employee">Employee</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
+          {role === "admin" &&
+            <div>
+              <label className="block text-sm font-medium mb-1">Role</label>
+              <select
+                name="role"
+                defaultValue={user.role}
+                required
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="employee">Employee</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          }
           <div className="flex gap-2 justify-end">
             <button
               type="button"
