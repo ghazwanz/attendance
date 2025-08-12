@@ -47,6 +47,9 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
   const [izinEnd, setIzinEnd] = useState('');
   const [sudahIzinPulang, setSudahIzinPulang] = useState(false);
   const [showChoiceBesokModal, setShowChoiceBesokModal] = useState(false);
+  // Modal dan state untuk keterangan pulang
+  const [showKeteranganPulangModal, setShowKeteranganPulangModal] = useState(false);
+  const [keteranganPulang, setKeteranganPulang] = useState("");
 
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
@@ -351,28 +354,43 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
     }
   };
 
+  // Handler untuk klik tombol pulang: tampilkan modal keterangan
   const handlePulang = async () => {
-    if (!scanUserRef.current) return;
+    setKeteranganPulang("");
+    setShowKeteranganPulangModal(true);
+  };
 
+  // Handler submit keterangan pulang
+  const handleSubmitKeteranganPulang = async () => {
+    if (!scanUserRef.current) return;
+    if (!keteranganPulang.trim()) {
+      showToast({ type: 'error', message: 'Keterangan kegiatan hari ini wajib diisi.' });
+      return;
+    }
     try {
       const { user_id, name } = scanUserRef.current;
       const now = new Date();
       const today = now.toISOString().split('T')[0];
-
       const { data: attendanceToday, error: fetchError } = await supabase
-        .from('attendances')
-        .select('*')
-        .eq('user_id', user_id)
-        .eq('date', today)
-        .single();
-
+          .from('attendances')
+          .select('*')
+          .eq('user_id', user_id)
+          .eq('date', today)
+          .single();
+    // const checkInTime = new Date(attendanceToday.check_in);
+    // const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+    // if (hoursDiff < 8) {
+    //   showToast({
+    //     type: 'warning',
+    //     message: `Belum bisa pulang. Baru ${hoursDiff.toFixed(1)} jam, minimal 8 jam.`,
+    //   });
+    //   return;
+    // }
       if (fetchError || !attendanceToday) {
         throw new Error('Data kehadiran tidak ditemukan');
       }
-
       const checkInTime = new Date(attendanceToday.check_in);
       const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
-
       if (hoursDiff < 8) {
         showToast({
           type: 'warning',
@@ -380,21 +398,18 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
         });
         return;
       }
-
       const { error: updateError } = await supabase
         .from('attendances')
-        .update({ check_out: now.toISOString() })
+        .update({ check_out: now.toISOString(), notes: keteranganPulang })
         .eq('user_id', user_id)
         .eq('date', today);
-
       if (updateError) throw new Error('Gagal mencatat pulang');
-
       showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
       if (onScanSuccess) onScanSuccess();
+      setShowKeteranganPulangModal(false);
+      setShowPulangModal(false);
     } catch (err) {
       showToast({ type: 'error', message: (err as Error).message });
-    } finally {
-      setShowPulangModal(false);
     }
   };
 
@@ -558,7 +573,6 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               >
                 🏁 Pulang
               </button>
-
               <button
                 onClick={() => {
                   if (!sudahIzinPulang) {
@@ -589,14 +603,41 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
               >
                 📅 Izin Besok
               </button>
-
               {sudahIzinPulang && (
                 <p className="text-xs text-center text-red-500 mt-1">
                   Anda sudah izin pulang awal hari ini.
                 </p>
               )}
             </div>
+          </div>
+        </div>
+      )}
 
+      {/* Modal Keterangan Pulang */}
+      {showKeteranganPulangModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-sm shadow-xl text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold mb-4 text-center">Keterangan Kegiatan Hari Ini</h2>
+            <textarea
+              className="w-full p-3 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg resize-none h-28 mb-4"
+              placeholder="Tuliskan kegiatan utama hari ini..."
+              value={keteranganPulang}
+              onChange={e => setKeteranganPulang(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowKeteranganPulangModal(false)}
+                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-white rounded-md"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSubmitKeteranganPulang}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md"
+              >
+                Simpan & Pulang
+              </button>
+            </div>
           </div>
         </div>
       )}
