@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "@/lib/type";
 import { useDebouncedCallback } from "use-debounce";
+import UpdatePasswordModal from "./components/UpdatePasswordModal";
 
 interface UsersTableProps {
   users: User[];
@@ -30,6 +31,7 @@ export default function UsersTable({
 }: UsersTableProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [updatePassModal, setUpdatePassModal] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -203,6 +205,15 @@ export default function UsersTable({
                     >
                       ✏️ Edit
                     </button>
+                    {user.id === currentUser.id &&
+                      <button
+                        onClick={() => { setUpdatePassModal(prev => !prev) }}
+                        className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                        disabled={isPending}
+                      >
+                        ✏️ Change Password
+                      </button>
+                    }
                     {currentUser?.role === "admin" && (
                       <button
                         onClick={() => {
@@ -229,6 +240,13 @@ export default function UsersTable({
           onClose={() => setCreateModalOpen(false)}
           onSubmit={handleCreateUser}
           isPending={isPending}
+        />
+      )}
+
+      {/* Create User Modal */}
+      {updatePassModal && (
+        <UpdatePasswordModal
+          onClose={() => setUpdatePassModal((prev)=>!prev)}
         />
       )}
 
