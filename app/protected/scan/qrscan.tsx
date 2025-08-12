@@ -372,20 +372,11 @@ export default function QRScanner({ onScanSuccess, onScanError }: QRScannerProps
       const now = new Date();
       const today = now.toISOString().split('T')[0];
       const { data: attendanceToday, error: fetchError } = await supabase
-          .from('attendances')
-          .select('*')
-          .eq('user_id', user_id)
-          .eq('date', today)
-          .single();
-    // const checkInTime = new Date(attendanceToday.check_in);
-    // const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
-    // if (hoursDiff < 8) {
-    //   showToast({
-    //     type: 'warning',
-    //     message: `Belum bisa pulang. Baru ${hoursDiff.toFixed(1)} jam, minimal 8 jam.`,
-    //   });
-    //   return;
-    // }
+        .from('attendances')
+        .select('*')
+        .eq('user_id', user_id)
+        .eq('date', today)
+        .single();
       if (fetchError || !attendanceToday) {
         throw new Error('Data kehadiran tidak ditemukan');
       }
