@@ -28,7 +28,6 @@ export default function JadwalPiketPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterDate, setFilterDate] = useState("");
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -78,6 +77,10 @@ export default function JadwalPiketPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if(currentUser?.role !== "admin"){
+      toast.error("Anda tidak dapat melakukan aksi ini")
+    }
 
     if (!form.user_id || !form.hari) {
       toast.error("❌ Lengkapi semua field terlebih dahulu.");
@@ -194,15 +197,19 @@ export default function JadwalPiketPage() {
       <h1 className="text-4xl font-bold mb-8 text-blue-700 dark:text-white">📅 Jadwal Piket</h1>
 
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-        <button
-          onClick={() => {
-            resetForm();
-            setShowAddForm(true);
-          }}
-          className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
-        >
-          ➕ Tambah Jadwal
-        </button>
+        {
+          currentUser?.role === "admin" && (
+            <button
+              onClick={() => {
+                resetForm();
+                setShowAddForm(true);
+              }}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
+            >
+              ➕ Tambah Jadwal
+            </button>
+          )
+        }
 
         <div className="flex gap-3 w-full md:w-auto">
           <input
@@ -211,12 +218,6 @@ export default function JadwalPiketPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full md:w-56 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="date"
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
       </div>
@@ -255,7 +256,10 @@ export default function JadwalPiketPage() {
                 <th className="px-6 py-3 rounded-l-xl">No.</th>
                 <th className="px-6 py-3">👤 Nama</th>
                 <th className="px-6 py-3">📅 Hari</th>
-                <th className="px-6 py-3 rounded-r-xl">⚙️ Aksi</th>
+                {
+                  currentUser?.role === "admin" &&
+                  <th className="px-6 py-3 rounded-r-xl">⚙️ Aksi</th>
+                }
               </tr>
             </thead>
             <tbody>
@@ -270,7 +274,7 @@ export default function JadwalPiketPage() {
                   >
                     <td className="px-6 py-4 rounded-l-xl font-semibold">{idx + 1}</td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center gap-2">
                         <span className="text-lg">👤</span>
                         <span>{item.users?.name || "-"}</span>
                       </div>
@@ -280,8 +284,8 @@ export default function JadwalPiketPage() {
                         {item.schedules?.day?.toUpperCase() || "-"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 rounded-r-xl flex items-center justify-center gap-2">
-                      {currentUser?.role === "admin" && (
+                    {currentUser?.role === "admin" && (
+                      <td className="px-6 py-4 rounded-r-xl flex items-center justify-center gap-2">
                         <>
                           <button
                             onClick={() => handleEdit(item)}
@@ -296,13 +300,13 @@ export default function JadwalPiketPage() {
                             🗑 Delete
                           </button>
                         </>
-                      )}
-                    </td>
+                      </td>
+                    )}
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="py-10 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={currentUser?.role === "admin" ? 4 : 3} className="py-10 text-center text-gray-500 dark:text-gray-400">
                     <div className="flex flex-col items-center gap-2">
                       <div className="text-4xl">📭</div>
                       <div className="text-sm">Belum ada jadwal piket.</div>
