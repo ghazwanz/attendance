@@ -10,8 +10,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Sistem Absesni – Berbasis QR & Real-Time Tracking",
+  description: "Permudah absensi karyawan dengan sistem berbasis QR. Pantau kehadiran real-time, kelola izin, dan buat laporan secara cepat dalam satu platform.",
 };
 
 const geistSans = Geist({

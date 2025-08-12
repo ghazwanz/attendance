@@ -8,6 +8,7 @@ import QRScanner from './qrscan';
 import UserLocationSection from '@/components/UserLocationSection';
 import { useLocationStores } from '@/lib/stores/useLocationStores';
 import QRTips from '@/components/QRTips';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 
 interface AttendanceRecord {
   id: string;
@@ -29,8 +30,8 @@ export default function AttendancePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   // const [isOutside, setIsOutside] = useState<boolean>(false);
   const [user, setUser] = useState<any>()
-  const isOutside = useLocationStores(state=>state.isOutside)
-  const setIsOutside = useLocationStores(state=>state.setIsOutside)
+  const isOutside = useLocationStores(state => state.isOutside)
+  const setIsOutside = useLocationStores(state => state.setIsOutside)
   const supabase = createClient();
 
   useEffect(() => {
@@ -155,30 +156,30 @@ export default function AttendancePage() {
           </div>
           <div className="hidden md:flex gap-3">
             {user ?
-            <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition">Dashboard</Link>
-            :
-            <>
-            <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition">Home</Link>
-            <Link href="/auth/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition">Login</Link>
-            </>
-          }
+              <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition">Dashboard</Link>
+              :
+              <>
+                <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition">Home</Link>
+                <Link href="/auth/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition">Login</Link>
+              </>
+            }
           </div>
         </div>
         {menuOpen && (
           <div className="md:hidden flex flex-col items-end px-5 pb-3 gap-2">
-            {user?
-            <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition w-full text-center">Dashboard</Link>
-            :
-            <>
-            <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition w-full text-center">Home</Link>
-            <Link href="/auth/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition w-full text-center">Login</Link>
-            </>
+            {user ?
+              <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition w-full text-center">Dashboard</Link>
+              :
+              <>
+                <Link href="/" className="px-4 py-2 rounded-xl font-medium bg-neutral-200 text-neutral-900 hover:bg-blue-600 hover:text-white dark:bg-neutral-800 dark:text-white dark:hover:bg-blue-500 transition w-full text-center">Home</Link>
+                <Link href="/auth/login" className="px-4 py-2 rounded-xl font-medium bg-neutral-100 text-neutral-900 hover:bg-emerald-600 hover:text-white dark:bg-neutral-700 dark:text-white dark:hover:bg-emerald-500 transition w-full text-center">Login</Link>
+              </>
             }
           </div>
         )}
       </nav>
 
-      <div className="py-10 w-full px-4 max-w-5xl mx-auto">
+      <div className="pt-10 w-full px-4 max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             📲 Sistem Absensi
@@ -198,7 +199,7 @@ export default function AttendancePage() {
               onScanSuccess={handleScanSuccess}
               onScanError={handleScanError}
               isOutside={isOutside}
-              // setIsOutside={setIsOutside}
+            // setIsOutside={setIsOutside}
             />
           </div>
 
@@ -235,10 +236,10 @@ export default function AttendancePage() {
                     </div>
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${(record.status.toLowerCase() === 'izin' || (record.notes && record.notes.toLowerCase().includes('izin keluar')))
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : record.status.toLowerCase() === 'hadir'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : record.status.toLowerCase() === 'hadir'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
                         }`}
                     >
                       {record.status.toUpperCase()}
@@ -252,8 +253,16 @@ export default function AttendancePage() {
         {/* LOKASI PENGGUNA */}
         <UserLocationSection setIsOutside={setIsOutside} isOutside={isOutside} />
         {/* TIPS */}
-        <QRTips/>
+        <QRTips />
       </div>
+      {/* FOOTER */}
+      <footer className="w-full flex items-center justify-center border-t border-gray-200 dark:border-white/10 mx-auto text-center text-xs gap-8 py-4">
+        <p className="font-bold">
+          Copyright © All Rights Reserved
+        </p>
+        {/* <DeployButton /> */}
+        <ThemeSwitcher />
+      </footer>
     </div>
   );
 }
