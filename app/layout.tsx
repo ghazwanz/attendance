@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import { NotificationProvider } from "@/lib/notifications/useNotification";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -73,8 +74,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+
           <Toaster position="top-center" reverseOrder={false} />
-          {children}
+          <NotificationProvider>
+            {children}
+          </NotificationProvider>
         </ThemeProvider>
       </body>
     </html>

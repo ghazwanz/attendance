@@ -11,6 +11,7 @@ import { AuthButton } from '@/components/auth-button';
 import UserLocationSection from '@/components/UserLocationSection';
 import QRWrapper from '@/components/QRWrapper';
 import QRTips from '@/components/QRTips';
+import NotificationWrapper from '@/components/Notifications/NotificationWrapper';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -88,6 +89,9 @@ export default async function Home() {
         {/* HERO */}
         <div className="flex-1 flex flex-col gap-12 max-w-6xl px-6 py-10 sm:py-16">
           <Hero />
+
+          <NotificationWrapper/>
+
           {/* <QRForm users={users ?? []} encryptedQRData={null} /> */}
 
           {/* GOOGLE MAPS: Lokasi Mahative Studio */}

@@ -37,6 +37,7 @@
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.3.0",
     "use-debounce": "^10.0.5",
+    "web-push": "^3.6.7",
     "zod": "^4.0.5",
     "zustand": "^5.0.7"
   },
@@ -47,6 +48,7 @@
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "autoprefixer": "^10.4.20",
     "concurrently": "^8.2.2",
     "eslint": "^9",
