@@ -432,8 +432,8 @@ export default function Page() {
                 <th className="py-3 px-4 rounded-tl-lg">No</th>
                 <th className="py-3 px-4">Nama</th>
                 <th className="py-3 px-4">Tanggal</th>
-                <th className="py-3 px-4">Check-in</th>
-                <th className="py-3 px-4">Check-out</th>
+                <th className="py-3 px-4">Masuk</th>
+                <th className="py-3 px-4">Pulang</th>
                 <th className="py-3 px-4">Keterangan</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 rounded-tr-lg">Aksi</th>
