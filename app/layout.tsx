@@ -10,7 +10,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Sistem Absesni – Berbasis QR & Real-Time Tracking",
+  title: "Sistem Absensi – Berbasis QR & Real-Time Tracking",
   description: "Permudah absensi karyawan dengan sistem berbasis QR. Pantau kehadiran real-time, kelola izin, dan buat laporan secara cepat dalam satu platform.",
 };
 

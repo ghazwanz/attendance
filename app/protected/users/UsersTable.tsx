@@ -1,11 +1,12 @@
 // app/users/components/UsersTable.tsx
 "use client";
 
-import { LucidePencil, Plus, Trash2, LucideSearch } from "lucide-react";
+import { LucideSearch } from "lucide-react";
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "@/lib/type";
 import { useDebouncedCallback } from "use-debounce";
+import UpdatePasswordModal from "./components/UpdatePasswordModal";
 
 interface UsersTableProps {
   users: User[];
@@ -30,6 +31,7 @@ export default function UsersTable({
 }: UsersTableProps) {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [updatePassModal, setUpdatePassModal] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -98,21 +100,8 @@ export default function UsersTable({
   return (
     <>
       <div className="mb-6 flex flex-wrap gap-4 items-center justify-between">
-        <form method="GET" className="mb-4 flex flex-wrap items-center gap-3">
-        <input
-          type="text"
-          name="search"
-          placeholder="Cari nama atau role..."
-          defaultValue={searchTerm || ''}
-          className="border px-3 py-1 rounded-md"
-        />
-        {/* Removed day filter dropdown as 'day' and 'dayNames' are not defined */}
-        <button type="submit" className="bg-blue-500 text-white px-4 py-1 rounded-md">
-          Filter
-        </button>
-      </form>
-
-        <div className="flex-1 min-w-[220px] max-w-[320px] mx-auto">
+        {/* Search Bar */}
+        <div className="flex-1 min-w-[220px] max-w-[320px]">
           <div className="relative">
             <LucideSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -120,7 +109,7 @@ export default function UsersTable({
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Cari pengguna..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 p-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -128,10 +117,10 @@ export default function UsersTable({
         {currentUser?.role === "admin" && (
           <button
             onClick={() => setCreateModalOpen(true)}
-             className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
+            className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
             disabled={isPending}
           >
-             ➕ Tambah Pengguna
+            ➕ Tambah Pengguna
           </button>
         )}
       </div>
@@ -155,17 +144,15 @@ export default function UsersTable({
               <th className="px-6 py-4 text-left">No</th>
               <th className="px-6 py-4 text-left">Nama</th>
               <th className="px-6 py-4 text-left">Email</th>
-              <th className="px-6 py-4 text-left">Role</th>
+              <th className="px-6 py-4 text-left">Peran</th>
               <th className="px-6 py-4 text-left">Tanggal Buat</th>
-              {currentUser?.role === "admin" && (
-                <th className="px-6 py-4 text-left">Action</th>
-              )}
+              <th className="px-6 py-4 text-left">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center text-gray-400 py-6">
+                <td colSpan={6} className="text-center text-gray-400 py-6">
                   Tidak ada data pengguna.
                 </td>
               </tr>
@@ -173,10 +160,11 @@ export default function UsersTable({
               users.map((user, index) => (
                 <tr
                   key={user.id}
-                   className={`transition duration-150 ${index % 2 === 0
+                  className={`transition duration-150 ${
+                    index % 2 === 0
                       ? "bg-white dark:bg-slate-800"
                       : "bg-blue-50 dark:bg-slate-700"
-                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                  } hover:bg-gray-100 dark:hover:bg-slate-600`}
                 >
                   <td className="px-6 py-4 font-medium">{index + 1}</td>
                   <td className="px-6 py-4">{user.name}</td>
@@ -189,36 +177,45 @@ export default function UsersTable({
                           : "bg-blue-100 text-blue-600"
                       }`}
                     >
-                      {user.role === "employee" ? "user": user.role}
+                      {user.role === "employee" ? "user" : user.role}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     {new Date(user.created_at).toLocaleDateString("id-ID")}
                   </td>
-                  {currentUser?.role === "admin" && (
-                    <td className="px-6 py-4 space-x-2">
+                  <td className="px-6 py-4 space-x-2">
+                    <button
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setEditModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                      disabled={isPending}
+                    >
+                      ✏️ Edit
+                    </button>
+                    {user.id === currentUser.id && (
                       <button
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setEditModalOpen(true);
-                        }}
+                        onClick={() => setUpdatePassModal((prev) => !prev)}
                         className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                         disabled={isPending}
                       >
-                       ✏️ Edit
+                        ✏️ Change Password
                       </button>
+                    )}
+                    {currentUser?.role === "admin" && (
                       <button
                         onClick={() => {
                           setUserToDelete(user);
                           setDeleteModalOpen(true);
                         }}
-                         className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                        className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                         disabled={isPending}
                       >
-                       🗑 Delete
+                        🗑 Hapus
                       </button>
-                    </td>
-                  )}
+                    )}
+                  </td>
                 </tr>
               ))
             )}
@@ -235,6 +232,13 @@ export default function UsersTable({
         />
       )}
 
+      {/* Update Password Modal */}
+      {updatePassModal && (
+        <UpdatePasswordModal
+          onClose={() => setUpdatePassModal((prev) => !prev)}
+        />
+      )}
+
       {/* Edit User Modal */}
       {editModalOpen && selectedUser && (
         <EditUserModal
@@ -242,13 +246,14 @@ export default function UsersTable({
           onClose={() => setEditModalOpen(false)}
           onSubmit={handleUpdateUser}
           isPending={isPending}
+          role={currentUser.role}
         />
       )}
 
       {/* Delete User Modal */}
       {deleteModalOpen && userToDelete && (
         <DeleteUserModal
-          user={userToDelete!}
+          user={userToDelete}
           onClose={() => setDeleteModalOpen(false)}
           onSubmit={handleDeleteUser}
           isPending={isPending}
@@ -258,7 +263,7 @@ export default function UsersTable({
   );
 }
 
-// Create User Modal Component
+// Create User Modal
 function CreateUserModal({
   onClose,
   onSubmit,
@@ -334,17 +339,19 @@ function CreateUserModal({
   );
 }
 
-// Edit User Modal Component
+// Edit User Modal
 function EditUserModal({
   user,
   onClose,
   onSubmit,
   isPending,
+  role,
 }: {
   user: User;
   onClose: () => void;
   onSubmit: (formData: FormData) => void;
   isPending: boolean;
+  role: "admin" | "employee";
 }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -363,7 +370,7 @@ function EditUserModal({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Nama</label>
+            <label className="block text-sm font-medium mb-1">Email</label>
             <input
               type="email"
               name="email"
@@ -372,18 +379,20 @@ function EditUserModal({
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Role</label>
-            <select
-              name="role"
-              defaultValue={user.role}
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="employee">Employee</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
+          {role === "admin" && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Role</label>
+              <select
+                name="role"
+                defaultValue={user.role}
+                required
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="employee">Employee</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          )}
           <div className="flex gap-2 justify-end">
             <button
               type="button"
@@ -407,7 +416,7 @@ function EditUserModal({
   );
 }
 
-// Delete User Modal Component
+// Delete User Modal
 function DeleteUserModal({
   user,
   onClose,
