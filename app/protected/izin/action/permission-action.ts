@@ -13,18 +13,18 @@ export const permissionActions = {
   },
 
   // Ambil user yang sedang login
-  async fetchCurrentUser(): Promise<{ id: string; role: string; user_metadata: string } | null> {
+  async fetchCurrentUser(): Promise<{ id: string; role: string; user_metadata: string, name:string } | null> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
     const { data: profile, error } = await supabase
       .from("users")
-      .select("id, role")
+      .select("id, role, name")
       .eq("id", user.id)
       .single();
 
     if (error) throw error;
-    return { id: profile.id, role: profile.role, user_metadata: user.user_metadata.role };
+    return { id: profile.id, role: profile.role, user_metadata: user.user_metadata.role, name:profile.name };
   },
 
   // Ambil daftar izin

@@ -15,7 +15,7 @@ const initialForm: PermissionForm = {
 export function usePermissions() {
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [users, setUsers] = useState<User[]>([]);
-    const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
+    const [currentUser, setCurrentUser] = useState<{ id: string; role: string, name:string } | null>(null);
     const [form, setForm] = useState<PermissionForm>(initialForm);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
