@@ -143,7 +143,7 @@ export default function ReminderPage() {
       <ToastContainer position="top-center" autoClose={3000} />
 
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold">Reminder List</h1>
+        <h1 className="text-2xl font-bold">Daftar Pengingat</h1>
         {userRole === "admin" && (
           <button
             onClick={() => {
@@ -164,10 +164,10 @@ export default function ReminderPage() {
         <table className="min-w-full text-sm border-separate border-spacing-y-2">
           <thead>
             <tr className="bg-blue-600 text-white text-xs uppercase">
-              <th className="py-3 px-4 rounded-tl-lg">Title</th>
-              <th className="py-3 px-4">Message</th>
+              <th className="py-3 px-4 rounded-tl-lg">Judul</th>
+              <th className="py-3 px-4">Pesan</th>
               <th className="py-3 px-4">Jadwal</th>
-              <th className="py-3 px-4">Type</th>
+              <th className="py-3 px-4">Jenis</th>
               {userRole === "admin" && <th className="py-3 px-4 rounded-tr-lg">Aksi</th>}
             </tr>
           </thead>
@@ -205,7 +205,7 @@ export default function ReminderPage() {
                         onClick={() => handleDelete(r.id)}
                         className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                       >
-                        🗑 Delete
+                        🗑 Hapus
                       </button>
                     </td>
                   )}
