@@ -27,6 +27,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <link rel="manifest" href="/manifest.json" />
+      <meta name="theme-color" content="#4CAF50" />
+
       <body className={`${geistSans.className} antialiased`}>
         <ThemeProvider
           attribute="class"
