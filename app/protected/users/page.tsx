@@ -64,32 +64,52 @@ async function updateUser(formData: FormData) {
     .eq('id', authUser.id)
     .single();
 
-  if (currentUser?.role !== 'admin') {
-    throw new Error('Unauthorized');
-  }
-
   const userId = formData.get('userId') as string;
   const name = formData.get('name') as string;
   const role = formData.get('role') as string;
   const email = formData.get('email') as string;
 
+  // Only admin can update role/email, but user can update their own name
+  const isAdmin = currentUser?.role === 'admin';
+  const isSelf = userId === authUser.id;
+
+  if (!isAdmin && !isSelf) {
+    throw new Error('Unauthorized');
+  }
+
   try {
-    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-      email: email,
-      email_confirm: true,
-      user_metadata: {
-        name,
-        role,
-      },
-    });
-    if (updateError) throw updateError;
-    const { error } = await supabase
-      .from('users')
-      .update({ name, role })
-      .eq('id', userId);
-
-    if (error) throw error;
-
+    if (isAdmin) {
+      // Admin can update everything
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        email: email,
+        email_confirm: true,
+        user_metadata: {
+          name,
+          role,
+        },
+      });
+      if (updateError) throw updateError;
+      const { error } = await supabase
+        .from('users')
+        .update({ name, role })
+        .eq('id', userId);
+      if (error) throw error;
+    } else if (isSelf) {
+      // User can update their own name and email
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        email: email,
+        email_confirm: true,
+        user_metadata: {
+          name,
+        },
+      });
+      if (updateError) throw updateError;
+      const { error } = await supabase
+        .from('users')
+        .update({ name })
+        .eq('id', userId);
+      if (error) throw error;
+    }
     revalidatePath('/users');
     return { success: true };
   } catch (error: Error | any) {
