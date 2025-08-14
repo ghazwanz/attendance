@@ -92,37 +92,37 @@ export default function ProtectedLayout({
                     href="/protected/attendances"
                     className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition"
                   >
-                    <CalendarCheck2 size={16} /> Attendance
+                    <CalendarCheck2 size={16} /> Kehadiran
                   </Link>
                   <Link
                     href="/protected/izin"
                     className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition"
                   >
-                    <ClipboardList size={16} /> Permission
+                    <ClipboardList size={16} /> Izin
                   </Link>
                   {/* Desktop Dropdown Schedule */}
                   <div className="relative p-2 group">
                     <button className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
-                      <CalendarClock size={16} /> Schedule
+                      <CalendarClock size={16} /> Jadwal
                     </button>
                     <div className="absolute hidden group-hover:flex flex-col bg-white dark:bg-slate-800 shadow-lg rounded-md mt-2 min-w-[180px] z-50">
                       <Link
                         href="/protected/schedule"
                         className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
                       >
-                        <CalendarClock size={16} /> Schedule
+                        <CalendarClock size={16} /> Jadwal
                       </Link>
                       <Link
                         href="/protected/jadwal-piket"
                         className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
                       >
-                        <ClipboardList size={16} /> Piket Schedule
+                        <ClipboardList size={16} /> Jadwal Piket
                       </Link>
                       <Link
                         href="/protected/reminder"
                         className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
                       >
-                        <ClipboardCheckIcon size={16} /> Reminder
+                        <ClipboardCheckIcon size={16} /> Pengingat
                       </Link>
                     </div>
                   </div>
