@@ -95,7 +95,7 @@ export default function Tabeljadwal() {
               <th className="px-6 py-4 text-left">Selesai Istirahat</th>
               <th className="px-6 py-4 text-left">Aktif</th>
               {currentUser?.role === "admin" && (
-                <th className="px-6 py-4 text-left">Action</th>
+                <th className="px-6 py-4 text-left">Aksi</th>
               )}
             </tr>
           </thead>
