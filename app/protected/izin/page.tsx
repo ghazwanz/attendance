@@ -40,9 +40,9 @@ export default function PermissionPage() {
             <ErrorNotification message={errorMessage} onClose={() => setErrorMessage("")} />
 
             {/* Button Tambah Izin untuk admin dan user */}
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-2">
                 <button
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold shadow"
+                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
                     onClick={() => { setShowForm(true); resetForm(); }}
                 >
                     ➕ Tambah Izin

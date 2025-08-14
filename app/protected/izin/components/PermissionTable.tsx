@@ -191,14 +191,6 @@ export default function PermissionTable({
               Reset
             </button>
           )}
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
-            disabled={showForm}
-            style={showForm ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-          >
-            ➕ Tambah Izin
-          </button>
         </div>
       </div>
 
