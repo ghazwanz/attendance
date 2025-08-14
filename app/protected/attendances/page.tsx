@@ -8,7 +8,7 @@ import { Attendance } from "@/lib/type";
 
 export default function Page() {
   // State untuk daftar user
-  const [userList, setUserList] = useState<{ id: string, name: string }[]>([]);
+  const [userList, setUserList] = useState<{ id: string; name: string }[]>([]);
   // State untuk modal tambah absen
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState({
@@ -21,7 +21,7 @@ export default function Page() {
   });
 
   const [addLoading, setAddLoading] = useState(false);
-  const [errorToast, setErrorToast] = useState<string | null>(null); // ✅ Tambahkan ini  
+  const [errorToast, setErrorToast] = useState<string | null>(null); // ✅ Tambahkan ini
   const supabase = createClient();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [data, setData] = useState<Attendance[]>([]);
@@ -53,9 +53,7 @@ export default function Page() {
     setUserRole(role);
 
     // Ambil semua user untuk dropdown
-    const { data: allUsers } = await supabase
-      .from("users")
-      .select("id, name");
+    const { data: allUsers } = await supabase.from("users").select("id, name");
     setUserList(allUsers || []);
     if (role !== "admin") {
       query = query.eq("user_id", userId);
@@ -143,7 +141,7 @@ export default function Page() {
       const timeout = setTimeout(() => setErrorToast(null), 3000);
       return () => clearTimeout(timeout);
     }
-  }, [errorToast]);  
+  }, [errorToast]);
 
   const showSuccessToast = (message: string) => {
     setSuccessMessage(message);
@@ -151,26 +149,22 @@ export default function Page() {
   };
 
   const filteredData = data.filter((item) => {
-    const nameMatch = item.users?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const nameMatch = item.users?.name
+      ?.toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
     const itemDate = new Date(item.date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     if (selectedFilter === "today") {
-      return (
-        itemDate.toDateString() === today.toDateString() &&
-        nameMatch
-      );
+      return itemDate.toDateString() === today.toDateString() && nameMatch;
     }
 
     if (selectedFilter === "yesterday") {
       const yesterday = new Date(today);
       yesterday.setDate(today.getDate() - 1);
-      return (
-        itemDate.toDateString() === yesterday.toDateString() &&
-        nameMatch
-      );
+      return itemDate.toDateString() === yesterday.toDateString() && nameMatch;
     }
 
     if (selectedFilter === "last7days") {
@@ -212,7 +206,6 @@ export default function Page() {
               }}
               userRole={userRole ?? ""}
             />
-
           </div>
           {/* Tombol Tambah Absen khusus admin di bawah form */}
           {/* 🔍 Input Search */}
@@ -243,7 +236,7 @@ export default function Page() {
                 <button
                   onClick={() => setShowAddModal(true)}
                   className="bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
-        >
+                >
                   ➕ Tambah Absen
                 </button>
               </div>
@@ -264,7 +257,9 @@ export default function Page() {
                 >
                   ✖
                 </button>
-                <h2 className="text-lg font-bold mb-4 text-center">Tambah Absen</h2>
+                <h2 className="text-lg font-bold mb-4 text-center">
+                  Tambah Absen
+                </h2>
                 {errorToast && (
                   <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
                     <div className="bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
@@ -286,27 +281,39 @@ export default function Page() {
 
                     // Validasi waktu check-in dan check-out
                     if (addForm.check_in && addForm.check_out) {
-                      const checkIn = new Date(`${addForm.date}T${addForm.check_in}`);
-                      const checkOut = new Date(`${addForm.date}T${addForm.check_out}`);
+                      const checkIn = new Date(
+                        `${addForm.date}T${addForm.check_in}`
+                      );
+                      const checkOut = new Date(
+                        `${addForm.date}T${addForm.check_out}`
+                      );
                       if (checkIn >= checkOut) {
-                        setErrorToast("❌ Jam Check-in tidak boleh sama atau lebih dari Check-out!");
+                        setErrorToast(
+                          "❌ Jam Check-in tidak boleh sama atau lebih dari Check-out!"
+                        );
                         setAddLoading(false);
                         return;
                       }
                     }
 
-                    const { error } = await supabase.from("attendances").insert({
-                      user_id: addForm.user_id,
-                      date: addForm.date,
-                      check_in: addForm.check_in
-                        ? new Date(`${addForm.date}T${addForm.check_in}`).toISOString()
-                        : null,
-                      check_out: addForm.check_out
-                        ? new Date(`${addForm.date}T${addForm.check_out}`).toISOString()
-                        : null,
-                      notes: addForm.notes,
-                      status: addForm.status,
-                    });
+                    const { error } = await supabase
+                      .from("attendances")
+                      .insert({
+                        user_id: addForm.user_id,
+                        date: addForm.date,
+                        check_in: addForm.check_in
+                          ? new Date(
+                              `${addForm.date}T${addForm.check_in}`
+                            ).toISOString()
+                          : null,
+                        check_out: addForm.check_out
+                          ? new Date(
+                              `${addForm.date}T${addForm.check_out}`
+                            ).toISOString()
+                          : null,
+                        notes: addForm.notes,
+                        status: addForm.status,
+                      });
 
                     if (!error) {
                       setShowAddModal(false);
@@ -330,11 +337,15 @@ export default function Page() {
                 >
                   {/* Nama User */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Nama</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Nama
+                    </label>
                     <select
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.user_id}
-                      onChange={(e) => setAddForm({ ...addForm, user_id: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, user_id: e.target.value })
+                      }
                       required
                     >
                       <option value="">Pilih Nama</option>
@@ -348,56 +359,76 @@ export default function Page() {
 
                   {/* Tanggal */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Tanggal</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Tanggal
+                    </label>
                     <input
                       type="date"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.date}
-                      onChange={(e) => setAddForm({ ...addForm, date: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, date: e.target.value })
+                      }
                       required
                     />
                   </div>
 
                   {/* Check-in */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Check-in</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Check-in
+                    </label>
                     <input
                       type="time"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.check_in}
-                      onChange={(e) => setAddForm({ ...addForm, check_in: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, check_in: e.target.value })
+                      }
                     />
                   </div>
 
                   {/* Check-out */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Check-out</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Check-out
+                    </label>
                     <input
                       type="time"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.check_out}
-                      onChange={(e) => setAddForm({ ...addForm, check_out: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, check_out: e.target.value })
+                      }
                     />
                   </div>
 
                   {/* Keterangan */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Keterangan</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Keterangan
+                    </label>
                     <input
                       type="text"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.notes}
-                      onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, notes: e.target.value })
+                      }
                     />
                   </div>
 
                   {/* Status */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Status</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Status
+                    </label>
                     <select
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.status}
-                      onChange={(e) => setAddForm({ ...addForm, status: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, status: e.target.value })
+                      }
                     >
                       <option value="HADIR">HADIR</option>
                       <option value="TERLAMBAT">TERLAMBAT</option>
@@ -453,10 +484,11 @@ export default function Page() {
                 filteredData.map((item, i) => (
                   <tr
                     key={item.id}
-                    className={`transition duration-150 ${i % 2 === 0
-                      ? "bg-white dark:bg-slate-800"
-                      : "bg-blue-50 dark:bg-slate-700"
-                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                    className={`transition duration-150 ${
+                      i % 2 === 0
+                        ? "bg-white dark:bg-slate-800"
+                        : "bg-blue-50 dark:bg-slate-700"
+                    } hover:bg-gray-100 dark:hover:bg-slate-600`}
                   >
                     <td className="py-2 px-4">{i + 1}</td>
                     <td className="py-2 px-4 uppercase">
@@ -467,10 +499,10 @@ export default function Page() {
                       <span className="text-yellow-400 font-mono text-sm">
                         {item.check_in
                           ? new Date(item.check_in).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          })
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })
                           : "-"}
                       </span>
                     </td>
@@ -478,22 +510,23 @@ export default function Page() {
                       <span className="text-blue-400 font-mono text-sm">
                         {item.check_out
                           ? new Date(item.check_out).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          })
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })
                           : "-"}
                       </span>
                     </td>
                     <td className="py-2 px-4">{item.notes || "-"}</td>
                     <td className="py-2 px-4">
                       <span
-                        className={`text-sm font-semibold ${item.status === "HADIR"
-                          ? "text-green-400"
-                          : item.status === "IZIN"
+                        className={`text-sm font-semibold ${
+                          item.status === "HADIR"
+                            ? "text-green-400"
+                            : item.status === "IZIN"
                             ? "text-yellow-400"
                             : "text-red-400"
-                          }`}
+                        }`}
                       >
                         {item.status}
                       </span>
@@ -502,8 +535,16 @@ export default function Page() {
                       <div className="flex flex-wrap gap-2">
                         {item.status == "IZIN" ? (
                           <>
-                            {userRole === "admin"
-                              ? (
+                            {userRole === "admin" ? (
+                              <button
+                                onClick={() => setSelected(item)}
+                                className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                              >
+                                ✏️ Edit
+                              </button>
+                            ) : (
+                              item.date?.split("T")[0] ===
+                                new Date().toISOString().split("T")[0] && (
                                 <button
                                   onClick={() => setSelected(item)}
                                   className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
@@ -511,14 +552,7 @@ export default function Page() {
                                   ✏️ Edit
                                 </button>
                               )
-                              : (item.date?.split("T")[0] === new Date().toISOString().split("T")[0] && (
-                                <button
-                                  onClick={() => setSelected(item)}
-                                  className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                                >
-                                  ✏️ Edit
-                                </button>
-                              ))}
+                            )}
 
                             {userRole === "admin" && (
                               <button
@@ -531,20 +565,30 @@ export default function Page() {
                           </>
                         ) : (
                           <>
-                            {!item.check_out && item.status !== "alpa".toUpperCase() && userRole !== "admin" && (
-                              <button
-                                onClick={() => {
-                                  setCheckoutItem(item);
-                                  setCheckoutError(null);
-                                }}
-                                className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                              >
-                                🕒 Pulang
-                              </button>
-                            )}
+                            {!item.check_out &&
+                              item.status !== "alpa".toUpperCase() &&
+                              userRole !== "admin" && (
+                                <button
+                                  onClick={() => {
+                                    setCheckoutItem(item);
+                                    setCheckoutError(null);
+                                  }}
+                                  className="inline-flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                >
+                                  🕒 Pulang
+                                </button>
+                              )}
 
-                            {userRole === "admin"
-                              ? (
+                            {userRole === "admin" ? (
+                              <button
+                                onClick={() => setSelected(item)}
+                                className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                              >
+                                ✏️ Edit
+                              </button>
+                            ) : (
+                              item.date?.split("T")[0] ===
+                                new Date().toISOString().split("T")[0] && (
                                 <button
                                   onClick={() => setSelected(item)}
                                   className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
@@ -552,14 +596,7 @@ export default function Page() {
                                   ✏️ Edit
                                 </button>
                               )
-                              : (item.date?.split("T")[0] === new Date().toISOString().split("T")[0] && (
-                                <button
-                                  onClick={() => setSelected(item)}
-                                  className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                                >
-                                  ✏️ Edit
-                                </button>
-                              ))}
+                            )}
 
                             {userRole === "admin" && (
                               <button
@@ -599,14 +636,25 @@ export default function Page() {
                   const { id, user_id, notes, status } = selected;
                   let { date, check_in, check_out } = selected;
                   // Pastikan date ISO string
-                  let dateISO = date && date.length === 10 ? new Date(date + 'T00:00:00Z').toISOString() : date;
+                  let dateISO =
+                    date && date.length === 10
+                      ? new Date(date + "T00:00:00Z").toISOString()
+                      : date;
                   // Format waktu check_in/check_out ke ISO
-                  let checkInISO = check_in && check_in.length <= 5 && date ? new Date(date + 'T' + check_in).toISOString() : check_in;
-                  let checkOutISO = check_out && check_out.length <= 5 && date ? new Date(date + 'T' + check_out).toISOString() : check_out;
+                  let checkInISO =
+                    check_in && check_in.length <= 5 && date
+                      ? new Date(date + "T" + check_in).toISOString()
+                      : check_in;
+                  let checkOutISO =
+                    check_out && check_out.length <= 5 && date
+                      ? new Date(date + "T" + check_out).toISOString()
+                      : check_out;
 
                   // Validasi jam
                   if (checkInISO && checkOutISO && checkOutISO < checkInISO) {
-                    alert("❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!");
+                    alert(
+                      "❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!"
+                    );
                     return;
                   }
 
@@ -619,7 +667,10 @@ export default function Page() {
                     .neq("id", id)
                     .maybeSingle();
                   if (dupeError) {
-                    alert("❌ Gagal cek duplikasi absensi: " + JSON.stringify(dupeError));
+                    alert(
+                      "❌ Gagal cek duplikasi absensi: " +
+                        JSON.stringify(dupeError)
+                    );
                     return;
                   }
                   if (dupe) {
@@ -648,29 +699,38 @@ export default function Page() {
                 className="space-y-4"
               >
                 <div>
-                  <label className="block text-sm font-medium mb-1">Tanggal</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Tanggal
+                  </label>
                   <input
                     type="date"
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                     value={selected.date?.split("T")[0] || ""}
-                    onChange={e => setSelected({ ...selected, date: e.target.value })}
+                    onChange={(e) =>
+                      setSelected({ ...selected, date: e.target.value })
+                    }
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Check-in</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Check-in
+                  </label>
                   <input
                     type="time"
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                     value={
                       selected.check_in
-                        ? (selected.check_in.length > 5
-                          ? new Date(selected.check_in).toLocaleTimeString("en-GB", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          })
-                          : selected.check_in)
+                        ? selected.check_in.length > 5
+                          ? new Date(selected.check_in).toLocaleTimeString(
+                              "en-GB",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              }
+                            )
+                          : selected.check_in
                         : ""
                     }
                     onChange={(e) =>
@@ -679,19 +739,24 @@ export default function Page() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Check-out</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Check-out
+                  </label>
                   <input
                     type="time"
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                     value={
                       selected.check_out
-                        ? (selected.check_out.length > 5
-                          ? new Date(selected.check_out).toLocaleTimeString("en-GB", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          })
-                          : selected.check_out)
+                        ? selected.check_out.length > 5
+                          ? new Date(selected.check_out).toLocaleTimeString(
+                              "en-GB",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: false,
+                              }
+                            )
+                          : selected.check_out
                         : ""
                     }
                     onChange={(e) =>
@@ -700,11 +765,29 @@ export default function Page() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Keterangan
+                  </label>
+                  <textarea
+                    rows={3}
+                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+                    value={selected.notes || ""}
+                    onChange={(e) =>
+                      setSelected({ ...selected, notes: e.target.value })
+                    }
+                    placeholder="Tulis keterangan absensi..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Status
+                  </label>
                   <select
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                     value={selected.status}
-                    onChange={e => setSelected({ ...selected, status: e.target.value })}
+                    onChange={(e) =>
+                      setSelected({ ...selected, status: e.target.value })
+                    }
                   >
                     <option value="HADIR">HADIR</option>
                     <option value="TERLAMBAT">TERLAMBAT</option>
@@ -768,9 +851,9 @@ export default function Page() {
                 <strong>⏰ Check-in:</strong>{" "}
                 {checkoutItem.check_in
                   ? new Date(checkoutItem.check_in).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                   : "-"}
               </p>
             </div>
