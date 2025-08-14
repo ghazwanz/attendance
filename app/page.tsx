@@ -11,7 +11,8 @@ import { AuthButton } from '@/components/auth-button';
 import UserLocationSection from '@/components/UserLocationSection';
 import QRWrapper from '@/components/QRWrapper';
 import QRTips from '@/components/QRTips';
-
+import NotificationButton from "@/components/NotificationButton";
+import TestNotificationButton from "@/components/TestNotificationButton";
 export default async function Home() {
   const supabase = await createClient();
   const {
@@ -36,7 +37,8 @@ export default async function Home() {
                 </span>
               </div>
             </Link>
-
+            <NotificationButton />
+            <TestNotificationButton />
             {!hasEnvVars ? (
               <EnvVarWarning />
             ) : (
@@ -121,7 +123,7 @@ export default async function Home() {
         {/* FOOTER */}
         <footer className="w-full flex items-center justify-center border-t border-gray-200 dark:border-white/10 mx-auto text-center text-xs gap-8 py-4">
           <p className="font-bold">
-            Copyright © All Rights Reserved  
+            Copyright © All Rights Reserved
           </p>
           {/* <DeployButton /> */}
           <ThemeSwitcher />
