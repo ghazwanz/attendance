@@ -297,7 +297,7 @@ export default function JadwalPiketPage() {
                             onClick={() => confirmDelete(item.id)}
                             className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 rounded-lg text-xs shadow"
                           >
-                            🗑 Delete
+                            🗑 Hapus
                           </button>
                         </>
                       </td>

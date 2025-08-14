@@ -1,18 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { motion } from "framer-motion";
+import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/utils/toast";
 
 export default function UpdatePasswordPage() {
+  const supabase = createClient();
+
   const [form, setForm] = useState({
-    currentPassword: "",
+    email: "",
     newPassword: "",
     confirmPassword: "",
   });
 
   const [showPassword, setShowPassword] = useState({
-    current: false,
     new: false,
     confirm: false,
   });
@@ -27,34 +30,24 @@ export default function UpdatePasswordPage() {
     e.preventDefault();
 
     if (form.newPassword !== form.confirmPassword) {
-      alert("⚠️ Konfirmasi password tidak cocok!");
+      showToast({type:"error" ,message:"Konfirmasi password tidak cocok!"});
       return;
     }
 
-    try {
-      setLoading(true);
-      const res = await fetch("/api/update-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentPassword: form.currentPassword,
-          newPassword: form.newPassword,
-        }),
-      });
+    setLoading(true);
 
-      const data = await res.json();
+    // Update password
+    const { data:resetData } = await supabase.rpc("resetpassword",{ 'user_email': form.email, 'new_plain_password': form.newPassword })
 
-      if (!res.ok) {
-        throw new Error(data.message || "Gagal mengubah password");
-      }
-
-      alert("✅ Password berhasil diubah! Silakan login kembali.");
-      window.location.href = "/login"; // redirect ke halaman login
-    } catch (error: any) {
-      alert("❌ " + error.message);
-    } finally {
-      setLoading(false);
+    setLoading(false);
+    if (resetData !== "success") {
+      showToast({type:"error" ,message:`User dengan Email ${form.email} tidak ditemukan!`});
+      return
     }
+    showToast({type:"success" ,message:`Password untuk user dengan email ${form.email} berhasil diubah`})
+
+    setForm({ email: "", newPassword: "", confirmPassword: "" });
+    window.location.href = "/auth/login";
   }
 
   return (
@@ -68,40 +61,67 @@ export default function UpdatePasswordPage() {
           🔒 Update Password
         </h2>
         <p className="text-gray-500 dark:text-gray-400 text-center mt-1 mb-6 text-sm">
-          Masukkan password lama dan buat password baru
+          Masukkan email dan password baru
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {[
-            { name: "newPassword", label: "Password Baru", key: "new" },
-            { name: "confirmPassword", label: "Konfirmasi Password Baru", key: "confirm" },
-          ].map((field) => (
-            <div className="relative" key={field.name}>
-              <Lock className="absolute left-3 top-3.5 text-gray-400" size={18} />
-              <input
-                type={showPassword[field.key as keyof typeof showPassword] ? "text" : "password"}
-                name={field.name}
-                placeholder={field.label}
-                value={form[field.name as keyof typeof form]}
-                onChange={handleChange}
-                required
-                className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800 dark:text-white"
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  setShowPassword((prev) => ({
-                    ...prev,
-                    [field.key]: !prev[field.key as keyof typeof showPassword],
-                  }))
-                }
-                className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                {showPassword[field.key as keyof typeof showPassword] ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          ))}
+          {/* Email */}
+          <div className="relative">
+            <Mail className="absolute left-3 top-3.5 text-gray-400" size={18} />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800 dark:text-white"
+            />
+          </div>
 
+          {/* Password Baru */}
+          <div className="relative">
+            <Lock className="absolute left-3 top-3.5 text-gray-400" size={18} />
+            <input
+              type={showPassword.new ? "text" : "password"}
+              name="newPassword"
+              placeholder="Password Baru"
+              value={form.newPassword}
+              onChange={handleChange}
+              required
+              className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800 dark:text-white"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => ({ ...prev, new: !prev.new }))}
+              className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+
+          {/* Konfirmasi Password Baru */}
+          <div className="relative">
+            <Lock className="absolute left-3 top-3.5 text-gray-400" size={18} />
+            <input
+              type={showPassword.confirm ? "text" : "password"}
+              name="confirmPassword"
+              placeholder="Konfirmasi Password Baru"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              required
+              className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800 dark:text-white"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => ({ ...prev, confirm: !prev.confirm }))}
+              className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              {showPassword.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+
+          {/* Tombol Submit */}
           <motion.button
             whileTap={{ scale: 0.97 }}
             whileHover={{ scale: 1.02 }}
