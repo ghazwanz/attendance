@@ -38,7 +38,17 @@ export default function PermissionPage() {
     return (
         <div>
             <ErrorNotification message={errorMessage} onClose={() => setErrorMessage("")} />
-            
+
+            {/* Button Tambah Izin untuk admin dan user */}
+            <div className="flex justify-end mb-2">
+                <button
+                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
+                    onClick={() => { setShowForm(true); resetForm(); }}
+                >
+                    ➕ Tambah Izin
+                </button>
+            </div>
+
             {/* Delete Confirmation Modal */}
             <DeleteConfirmModal
                 isOpen={showConfirmModal}

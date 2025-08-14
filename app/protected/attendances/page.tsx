@@ -269,7 +269,9 @@ export default function Page() {
                 >
                   ✖
                 </button>
-                <h2 className="text-lg font-bold mb-4 text-center">Tambah Absen</h2>
+                <h2 className="text-lg font-bold mb-4 text-center">
+                  Tambah Absen
+                </h2>
                 {errorToast && (
                   <div className="fixed top-5 left-1/2 transform -translate-x-1/2 z-50">
                     <div className="bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg text-sm animate-bounce">
@@ -289,9 +291,16 @@ export default function Page() {
                     }
 
                     if (addForm.check_in && addForm.check_out) {
-                      const checkIn = new Date(`${addForm.date}T${addForm.check_in}`);
-                      const checkOut = new Date(`${addForm.date}T${addForm.check_out}`);
+                      const checkIn = new Date(
+                        `${addForm.date}T${addForm.check_in}`
+                      );
+                      const checkOut = new Date(
+                        `${addForm.date}T${addForm.check_out}`
+                      );
                       if (checkIn >= checkOut) {
+                        setErrorToast(
+                          "❌ Jam Check-in tidak boleh sama atau lebih dari Check-out!"
+                        );
                         setErrorToast(
                           "❌ Jam Check-in tidak boleh sama atau lebih dari Check-out!"
                         );
@@ -300,18 +309,24 @@ export default function Page() {
                       }
                     }
 
-                    const { error } = await supabase.from("attendances").insert({
-                      user_id: addForm.user_id,
-                      date: addForm.date,
-                      check_in: addForm.check_in
-                        ? new Date(`${addForm.date}T${addForm.check_in}`).toISOString()
-                        : null,
-                      check_out: addForm.check_out
-                        ? new Date(`${addForm.date}T${addForm.check_out}`).toISOString()
-                        : null,
-                      notes: addForm.notes,
-                      status: addForm.status,
-                    });
+                    const { error } = await supabase
+                      .from("attendances")
+                      .insert({
+                        user_id: addForm.user_id,
+                        date: addForm.date,
+                        check_in: addForm.check_in
+                          ? new Date(
+                              `${addForm.date}T${addForm.check_in}`
+                            ).toISOString()
+                          : null,
+                        check_out: addForm.check_out
+                          ? new Date(
+                              `${addForm.date}T${addForm.check_out}`
+                            ).toISOString()
+                          : null,
+                        notes: addForm.notes,
+                        status: addForm.status,
+                      });
 
                     if (!error) {
                       setShowAddModal(false);
@@ -335,11 +350,15 @@ export default function Page() {
                 >
                   {/* Nama User */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Nama</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Nama
+                    </label>
                     <select
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.user_id}
-                      onChange={(e) => setAddForm({ ...addForm, user_id: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, user_id: e.target.value })
+                      }
                       required
                     >
                       <option value="">Pilih Nama</option>
@@ -353,56 +372,76 @@ export default function Page() {
 
                   {/* Tanggal */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Tanggal</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Tanggal
+                    </label>
                     <input
                       type="date"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.date}
-                      onChange={(e) => setAddForm({ ...addForm, date: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, date: e.target.value })
+                      }
                       required
                     />
                   </div>
 
                   {/* Check-in */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Check-in</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Check-in
+                    </label>
                     <input
                       type="time"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.check_in}
-                      onChange={(e) => setAddForm({ ...addForm, check_in: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, check_in: e.target.value })
+                      }
                     />
                   </div>
 
                   {/* Check-out */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Check-out</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Check-out
+                    </label>
                     <input
                       type="time"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.check_out}
-                      onChange={(e) => setAddForm({ ...addForm, check_out: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, check_out: e.target.value })
+                      }
                     />
                   </div>
 
                   {/* Keterangan */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Keterangan</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Keterangan
+                    </label>
                     <input
                       type="text"
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.notes}
-                      onChange={(e) => setAddForm({ ...addForm, notes: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, notes: e.target.value })
+                      }
                     />
                   </div>
 
                   {/* Status */}
                   <div>
-                    <label className="block text-sm font-medium mb-1">Status</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Status
+                    </label>
                     <select
                       className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
                       value={addForm.status}
-                      onChange={(e) => setAddForm({ ...addForm, status: e.target.value })}
+                      onChange={(e) =>
+                        setAddForm({ ...addForm, status: e.target.value })
+                      }
                     >
                       <option value="HADIR">HADIR</option>
                       <option value="TERLAMBAT">TERLAMBAT</option>
@@ -669,7 +708,9 @@ export default function Page() {
 
                   // Validasi jam
                   if (checkInISO && checkOutISO && checkOutISO < checkInISO) {
-                    alert("❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!");
+                    alert(
+                      "❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!"
+                    );
                     return;
                   }
 
@@ -683,7 +724,10 @@ export default function Page() {
                     .maybeSingle();
 
                   if (dupeError) {
-                    alert("❌ Gagal cek duplikasi absensi: " + JSON.stringify(dupeError));
+                    alert(
+                      "❌ Gagal cek duplikasi absensi: " +
+                        JSON.stringify(dupeError)
+                    );
                     return;
                   }
                   if (dupe) {
@@ -713,7 +757,9 @@ export default function Page() {
                 className="space-y-4"
               >
                 <div>
-                  <label className="block text-sm font-medium mb-1">Tanggal</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Tanggal
+                  </label>
                   <input
                     type="date"
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
@@ -723,7 +769,9 @@ export default function Page() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Check-in</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Check-in
+                  </label>
                   <input
                     type="time"
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
@@ -742,7 +790,9 @@ export default function Page() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Check-out</label>
+                  <label className="block text-sm font-medium mb-1">
+                    Check-out
+                  </label>
                   <input
                     type="time"
                     className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
@@ -830,7 +880,7 @@ export default function Page() {
                   ? new Date(checkoutItem.check_in).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
-                    })
+                    })                    
                   : "-"}
               </p>
             </div>
