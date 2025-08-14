@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/utils/toast";
 
 export default function UpdatePasswordPage() {
   const supabase = createClient();
@@ -29,41 +30,24 @@ export default function UpdatePasswordPage() {
     e.preventDefault();
 
     if (form.newPassword !== form.confirmPassword) {
-      alert("⚠️ Konfirmasi password tidak cocok!");
+      showToast({type:"error" ,message:"Konfirmasi password tidak cocok!"});
       return;
     }
 
     setLoading(true);
 
-    // Ambil user dari email
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      setLoading(false);
-      alert("❌ User tidak ditemukan atau belum login");
-      return;
-    }
-
-    if (user.email !== form.email) {
-      setLoading(false);
-      alert("❌ Email tidak sesuai dengan akun yang login");
-      return;
-    }
-
     // Update password
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: form.newPassword,
-    });
+    const { data:resetData } = await supabase.rpc("resetpassword",{ 'user_email': form.email, 'new_plain_password': form.newPassword })
 
     setLoading(false);
-
-    if (updateError) {
-      alert("❌ Gagal mengubah password: " + updateError.message);
-      return;
+    if (resetData !== "success") {
+      showToast({type:"error" ,message:`User dengan Email ${form.email} tidak ditemukan!`});
+      return
     }
+    showToast({type:"success" ,message:`Password untuk user dengan email ${form.email} berhasil diubah`})
 
-    alert("✅ Password berhasil diubah! Silakan login ulang.");
     setForm({ email: "", newPassword: "", confirmPassword: "" });
-    window.location.href = "/login";
+    window.location.href = "/auth/login";
   }
 
   return (
