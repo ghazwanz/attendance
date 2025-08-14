@@ -144,9 +144,9 @@ export default function UsersTable({
               <th className="px-6 py-4 text-left">No</th>
               <th className="px-6 py-4 text-left">Nama</th>
               <th className="px-6 py-4 text-left">Email</th>
-              <th className="px-6 py-4 text-left">Role</th>
+              <th className="px-6 py-4 text-left">Peran</th>
               <th className="px-6 py-4 text-left">Tanggal Buat</th>
-              <th className="px-6 py-4 text-left">Action</th>
+              <th className="px-6 py-4 text-left">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -212,7 +212,7 @@ export default function UsersTable({
                         className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                         disabled={isPending}
                       >
-                        🗑 Delete
+                        🗑 Hapus
                       </button>
                     )}
                   </td>
