@@ -87,7 +87,7 @@ email pengaturan ulang kata sandi.
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">
-                Already have an account?{" "}
+                Sudah punya akun?{" "}
                 <Link
                   href="/auth/login"
                   className="underline underline-offset-4"
