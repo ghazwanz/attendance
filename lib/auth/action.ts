@@ -61,7 +61,7 @@ export async function handleSignup(
     password,
     options: {
       data: { name, role },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/sign-up-success`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/protected`,
     },
   });
 
