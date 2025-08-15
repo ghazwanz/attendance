@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 webpush.setVapidDetails(
   "mailto:you@example.com",
-  process.env.VAPID_PUBLIC_KEY!,
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
 

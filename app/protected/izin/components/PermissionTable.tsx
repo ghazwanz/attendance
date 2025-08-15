@@ -56,6 +56,7 @@ interface PermissionTableProps {
   onEdit: (item: Permission) => void;
   onDelete: (id: string) => void;
   loading: boolean;
+  onCreate:()=>void
 }
 
 export default function PermissionTable({
@@ -64,6 +65,7 @@ export default function PermissionTable({
   onEdit,
   onDelete,
   loading,
+  onCreate
 }: PermissionTableProps) {
   const [localData, setLocalData] = useState<Permission[]>([]);
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -71,7 +73,6 @@ export default function PermissionTable({
   const [statusLoading, setStatusLoading] = useState(false);
   const [selectedDay, setSelectedDay] = useState("all");
   const [searchName, setSearchName] = useState("");
-  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     setLocalData(data);
@@ -130,10 +131,10 @@ export default function PermissionTable({
         prev.map((item) =>
           item.id === selectedPermissionId
             ? {
-                ...item,
-                status: status as Permission["status"],
-                approved_by: currentUser?.id || null,
-              }
+              ...item,
+              status: status as Permission["status"],
+              approved_by: currentUser?.id || null,
+            }
             : item
         )
       );
@@ -191,6 +192,12 @@ export default function PermissionTable({
               Reset
             </button>
           )}
+          <button
+            className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
+            onClick={() => { onCreate() }}
+          >
+            ➕ Tambah Izin
+          </button>
         </div>
       </div>
 
@@ -203,7 +210,6 @@ export default function PermissionTable({
               <th className="px-4 py-3">Nama</th>
               <th className="px-4 py-3">Mulai Izin</th>
               <th className="px-4 py-3">Selesai Izin</th>
-              <th className="px-4 py-3">Jenis</th>
               <th className="px-4 py-3">Alasan</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Dibuat</th>
@@ -214,23 +220,21 @@ export default function PermissionTable({
           <tbody>
             {filteredData.map((item, idx) => (
               <tr key={item.id} className={`transition duration-150 ${idx % 2 === 0
-                  ? "bg-white dark:bg-slate-800"
-                  : "bg-blue-50 dark:bg-slate-700"
+                ? "bg-white dark:bg-slate-800"
+                : "bg-blue-50 dark:bg-slate-700"
                 } hover:bg-gray-100 dark:hover:bg-slate-600`}>
                 <td className="px-4 py-3">{idx + 1}</td>
                 <td className="px-4 py-3 rounded-l-xl">{item.user?.name || "-"}</td>
                 <td className="px-4 py-3">{item.exit_time ? formatDateTime(item.exit_time) : "-"}</td>
                 <td className="px-4 py-3">{item.reentry_time ? formatDateTime(item.reentry_time) : "-"}</td>
-                <td className="px-4 py-3">lapet</td>
                 <td className="px-4 py-3">{item.reason || "-"}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
-                    item.status === "pending"
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${item.status === "pending"
                       ? "bg-yellow-100 text-yellow-800"
                       : item.status === "diterima"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}>
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}>
                     {item.status || "pending"}
                   </span>
                 </td>
@@ -241,32 +245,32 @@ export default function PermissionTable({
                     (currentUser?.id === item.user_id &&
                       item.status === "pending" &&
                       new Date(item.created_at).toDateString() === new Date().toDateString())) && (
-                    <>
-                      <button
-                        onClick={() => onEdit(item)}
-                        disabled={loading}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs"
-                      >
-                        ✏️ Edit
-                      </button>
-
-                      {currentUser?.role === "admin" && (
+                      <>
                         <button
-                          onClick={() => handleOpenStatusModal(item.id)}
-                          disabled={loading || statusLoading}
-                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs"
+                          onClick={() => onEdit(item)}
+                          disabled={loading}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs"
                         >
-                          ✅ Persetujuan
+                          ✏️ Edit
                         </button>
-                      )}
-                    </>
-                  )}
+
+                        {currentUser?.role === "admin" && (
+                          <button
+                            onClick={() => handleOpenStatusModal(item.id)}
+                            disabled={loading || statusLoading}
+                            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-full text-xs"
+                          >
+                            ✅ Persetujuan
+                          </button>
+                        )}
+                      </>
+                    )}
                 </td>
               </tr>
             ))}
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan={10} className="text-center text-gray-400 py-4">
+                <td colSpan={9} className="text-center text-gray-400 py-4">
                   Tidak ada data izin.
                 </td>
               </tr>
