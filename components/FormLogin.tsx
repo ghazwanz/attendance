@@ -53,7 +53,7 @@ export function FormLogin() {
                             <input type="checkbox" className="accent-indigo-500" />
                             Remember me
                         </label>
-                        <Link href="./update-password" className="dark:text-indigo-400 text-indigo-600 hover:underline transition">
+                        <Link href="./forgot-password" className="dark:text-indigo-400 text-indigo-600 hover:underline transition">
                             Lupa password?
                         </Link>
                     </div>
