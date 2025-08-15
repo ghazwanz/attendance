@@ -59,6 +59,16 @@ export default function UpdateForm({
       return;
     }
 
+    // Auto set status berdasarkan jam masuk (untuk non-admin)
+    if (form.check_in && userRole !== "admin") {
+      const [h, m] = form.check_in.split(":").map(Number);
+      if (h < 8 || (h === 8 && m === 0)) {
+        form.status = "HADIR";
+      } else {
+        form.status = "TERLAMBAT";
+      }
+    }
+
     const { data: dupe } = await supabase
       .from("attendances")
       .select("id")
@@ -80,7 +90,7 @@ export default function UpdateForm({
         check_in: checkInISO,
         check_out: checkOutISO,
         notes: form?.notes,
-        status: userRole === "admin" ? form.status : form.status, // status hanya bisa diedit oleh admin
+        status: form.status,
       })
       .eq("id", form.id);
 
@@ -111,57 +121,56 @@ export default function UpdateForm({
       >
         <h2 className="text-lg font-semibold mb-2">✏️ Perbarui Absensi</h2>
 
-{/* TANGGAL */}
-<div>
-  <label className="block text-sm font-medium mb-1">Tanggal</label>
-  {userRole === "admin" ? (
-    <input
-      type="date"
-      value={form.date}
-      onChange={(e) => setForm({ ...form, date: e.target.value })}
-      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-    />
-  ) : (
-    <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
-      {form.date}
-    </p>
-  )}
-</div>
+        {/* TANGGAL */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Tanggal</label>
+          {userRole === "admin" ? (
+            <input
+              type="date"
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            />
+          ) : (
+            <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
+              {form.date}
+            </p>
+          )}
+        </div>
 
-{/* CHECK-IN */}
-<div>
-  <label className="block text-sm font-medium mb-1">Check-in</label>
-  {userRole === "admin" ? (
-    <input
-      type="time"
-      value={form.check_in}
-      onChange={(e) => setForm({ ...form, check_in: e.target.value })}
-      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-    />
-  ) : (
-    <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
-      {form.check_in || "-"}
-    </p>
-  )}
-</div>
+        {/* CHECK-IN */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Check-in</label>
+          {userRole === "admin" ? (
+            <input
+              type="time"
+              value={form.check_in}
+              onChange={(e) => setForm({ ...form, check_in: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            />
+          ) : (
+            <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
+              {form.check_in || "-"}
+            </p>
+          )}
+        </div>
 
-{/* CHECK-OUT */}
-<div>
-  <label className="block text-sm font-medium mb-1">Check-out</label>
-  {userRole === "admin" ? (
-    <input
-      type="time"
-      value={form.check_out}
-      onChange={(e) => setForm({ ...form, check_out: e.target.value })}
-      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-    />
-  ) : (
-    <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
-      {form.check_out || "-"}
-    </p>
-  )}
-</div>
-
+        {/* CHECK-OUT */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Check-out</label>
+          {userRole === "admin" ? (
+            <input
+              type="time"
+              value={form.check_out}
+              onChange={(e) => setForm({ ...form, check_out: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            />
+          ) : (
+            <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
+              {form.check_out || "-"}
+            </p>
+          )}
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
@@ -176,7 +185,7 @@ export default function UpdateForm({
           />
         </div>
 
-        {/* Tampilkan status hanya untuk admin */}
+        {/* Status hanya untuk admin */}
         {userRole === "admin" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -189,6 +198,7 @@ export default function UpdateForm({
             >
               <option value="HADIR">HADIR</option>
               <option value="IZIN">IZIN</option>
+              <option value="TERLAMBAT">TERLAMBAT</option>
             </select>
           </div>
         )}
