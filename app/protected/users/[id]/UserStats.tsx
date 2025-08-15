@@ -1,3 +1,4 @@
+import { createAdmin } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/client';
 
 export async function getUserAttendanceStats(userId: string, month?: number, year?: number) {
@@ -18,26 +19,10 @@ export async function getUserAttendanceStats(userId: string, month?: number, yea
   const { data: attendances, error } = await query;
   if (error || !attendances) return null;
 
-
-  // Ambil data nama dari tabel users
-  const { data: userInfo } = await supabase
-    .from('users')
-    .select('name')
-    .eq('id', userId)
-    .single();
-
-  // Ambil email dari authentication
-  const { data: authUser } = await supabase.auth.admin.getUserById(userId);
-  const email = authUser?.user?.email ?? '';
-
   let jumlahAbsensi = attendances.length;
   let jumlahAlpa = attendances.filter(a => a.status === 'ALPA').length;
   let jumlahIzin = attendances.filter(a => a.status === 'IZIN').length;
-  let jumlahTerlambat = attendances.filter(a => {
-    if (!a.check_in) return false;
-    const jamMasuk = new Date(a.check_in).getHours();
-    return jamMasuk > 8; // misal terlambat jika masuk setelah jam 8
-  }).length;
+  let jumlahTerlambat = attendances.filter(a => a.status === "TERLAMBAT").length;
   let jumlahMasuk = attendances.filter(a => a.status === 'HADIR').length;
 
   return {
@@ -46,7 +31,12 @@ export async function getUserAttendanceStats(userId: string, month?: number, yea
     jumlahIzin,
     jumlahTerlambat,
     jumlahMasuk,
-    name: userInfo?.name ?? '',
-    email,
   };
+}
+
+export const getUserInfo = async (userId: string) => {
+  const supabase = createAdmin()
+  const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+  if (!authUser) return null;
+  return {name: authUser.user?.user_metadata.name, email: authUser.user?.email}
 }

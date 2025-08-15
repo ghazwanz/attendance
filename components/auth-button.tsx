@@ -12,7 +12,9 @@ export async function AuthButton({size}:{size?: "sm" | "lg"} = { size: "sm" }) {
 
   return user ? (
     <div className="flex items-center gap-4">
-      Hey, {user.user_metadata.name || user.email}!
+      <Link href={"/protected/settings"} className="text-sm text-gray-700 dark:text-white hover:text-blue-600 dark:hover:text-emerald-400 transition">
+        Hey, {user.user_metadata.name || user.email}!
+      </Link>
       <LogoutButton />
     </div>
   ) : (

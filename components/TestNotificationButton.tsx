@@ -1,11 +1,12 @@
 "use client";
 
+import { showToast } from "@/lib/utils/toast";
 import React from "react";
 
 export default function TestNotificationButton() {
   const handleNotification = async () => {
     if (!("Notification" in window)) {
-      alert("Browser ini tidak mendukung notifikasi!");
+      showToast({type:"info",message:"Browser ini tidak mendukung notifikasi!"});
       return;
     }
 
@@ -21,8 +22,8 @@ export default function TestNotificationButton() {
         const registration = await navigator.serviceWorker.ready;
         registration.showNotification("🎉 Notifikasi PWA Berhasil!", {
           body: "Ini contoh notifikasi dari PWA kamu.",
-          icon: "/icon-192x192.png", // sesuaikan path icon
-          badge: "/icon-192x192.png",
+          icon: "/icons/icon-192x192.png", // sesuaikan path icon
+          badge: "/icons/icon-192x192.png",
         });
       } else {
         // fallback: notifikasi biasa

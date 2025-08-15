@@ -207,7 +207,7 @@ export default function UsersTable({
                         className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                         disabled={isPending}
                       >
-                        ✏️ Change Password
+                        ✏️ Ubah Password
                       </button>
                     )}
                     {currentUser?.role === "admin" && (
