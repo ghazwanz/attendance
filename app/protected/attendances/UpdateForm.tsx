@@ -6,10 +6,12 @@ export default function UpdateForm({
   attendance,
   onDone,
   userRole,
+  onClose,
 }: {
   attendance: any;
   onDone: () => void;
   userRole?: string;
+  onClose?: () => void;
 }) {
   const supabase = createClient();
 
@@ -115,10 +117,17 @@ export default function UpdateForm({
         </div>
       )}
 
+
       <form
         onSubmit={handleUpdate}
-        className="space-y-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 p-6 rounded-xl shadow-md transition-all"
+        className="space-y-4 bg-white relative w-full max-w-md dark:bg-slate-800 border border-gray-200 dark:border-white/10 p-6 rounded-xl shadow-md transition-all"
       >
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-sm text-gray-400 hover:text-red-500"
+        >
+          ✖
+        </button>
         <h2 className="text-lg font-semibold mb-2">✏️ Perbarui Absensi</h2>
 
         {/* TANGGAL */}
@@ -175,30 +184,20 @@ export default function UpdateForm({
           <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
             📝 Keterangan
           </label>
-          {userRole === "admin" ? (
-            <input
-              type="text"
-              placeholder="Contoh: Hadir tepat waktu"
-              value={form.notes || ""}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          ) : (
-            <input
-              type="text"
-              placeholder="Contoh: Hadir tepat waktu"
-              value={form.notes || ""}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={
-                userRole !== "admin" && attendance.user_id !== form.user_id
-              }
-            />
-          )}
+          <input
+            type="text"
+            placeholder="Contoh: Hadir tepat waktu"
+            value={form.notes || ""}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={
+              userRole !== "admin" && attendance.user_id !== form.user_id
+            }
+          />
         </div>
 
         {/* Tampilkan status hanya untuk admin */}
-        {userRole === "admin" && (
+        {userRole === "admin" ? (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               📌 Status
@@ -210,8 +209,14 @@ export default function UpdateForm({
             >
               <option value="HADIR">HADIR</option>
               <option value="IZIN">IZIN</option>
+              <option value="TERLAMBAT">TERLAMBAT</option>
+              <option value="ALPA">ALPA</option>
             </select>
           </div>
+        ) : (
+          <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
+            {form.status}
+          </p>
         )}
 
         {timeError && (
