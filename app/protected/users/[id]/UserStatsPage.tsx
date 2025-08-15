@@ -23,6 +23,13 @@ export default function UserStatsPage({ params }: { params: Promise<{ id: string
 
   return (
     <div className="max-w-2xl mx-auto mt-8">
+      {/* User Info */}
+      <div className="mb-6 p-4 rounded-xl bg-white dark:bg-slate-800 shadow flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="text-lg font-bold text-blue-700 dark:text-white">{stats?.name ?? '-'}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">{stats?.email ?? '-'}</div>
+        </div>
+      </div>
       <div className="flex gap-4 mb-6 items-end">
         <div>
           <label className="block text-sm font-semibold mb-1">Bulan</label>

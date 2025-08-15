@@ -18,6 +18,18 @@ export async function getUserAttendanceStats(userId: string, month?: number, yea
   const { data: attendances, error } = await query;
   if (error || !attendances) return null;
 
+
+  // Ambil data nama dari tabel users
+  const { data: userInfo } = await supabase
+    .from('users')
+    .select('name')
+    .eq('id', userId)
+    .single();
+
+  // Ambil email dari authentication
+  const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+  const email = authUser?.user?.email ?? '';
+
   let jumlahAbsensi = attendances.length;
   let jumlahAlpa = attendances.filter(a => a.status === 'ALPA').length;
   let jumlahIzin = attendances.filter(a => a.status === 'IZIN').length;
@@ -34,5 +46,7 @@ export async function getUserAttendanceStats(userId: string, month?: number, yea
     jumlahIzin,
     jumlahTerlambat,
     jumlahMasuk,
+    name: userInfo?.name ?? '',
+    email,
   };
 }
