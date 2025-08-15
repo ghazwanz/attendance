@@ -66,10 +66,6 @@ export async function handleSignup(
   }
 
   // Tidak langsung redirect, karena harus verifikasi dulu
-  return {
-    success: true,
-    message: "Pendaftaran berhasil! Silakan cek email untuk verifikasi sebelum login.",
-    error: false,
-  };
+  redirect("/auth/sign-up-success");
 }
 
