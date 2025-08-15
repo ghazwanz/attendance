@@ -49,23 +49,22 @@ export function ForgotPasswordForm({
       {success ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>Password reset instructions sent</CardDescription>
+            <CardTitle className="text-2xl">Periksa Email Anda</CardTitle>
+            <CardDescription>Instruksi pengaturan ulang kata sandi telah dikirim</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              If you registered using your email and password, you will receive
-              a password reset email.
+              Jika Anda mendaftar menggunakan email dan kata sandi Anda, Anda akan menerima
+email pengaturan ulang kata sandi.
             </p>
           </CardContent>
         </Card>
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Reset Your Password</CardTitle>
+            <CardTitle className="text-2xl">Atur Ulang Kata Sandi Anda</CardTitle>
             <CardDescription>
-              Type in your email and we&apos;ll send you a link to reset your
-              password
+              Ketik email Anda dan kami akan mengirimkan tautan untuk mengatur ulang kata sandi Anda
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -84,7 +83,7 @@ export function ForgotPasswordForm({
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Sending..." : "Send reset email"}
+                  {isLoading ? "Mengirim..." : "Kirim email pengaturan ulang"}
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">
