@@ -167,7 +167,14 @@ export default function UsersTable({
                   } hover:bg-gray-100 dark:hover:bg-slate-600`}
                 >
                   <td className="px-6 py-4 font-medium">{index + 1}</td>
-                  <td className="px-6 py-4">{user.name}</td>
+                  <td className="px-6 py-4">
+                    <a
+                      href={`/protected/users/${user.id}`}
+                      className=" hover:underline font-semibold"
+                    >
+                      {user.name}
+                    </a>
+                  </td>
                   <td className="px-6 py-4">{user.email}</td>
                   <td className="px-6 py-4">
                     <span
