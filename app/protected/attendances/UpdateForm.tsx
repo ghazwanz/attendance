@@ -16,7 +16,11 @@ export default function UpdateForm({
   const getLocalTime = (isoString: string) => {
     if (!isoString) return "";
     const d = new Date(isoString);
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+    return d.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
   };
 
   const getLocalDate = (isoString: string) => {
@@ -50,23 +54,19 @@ export default function UpdateForm({
     e.preventDefault();
     setTimeError(null);
 
-    const checkInISO = form.check_in ? localDateTimeToISO(form.date, form.check_in) : null;
-    const checkOutISO = form.check_out ? localDateTimeToISO(form.date, form.check_out) : null;
-    const dateISO = form.date ? new Date(form.date + 'T00:00:00Z').toISOString() : null;
+    const checkInISO = form.check_in
+      ? localDateTimeToISO(form.date, form.check_in)
+      : null;
+    const checkOutISO = form.check_out
+      ? localDateTimeToISO(form.date, form.check_out)
+      : null;
+    const dateISO = form.date
+      ? new Date(form.date + "T00:00:00Z").toISOString()
+      : null;
 
     if (checkInISO && checkOutISO && checkOutISO < checkInISO) {
       setTimeError("❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!");
       return;
-    }
-
-    // Auto set status berdasarkan jam masuk (untuk non-admin)
-    if (form.check_in && userRole !== "admin") {
-      const [h, m] = form.check_in.split(":").map(Number);
-      if (h < 8 || (h === 8 && m === 0)) {
-        form.status = "HADIR";
-      } else {
-        form.status = "TERLAMBAT";
-      }
     }
 
     const { data: dupe } = await supabase
@@ -90,7 +90,7 @@ export default function UpdateForm({
         check_in: checkInISO,
         check_out: checkOutISO,
         notes: form?.notes,
-        status: form.status,
+        status: userRole === "admin" ? form.status : form.status, // status hanya bisa diedit oleh admin
       })
       .eq("id", form.id);
 
@@ -171,21 +171,33 @@ export default function UpdateForm({
             </p>
           )}
         </div>
-
         <div>
           <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
             📝 Keterangan
           </label>
-          <input
-            type="text"
-            placeholder="Contoh: Hadir tepat waktu"
-            value={form.notes || ""}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          {userRole === "admin" ? (
+            <input
+              type="text"
+              placeholder="Contoh: Hadir tepat waktu"
+              value={form.notes || ""}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          ) : (
+            <input
+              type="text"
+              placeholder="Contoh: Hadir tepat waktu"
+              value={form.notes || ""}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={
+                userRole !== "admin" && attendance.user_id !== form.user_id
+              }
+            />
+          )}
         </div>
 
-        {/* Status hanya untuk admin */}
+        {/* Tampilkan status hanya untuk admin */}
         {userRole === "admin" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -198,7 +210,6 @@ export default function UpdateForm({
             >
               <option value="HADIR">HADIR</option>
               <option value="IZIN">IZIN</option>
-              <option value="TERLAMBAT">TERLAMBAT</option>
             </select>
           </div>
         )}
