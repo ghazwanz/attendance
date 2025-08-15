@@ -39,16 +39,6 @@ export default function PermissionPage() {
         <div>
             <ErrorNotification message={errorMessage} onClose={() => setErrorMessage("")} />
 
-            {/* Button Tambah Izin untuk admin dan user */}
-            <div className="flex justify-end mb-2">
-                <button
-                    className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:brightness-110 text-white font-semibold px-5 py-2 rounded-xl shadow"
-                    onClick={() => { setShowForm(true); resetForm(); }}
-                >
-                    ➕ Tambah Izin
-                </button>
-            </div>
-
             {/* Delete Confirmation Modal */}
             <DeleteConfirmModal
                 isOpen={showConfirmModal}
@@ -69,29 +59,16 @@ export default function PermissionPage() {
                 onClose={() => setShowEditModal(false)}
             />
 
-            {/* Modal Tambah Izin */}
-            {showForm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 w-full max-w-lg relative">
-                        <button
-                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white text-2xl font-bold"
-                            onClick={() => { setShowForm(false); resetForm(); }}
-                            aria-label="Tutup"
-                        >
-                            ×
-                        </button>
-                        <h2 className="text-xl font-semibold mb-4">Tambah Izin</h2>
-                        <PermissionForm
-                            form={form}
-                            users={users}
-                            currentUser={currentUser}
-                            loading={loading}
-                            onSubmit={handleSubmit}
-                            onChange={handleFormChange}
-                        />
-                    </div>
-                </div>
-            )}
+            <PermissionForm
+                isOpen={showForm}
+                form={form}
+                users={users}
+                currentUser={currentUser}
+                loading={loading}
+                onSubmit={handleSubmit}
+                onChange={handleFormChange}
+                onClose={() => setShowForm(false)}
+            />
 
             {/* Permissions Table */}
             <PermissionTable
@@ -100,6 +77,7 @@ export default function PermissionPage() {
                 onEdit={handleEdit}
                 onDelete={confirmDelete}
                 loading={loading}
+                onCreate={()=>setShowForm(true)}
             />
         </div>
     );

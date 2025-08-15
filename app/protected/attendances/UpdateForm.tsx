@@ -16,7 +16,11 @@ export default function UpdateForm({
   const getLocalTime = (isoString: string) => {
     if (!isoString) return "";
     const d = new Date(isoString);
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+    return d.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
   };
 
   const getLocalDate = (isoString: string) => {
@@ -50,9 +54,15 @@ export default function UpdateForm({
     e.preventDefault();
     setTimeError(null);
 
-    const checkInISO = form.check_in ? localDateTimeToISO(form.date, form.check_in) : null;
-    const checkOutISO = form.check_out ? localDateTimeToISO(form.date, form.check_out) : null;
-    const dateISO = form.date ? new Date(form.date + 'T00:00:00Z').toISOString() : null;
+    const checkInISO = form.check_in
+      ? localDateTimeToISO(form.date, form.check_in)
+      : null;
+    const checkOutISO = form.check_out
+      ? localDateTimeToISO(form.date, form.check_out)
+      : null;
+    const dateISO = form.date
+      ? new Date(form.date + "T00:00:00Z").toISOString()
+      : null;
 
     if (checkInISO && checkOutISO && checkOutISO < checkInISO) {
       setTimeError("❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!");
@@ -111,69 +121,80 @@ export default function UpdateForm({
       >
         <h2 className="text-lg font-semibold mb-2">✏️ Perbarui Absensi</h2>
 
-{/* TANGGAL */}
-<div>
-  <label className="block text-sm font-medium mb-1">Tanggal</label>
-  {userRole === "admin" ? (
-    <input
-      type="date"
-      value={form.date}
-      onChange={(e) => setForm({ ...form, date: e.target.value })}
-      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-    />
-  ) : (
-    <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
-      {form.date}
-    </p>
-  )}
-</div>
+        {/* TANGGAL */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Tanggal</label>
+          {userRole === "admin" ? (
+            <input
+              type="date"
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            />
+          ) : (
+            <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
+              {form.date}
+            </p>
+          )}
+        </div>
 
-{/* CHECK-IN */}
-<div>
-  <label className="block text-sm font-medium mb-1">Check-in</label>
-  {userRole === "admin" ? (
-    <input
-      type="time"
-      value={form.check_in}
-      onChange={(e) => setForm({ ...form, check_in: e.target.value })}
-      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-    />
-  ) : (
-    <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
-      {form.check_in || "-"}
-    </p>
-  )}
-</div>
+        {/* CHECK-IN */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Check-in</label>
+          {userRole === "admin" ? (
+            <input
+              type="time"
+              value={form.check_in}
+              onChange={(e) => setForm({ ...form, check_in: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            />
+          ) : (
+            <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
+              {form.check_in || "-"}
+            </p>
+          )}
+        </div>
 
-{/* CHECK-OUT */}
-<div>
-  <label className="block text-sm font-medium mb-1">Check-out</label>
-  {userRole === "admin" ? (
-    <input
-      type="time"
-      value={form.check_out}
-      onChange={(e) => setForm({ ...form, check_out: e.target.value })}
-      className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-    />
-  ) : (
-    <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
-      {form.check_out || "-"}
-    </p>
-  )}
-</div>
-
-
+        {/* CHECK-OUT */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Check-out</label>
+          {userRole === "admin" ? (
+            <input
+              type="time"
+              value={form.check_out}
+              onChange={(e) => setForm({ ...form, check_out: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
+            />
+          ) : (
+            <p className="px-3 py-2 bg-gray-100 dark:bg-slate-700 rounded-md text-sm text-gray-800 dark:text-white">
+              {form.check_out || "-"}
+            </p>
+          )}
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
             📝 Keterangan
           </label>
-          <input
-            type="text"
-            placeholder="Contoh: Hadir tepat waktu"
-            value={form.notes || ""}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          {userRole === "admin" ? (
+            <input
+              type="text"
+              placeholder="Contoh: Hadir tepat waktu"
+              value={form.notes || ""}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          ) : (
+            <input
+              type="text"
+              placeholder="Contoh: Hadir tepat waktu"
+              value={form.notes || ""}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={
+                userRole !== "admin" && attendance.user_id !== form.user_id
+              }
+            />
+          )}
         </div>
 
         {/* Tampilkan status hanya untuk admin */}
