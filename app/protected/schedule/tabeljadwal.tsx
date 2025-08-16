@@ -69,7 +69,7 @@ export default function Tabeljadwal() {
         end_time: updatedItem.end_time,
         mulai_istirahat: updatedItem.mulai_istirahat,
         selesai_istirahat: updatedItem.selesai_istirahat,
-        
+        is_active: updatedItem.is_active,
       })
       .eq("id", updatedItem.id);
 
