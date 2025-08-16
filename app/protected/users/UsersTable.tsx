@@ -160,11 +160,12 @@ export default function UsersTable({
               users.map((user, index) => (
                 <tr
                   key={user.id}
-                  className={`transition duration-150 ${
+                  className={`transition duration-150 cursor-pointer ${
                     index % 2 === 0
                       ? "bg-white dark:bg-slate-800"
                       : "bg-blue-50 dark:bg-slate-700"
                   } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                  onClick={() => window.location.href = `/protected/users/${user.id}`}
                 >
                   <td className="px-6 py-4 font-medium">{index + 1}</td>
                   <td className="px-6 py-4">{user.name}</td>
@@ -185,7 +186,8 @@ export default function UsersTable({
                   </td>
                   <td className="px-6 py-4 space-x-2">
                     <button
-                      onClick={() => {
+                      onClick={e => {
+                        e.stopPropagation();
                         setSelectedUser(user);
                         setEditModalOpen(true);
                       }}
@@ -196,7 +198,10 @@ export default function UsersTable({
                     </button>
                     {user.id === currentUser.id && (
                       <button
-                        onClick={() => setUpdatePassModal((prev) => !prev)}
+                        onClick={e => {
+                          e.stopPropagation();
+                          setUpdatePassModal((prev) => !prev);
+                        }}
                         className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                         disabled={isPending}
                       >
@@ -205,7 +210,8 @@ export default function UsersTable({
                     )}
                     {currentUser?.role === "admin" && (
                       <button
-                        onClick={() => {
+                        onClick={e => {
+                          e.stopPropagation();
                           setUserToDelete(user);
                           setDeleteModalOpen(true);
                         }}
