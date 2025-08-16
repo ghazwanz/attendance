@@ -6,6 +6,7 @@ import EditModal from './components/Modals/EditModal'
 import EditModalEmail from './components/Modals/EditModalEmail'
 import { Mail } from 'lucide-react'
 import EditModalPassword from './components/Modals/EditModalPassword'
+import NotificationSettings from '@/components/NotificationSetting'
 
 const page = async () => {
     const data = await getUser()
@@ -44,6 +45,7 @@ const page = async () => {
                     </div>
                 </ProfileCard>
             </div>
+            <NotificationSettings/>
             <StatusAbsensiUser id={data.user?.id ?? ""} />
         </div>
     )
