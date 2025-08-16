@@ -25,7 +25,7 @@ export function useUserLocationEffect() {
     const setIsOutside = useLocationStores((state) => state.setIsOutside);
 
     useEffect(() => {
-        if (!navigator.geolocation) return;
+        // if (!navigator.geolocation) return;
 
         const handleLocation = (position: GeolocationPosition) => {
             const userLoc = {
@@ -45,7 +45,7 @@ export function useUserLocationEffect() {
 
         const handleError = (err: GeolocationPositionError) => {
             // Handle error as needed
-            showToast({type:"error", message:`Gagal mendapatkan Lokasi User: ${err.message}`})
+            showToast({type:"error", message:`Gagal mendapatkan Lokasi User`})
             // setError(`Failed to detect location: ${err.message}`);
         };
 

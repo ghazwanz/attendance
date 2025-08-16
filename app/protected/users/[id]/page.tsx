@@ -1,35 +1,25 @@
-import { getUserAttendanceStats } from './UserStats';
+import { getUserInfo } from "./UserStats";
+import UserStatsPage from "./UserStatsPage";
 
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params;
-  const stats = await getUserAttendanceStats(id);
-
+export default async function PageWrapper({ params }: { params: Promise<{ id: string }> }) {
+  const userId = await getUserInfo((await params).id);
   return (
-    <div className="max-w-2xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-xl shadow-lg p-6 flex flex-col items-center">
-        <span className="text-4xl font-bold mb-2">{stats?.jumlahAbsensi ?? '-'}</span>
-        <span className="text-lg font-semibold">Jumlah Absensi</span>
+    <div className="w-full min-h-[80dvh] flex flex-col justify-center">
+      {/* User Info */}
+      <div className="mb-6 p-4 rounded-xl bg-white dark:bg-slate-800 shadow flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className='flex justify-between items-center w-full'>
+          <div className='mb-2'>
+            <h3>Nama</h3>
+            <div className="text-lg font-bold text-blue-700 dark:text-white">{userId?.name ?? '-'}</div>
+          </div>
+          <div className='mb-2'>
+            <h3>Email</h3>
+            <div className="text-lg font-bold text-blue-700 dark:text-white">{userId?.email ?? '-'}</div>
+          </div>
+        </div>
       </div>
-      <div className="bg-gradient-to-r from-red-500 to-red-700 text-white rounded-xl shadow-lg p-6 flex flex-col items-center">
-        <span className="text-4xl font-bold mb-2">{stats?.jumlahAlpa ?? '-'}</span>
-        <span className="text-lg font-semibold">Jumlah Alpa</span>
-      </div>
-      <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-xl shadow-lg p-6 flex flex-col items-center">
-        <span className="text-4xl font-bold mb-2">{stats?.jumlahIzin ?? '-'}</span>
-        <span className="text-lg font-semibold">Jumlah Izin</span>
-      </div>
-      <div className="bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl shadow-lg p-6 flex flex-col items-center">
-        <span className="text-4xl font-bold mb-2">{stats?.jumlahTerlambat ?? '-'}</span>
-        <span className="text-lg font-semibold">Jumlah Terlambat</span>
-      </div>
-      <div className="bg-gradient-to-r from-green-500 to-green-700 text-white rounded-xl shadow-lg p-6 flex flex-col items-center">
-        <span className="text-4xl font-bold mb-2">{stats?.jumlahMasuk ?? '-'}</span>
-        <span className="text-lg font-semibold">Jumlah Masuk</span>
-      </div>
+
+      <UserStatsPage params={params} />
     </div>
   );
 }
