@@ -25,7 +25,7 @@ export function useUserLocationEffect() {
     const setIsOutside = useLocationStores((state) => state.setIsOutside);
 
     useEffect(() => {
-        if (!navigator.geolocation) return;
+        // if (!navigator.geolocation) return;
 
         const handleLocation = (position: GeolocationPosition) => {
             const userLoc = {
