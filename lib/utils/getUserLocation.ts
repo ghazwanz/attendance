@@ -45,7 +45,7 @@ export function useUserLocationEffect() {
 
         const handleError = (err: GeolocationPositionError) => {
             // Handle error as needed
-            showToast({type:"error", message:`Gagal mendapatkan Lokasi User: ${err.message}`})
+            // showToast({type:"error", message:`Gagal mendapatkan Lokasi User: ${err.message}`})
             // setError(`Failed to detect location: ${err.message}`);
         };
 
