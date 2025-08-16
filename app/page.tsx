@@ -38,7 +38,7 @@ export default async function Home() {
               </div>
             </Link>
             <AutoRequestNotification />
-            <TestNotificationButton />
+            {/* <TestNotificationButton /> */}
             {!hasEnvVars ? (
               <EnvVarWarning />
             ) : (

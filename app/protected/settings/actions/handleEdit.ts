@@ -68,3 +68,30 @@ export async function handleEditEmail(
 
     return { success: true, message: "Email berhasil diubah, konfirmasi email untuk melanjutkan perubahan" };
 }
+
+export async function handleEditPass(
+    prevState: any,
+    formData: FormData
+): Promise<{ success: boolean; message: string; }> {
+    const oldPass = formData.get("old-password") as string;
+    const newPass = formData.get("new-password") as string;
+
+    if (!oldPass || !newPass) {
+        return { success: false, message: "Isi Semua Field." };
+    }
+
+    const supabase = createClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+
+    if (!authUser) {
+        return { success: false, message: "Pengguna tidak ditemukan." };
+    }
+
+    const {data} = await supabase.rpc('changepassword',{current_plain_password:oldPass,new_plain_password:newPass,current_id:authUser.id})
+
+    if (data !== "success") {
+        return { success: false, message: "Gagal merubah password" };
+    }
+
+    return { success: true, message: "Password berhasil diubah" };
+}

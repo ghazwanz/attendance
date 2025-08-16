@@ -216,8 +216,8 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
   const handleHadirSelection = async () => {
     if (!scanUserRef.current) return;
     const success = await handleAbsenHadir(scanUserRef.current, isOutside, showToast);
-    if (success && onScanSuccess) {
-      onScanSuccess();
+    if (success) {
+      onScanSuccess?.();
       setShowChoiceModal(false);
       const isPiket = await getPiket({ user_id: scanUserRef.current.user_id })
       const type = isPiket ? "piket_reminder" : null
