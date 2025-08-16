@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 // Configure web-push with VAPID details
 webpush.setVapidDetails(
     process.env.VAPID_EMAIL || 'mailto:you@example.com',
-    process.env.VAPID_PUBLIC_KEY!,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!
 );
 
