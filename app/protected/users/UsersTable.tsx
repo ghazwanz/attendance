@@ -167,7 +167,14 @@ export default function UsersTable({
                   } hover:bg-gray-100 dark:hover:bg-slate-600`}
                 >
                   <td className="px-6 py-4 font-medium">{index + 1}</td>
-                  <td className="px-6 py-4">{user.name}</td>
+                  <td className="px-6 py-4">
+                    <a
+                      href={`/protected/users/${user.id}`}
+                      className=" hover:underline font-semibold"
+                    >
+                      {user.name}
+                    </a>
+                  </td>
                   <td className="px-6 py-4">{user.email}</td>
                   <td className="px-6 py-4">
                     <span
@@ -200,7 +207,7 @@ export default function UsersTable({
                         className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                         disabled={isPending}
                       >
-                        ✏️ Change Password
+                        ✏️ Ubah Password
                       </button>
                     )}
                     {currentUser?.role === "admin" && (

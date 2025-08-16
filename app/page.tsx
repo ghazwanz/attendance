@@ -11,7 +11,7 @@ import { AuthButton } from '@/components/auth-button';
 import UserLocationSection from '@/components/UserLocationSection';
 import QRWrapper from '@/components/QRWrapper';
 import QRTips from '@/components/QRTips';
-import NotificationButton from "@/components/NotificationButton";
+import AutoRequestNotification from "@/components/AutoRequestNotification";
 import TestNotificationButton from "@/components/TestNotificationButton";
 export default async function Home() {
   const supabase = await createClient();
@@ -37,8 +37,8 @@ export default async function Home() {
                 </span>
               </div>
             </Link>
-            {/* <NotificationButton />
-            <TestNotificationButton /> */}
+            <AutoRequestNotification />
+            {/* <TestNotificationButton /> */}
             {!hasEnvVars ? (
               <EnvVarWarning />
             ) : (

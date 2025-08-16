@@ -37,6 +37,7 @@ export default function ProtectedPage() {
   const [countAlpha, setCountAlpha] = useState(0);
   const [pendingIzin, setPendingIzin] = useState<Attendance[]>([]);
   const [recentAttendance, setRecentAttendance] = useState<Attendance[]>([]);
+  const [role, setRole] = useState<string>();
   const [isPiketToday, setIsPiketToday] = useState(false);
   const qrRef = useRef<SVGSVGElement | null>(null);
 
@@ -102,6 +103,7 @@ function QRModal({ session }: QRModalProps) {
         return;
       }
       setUserId(user.id);
+      setRole(user.user_metadata.role)
 
       // Nama hari sekarang (lowercase)
       const todayName = new Date().toLocaleDateString("id-ID", {
@@ -341,7 +343,7 @@ function QRModal({ session }: QRModalProps) {
               </button>
             </div>
           </div>
-          {pendingIzin.length > 0 && (
+          {pendingIzin.length > 0 && role === 'admin' && (
             <div className=" w-full h-full bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
               <h2 className="text-xl font-semibold text-yellow-700 dark:text-yellow-400 mb-4 flex items-center gap-2">
                 <Clock9 className="w-5 h-5" />

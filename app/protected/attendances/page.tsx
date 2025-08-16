@@ -316,13 +316,13 @@ export default function Page() {
                         date: addForm.date,
                         check_in: addForm.check_in
                           ? new Date(
-                              `${addForm.date}T${addForm.check_in}`
-                            ).toISOString()
+                            `${addForm.date}T${addForm.check_in}`
+                          ).toISOString()
                           : null,
                         check_out: addForm.check_out
                           ? new Date(
-                              `${addForm.date}T${addForm.check_out}`
-                            ).toISOString()
+                            `${addForm.date}T${addForm.check_out}`
+                          ).toISOString()
                           : null,
                         notes: addForm.notes,
                         status: addForm.status,
@@ -514,10 +514,10 @@ export default function Page() {
                         <span className="text-yellow-400 font-mono text-sm">
                           {item.check_in
                             ? new Date(item.check_in).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                              })
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })
                             : "-"}
                         </span>
                       </td>
@@ -525,23 +525,22 @@ export default function Page() {
                         <span className="text-blue-400 font-mono text-sm">
                           {item.check_out
                             ? new Date(item.check_out).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: false,
-                              })
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            })
                             : "-"}
                         </span>
                       </td>
                       <td className="py-2 px-4">{item.notes || "-"}</td>
                       <td className="py-2 px-4">
                         <span
-                          className={`text-sm font-semibold ${
-                            item.status === "HADIR"
+                          className={`text-sm font-semibold ${item.status === "HADIR"
                               ? "text-green-400"
                               : item.status === "IZIN"
-                              ? "text-yellow-400"
-                              : "text-red-400"
-                          }`}
+                                ? "text-yellow-400"
+                                : "text-red-400"
+                            }`}
                         >
                           {item.status}
                         </span>
@@ -652,9 +651,8 @@ export default function Page() {
                     <button
                       key={n}
                       onClick={() => setCurrentPage(n)}
-                      className={`px-3 py-1 border rounded-md text-sm hover:bg-gray-100 dark:hover:bg-slate-700 ${
-                        currentPage === n ? "bg-blue-600 text-white" : ""
-                      }`}
+                      className={`px-3 py-1 border rounded-md text-sm hover:bg-gray-100 dark:hover:bg-slate-700 ${currentPage === n ? "bg-blue-600 text-white" : ""
+                        }`}
                     >
                       {n}
                     </button>
@@ -674,182 +672,17 @@ export default function Page() {
 
       {/* Modal Edit */}
       {selected && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg max-w-md w-full relative">
-            <button
-              onClick={() => setSelected(null)}
-              className="absolute top-2 right-2 text-sm text-gray-400 hover:text-red-500"
-            >
-              ✖
-            </button>
-            <h2 className="text-lg font-bold mb-4">✏️ Edit Absensi</h2>
-            {userRole === "admin" ? (
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const { id, user_id, notes, status } = selected;
-                  let { date, check_in, check_out } = selected;
-
-                  // Pastikan date ISO string
-                  const dateISO =
-                    date && date.length === 10
-                      ? new Date(date + "T00:00:00Z").toISOString()
-                      : date;
-
-                  // Format waktu check_in/check_out ke ISO
-                  const checkInISO =
-                    check_in && check_in.length <= 5 && date
-                      ? new Date(date + "T" + check_in).toISOString()
-                      : check_in;
-                  const checkOutISO =
-                    check_out && check_out.length <= 5 && date
-                      ? new Date(date + "T" + check_out).toISOString()
-                      : check_out;
-
-                  // Validasi jam
-                  if (checkInISO && checkOutISO && checkOutISO < checkInISO) {
-                    alert(
-                      "❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!"
-                    );
-                    return;
-                  }
-
-                  // Validasi duplikasi absensi (user_id + date) selain id ini
-                  const { data: dupe, error: dupeError } = await supabase
-                    .from("attendances")
-                    .select("id")
-                    .eq("user_id", user_id)
-                    .eq("date", dateISO)
-                    .neq("id", id)
-                    .maybeSingle();
-
-                  if (dupeError) {
-                    alert(
-                      "❌ Gagal cek duplikasi absensi: " +
-                        JSON.stringify(dupeError)
-                    );
-                    return;
-                  }
-                  if (dupe) {
-                    alert("❌ Sudah ada absensi untuk tanggal ini!");
-                    return;
-                  }
-
-                  const { error } = await supabase
-                    .from("attendances")
-                    .update({
-                      date: dateISO,
-                      check_in: checkInISO,
-                      check_out: checkOutISO,
-                      notes: notes || null,
-                      status,
-                    })
-                    .eq("id", id);
-
-                  if (!error) {
-                    setSelected(null);
-                    void fetchData();
-                    showSuccessToast("Absensi berhasil diperbarui!");
-                  } else {
-                    alert("Gagal update absensi! " + (error.message || ""));
-                  }
-                }}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Tanggal
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-                    value={selected.date?.split("T")[0] || ""}
-                    onChange={(e) => setSelected({ ...selected, date: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Check-in
-                  </label>
-                  <input
-                    type="time"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-                    value={
-                      selected.check_in
-                        ? selected.check_in.length > 5
-                          ? new Date(selected.check_in).toLocaleTimeString("en-GB", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })
-                          : selected.check_in
-                        : ""
-                    }
-                    onChange={(e) => setSelected({ ...selected, check_in: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Check-out
-                  </label>
-                  <input
-                    type="time"
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-                    value={
-                      selected.check_out
-                        ? selected.check_out.length > 5
-                          ? new Date(selected.check_out).toLocaleTimeString("en-GB", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })
-                          : selected.check_out
-                        : ""
-                    }
-                    onChange={(e) => setSelected({ ...selected, check_out: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
-                  <select
-                    className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-black dark:text-white"
-                    value={selected.status}
-                    onChange={(e) => setSelected({ ...selected, status: e.target.value })}
-                  >
-                    <option value="HADIR">HADIR</option>
-                    <option value="TERLAMBAT">TERLAMBAT</option>
-                    <option value="IZIN">IZIN</option>
-                    <option value="ALPA">ALPA</option>
-                  </select>
-                </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <button
-                    type="button"
-                    onClick={() => setSelected(null)}
-                    className="px-4 py-2 text-sm rounded-md bg-gray-300 dark:bg-slate-600 hover:bg-gray-400 dark:hover:bg-slate-500 text-black dark:text-white"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow"
-                  >
-                    ✅ Simpan
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <UpdateForm
-                attendance={selected}
-                onDone={() => {
-                  setSelected(null);
-                  void fetchData();
-                  showSuccessToast("Absensi berhasil diperbarui!");
-                }}
-              />
-            )}
-          </div>
+        <div className="fixed inset-0 bg-black/40 p-3 backdrop-blur-sm flex items-center justify-center z-50">
+          <UpdateForm
+            userRole={userRole ?? ""}
+            attendance={selected}
+            onClose={() => setSelected(null)}
+            onDone={() => {
+              setSelected(null);
+              void fetchData();
+              showSuccessToast("Absensi berhasil diperbarui!");
+            }}
+          />
         </div>
       )}
 
@@ -878,9 +711,9 @@ export default function Page() {
                 <strong>⏰ Check-in:</strong>{" "}
                 {checkoutItem.check_in
                   ? new Date(checkoutItem.check_in).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })                    
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
                   : "-"}
               </p>
             </div>
