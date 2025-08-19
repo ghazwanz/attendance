@@ -41,7 +41,7 @@ export default function Page() {
 
   // ====== Pagination ======
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage] = useState(10); // ubah jika ingin page size lain
+  const [rowsPerPage] = useState(20); // ubah jika ingin page size lain
   const [totalCount, setTotalCount] = useState(0);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
