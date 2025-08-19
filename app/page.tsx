@@ -13,6 +13,7 @@ import QRWrapper from '@/components/QRWrapper';
 import QRTips from '@/components/QRTips';
 import AutoRequestNotification from "@/components/AutoRequestNotification";
 import TestNotificationButton from "@/components/TestNotificationButton";
+import LokasiKantor from '@/components/LokasiKantor';
 export default async function Home() {
   const supabase = await createClient();
   const {
@@ -106,18 +107,7 @@ export default async function Home() {
             <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
               Jalan Kemantren, Bandungrejosari, Sukun, Kota Malang – Jawa Timur, Indonesia
             </p>
-            <div className="w-full h-[440px] rounded-xl overflow-hidden border-4 border-blue-200 dark:border-slate-700 shadow-lg hover:shadow-2xl transition duration-300">
-              <iframe
-                title="Lokasi Mahative Studio Malang"
-                src="https://maps.google.com/maps?q=-8.0017804,112.6075698&z=18&output=embed"
-                width="100%"
-                height="100%"
-                allowFullScreen
-                loading="lazy"
-                className="border-0"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
+            <LokasiKantor />        
           </section>
         </div>
 
