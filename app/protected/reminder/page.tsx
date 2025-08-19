@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 interface Reminder {
   id: string;
   title: string;
@@ -57,11 +56,11 @@ export default function ReminderPage() {
   }, []);
 
   const handleDelete = (id: string) => {
-    if(userRole !== "admin") {
-      toast.error("Aksi tidak dapat dilakukan")
-      return
+    if (userRole !== "admin") {
+      toast.error("Aksi tidak dapat dilakukan");
+      return;
     }
-    
+
     toast(
       ({ closeToast }) => (
         <div>
@@ -99,10 +98,9 @@ export default function ReminderPage() {
     data: Omit<Reminder, "id" | "created_at">,
     id?: string
   ) => {
-
-    if(userRole !== "admin") {
-      toast.error("Aksi tidak dapat dilakukan")
-      return
+    if (userRole !== "admin") {
+      toast.error("Aksi tidak dapat dilakukan");
+      return;
     }
 
     if (id) {
@@ -161,59 +159,64 @@ export default function ReminderPage() {
         <p>Loading...</p>
       ) : (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
-        <table className="min-w-full text-sm border-separate border-spacing-y-2">
-          <thead>
-            <tr className="bg-blue-600 text-white text-xs uppercase">
-              <th className="py-3 px-4 rounded-tl-lg">Judul</th>
-              <th className="py-3 px-4">Pesan</th>
-              <th className="py-3 px-4">Jadwal</th>
-              <th className="py-3 px-4">Jenis</th>
-              {userRole === "admin" && <th className="py-3 px-4 rounded-tr-lg">Aksi</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {reminders.length === 0 ? (
-              <tr>
-                <td colSpan={userRole === "admin" ? 5 : 4} className="text-center py-4 text-gray-500">
-                  🚫 Tidak ada notifikasi
-                </td>
-              </tr>
-            ) : (
-              reminders.map((r,idx) => (
-                <tr key={r.id} 
-                   className={`transition duration-150 ${idx % 2 === 0
-                      ? "bg-white dark:bg-slate-800"
-                      : "bg-blue-50 dark:bg-slate-700"
-                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
-                >
-                  <td className="border px-4 py-2">{r.title}</td>
-                  <td className="border px-4 py-2">{r.message}</td>
-                  <td className="border px-4 py-2">{r.jadwal?.slice(0, 5)}</td>
-                  <td className="border px-4 py-2">{r.type}</td>
-                  {userRole === "admin" && (
-                    <td className="border px-4 py-2 space-x-2">
-                      <button
-                        onClick={() => {
-                          setEditing(r);
-                          setShowModal(true);
-                        }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(r.id)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                      >
-                        🗑 Hapus
-                      </button>
-                    </td>
-                  )}
+          {/* Responsif wrapper */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm border-separate border-spacing-y-2">
+              <thead>
+                <tr className="bg-blue-600 text-white text-xs uppercase">
+                  <th className="py-3 px-4 rounded-tl-lg">Judul</th>
+                  <th className="py-3 px-4">Pesan</th>
+                  <th className="py-3 px-4">Jadwal</th>
+                  <th className="py-3 px-4">Jenis</th>
+                  {userRole === "admin" && <th className="py-3 px-4 rounded-tr-lg">Aksi</th>}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {reminders.length === 0 ? (
+                  <tr>
+                    <td colSpan={userRole === "admin" ? 5 : 4} className="text-center py-4 text-gray-500">
+                      🚫 Tidak ada notifikasi
+                    </td>
+                  </tr>
+                ) : (
+                  reminders.map((r, idx) => (
+                    <tr
+                      key={r.id}
+                      className={`transition duration-150 ${
+                        idx % 2 === 0
+                          ? "bg-white dark:bg-slate-800"
+                          : "bg-blue-50 dark:bg-slate-700"
+                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                    >
+                      <td className="border px-4 py-2">{r.title}</td>
+                      <td className="border px-4 py-2">{r.message}</td>
+                      <td className="border px-4 py-2">{r.jadwal?.slice(0, 5)}</td>
+                      <td className="border px-4 py-2">{r.type}</td>
+                      {userRole === "admin" && (
+                        <td className="border px-4 py-2 space-x-2">
+                          <button
+                            onClick={() => {
+                              setEditing(r);
+                              setShowModal(true);
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(r.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                          >
+                            🗑 Hapus
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -230,7 +233,6 @@ export default function ReminderPage() {
     </div>
   );
 }
-
 
 function ReminderModal({
   initialData,
@@ -336,4 +338,4 @@ function ReminderModal({
       </div>
     </div>
   );
-}  
+}
