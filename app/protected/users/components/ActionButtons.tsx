@@ -34,18 +34,6 @@ export default function ActionButtons({
             >
                 ✏️ Edit
             </button>
-            {user.id === currentUser.id && (
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setUpdatePassModal(false);
-                    }}
-                    className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                    disabled={isPending}
-                >
-                    ✏️ Ubah Password
-                </button>
-            )}
             {currentUser?.role === "admin" && (
                 <button
                     onClick={(e) => {
