@@ -191,9 +191,9 @@ export default function UsersTable({
                   </td>
 
                   {/* ✅ Kolom Status */}
-                  <td className="px-6 py-4">
+                  <td>
                     <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                      className={`px-3 py-1 text-xs text-nowrap font-semibold rounded-full ${
                         user.is_active
                           ? "bg-green-100 text-green-600"
                           : "bg-red-100 text-red-600"
@@ -204,7 +204,7 @@ export default function UsersTable({
                   </td>
 
                   <td className="px-6 py-4">
-                    {new Date(user.created_at).toLocaleDateString("id-ID")}
+                    {new Date(user.created_at).toLocaleDateString("id-ID",{timeZone: "Asia/Jakarta"})}
                   </td>
                   <td className="px-6 py-4 space-x-2">
                     <ActionButtons
