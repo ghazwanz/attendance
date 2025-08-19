@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client';
 export interface AttendanceUser {
     user_id: string;
     name: string;
+    notes?: string;
 }
 
 export interface ResultStatus {
@@ -15,7 +16,7 @@ export const handlePulangAction = async (
     user: AttendanceUser,
     isOutside: boolean,
 ): Promise<boolean> => {
-    const { user_id, name } = user
+    const { user_id, name, notes } = user
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     const supabase = createClient();
@@ -38,7 +39,10 @@ export const handlePulangAction = async (
 
     const { error: updateError } = await supabase
         .from('attendances')
-        .update({ check_out: now.toISOString() })
+        .update({ 
+            check_out: now.toISOString(),
+            notes: notes
+        })
         .eq('user_id', user_id)
         .eq('date', today);
 
