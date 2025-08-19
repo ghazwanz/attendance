@@ -12,7 +12,7 @@ const page = async () => {
     return (
         <div className='flex flex-col gap-5 w-full'>
             <h1 className='text-2xl'>Pengaturan</h1>
-            <div className='flex items-stretch gap-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <ProfileCard>
                     <h2 className='text-lg font-semibold'>Nama Lengkap</h2>
                     <div className='flex justify-between w-full gap-1'>
@@ -28,7 +28,8 @@ const page = async () => {
                     </div>
                 </ProfileCard>
             </div>
-            <div className='flex items-stretch gap-4'>
+
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <ProfileCard>
                     <div className='flex items-center justify-between w-full gap-1'>
                         <h2 className='text-lg font-semibold'>Masuk Dengan Metode</h2>
@@ -44,6 +45,7 @@ const page = async () => {
                     </div>
                 </ProfileCard>
             </div>
+
             <StatusAbsensiUser id={data.user?.id ?? ""} />
         </div>
     )

@@ -213,20 +213,53 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
     }
   };
 
+  // Fungsi untuk handle pilihan Hadir
   const handleHadirSelection = async () => {
     if (!scanUserRef.current) return;
-    const success = await handleAbsenHadir(scanUserRef.current, isOutside, showToast);
-    if (success) {
-      onScanSuccess?.();
-      setShowChoiceModal(false);
-      const isPiket = await getPiket({ user_id: scanUserRef.current.user_id })
-      const type = isPiket ? "piket_reminder" : null
-      if (!type) return
-      const msg = await getMessage(type)
-      if (msg) {
-        setNotifData({ title: msg?.title, message: msg?.message, type })
-        setNotifOpen((prev) => !prev)
+
+    try {
+      const today = new Date();
+      const currentDate = today.toISOString().split("T")[0];
+      const currentTime = today.getHours() * 60 + today.getMinutes(); // menit sekarang
+      const batasTerlambat = 8 * 60; // 08:00 dalam menit
+
+      // Tentukan status hadir / terlambat
+      const status = currentTime <= batasTerlambat ? "hadir" : "terlambat";
+
+      const { data: existingAttendance } = await supabase
+        .from("attendances")
+        .select("*")
+        .eq("user_id", scanUserRef.current.user_id)
+        .eq("date", currentDate)
+        .maybeSingle();
+
+      if (existingAttendance) {
+        // Kalau sudah ada, update status
+        await supabase
+          .from("attendances")
+          .update({ status, check_in: today.toISOString() })
+          .eq("id", existingAttendance.id);
+      } else {
+        // Kalau belum ada, insert baru
+        await supabase.from("attendances").insert([
+          {
+            user_id: scanUserRef.current.user_id,
+            date: currentDate,
+            status,
+            check_in: today.toISOString(),
+          },
+        ]);
       }
+
+      toast.success(
+        status === "hadir"
+          ? "✅ Absen hadir berhasil dicatat!"
+          : "⏰ Kamu terlambat, absen tetap dicatat!"
+      );
+      setShowChoiceModal(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Gagal mencatat kehadiran.");
     }
   };
 
@@ -306,16 +339,16 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
       showToast({ type: 'error', message: 'Data kehadiran tidak ditemukan' });
       return;
     }
-  // const checkInTime = new Date(attendanceToday.check_in);
-  // const now = new Date();
-  // const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
-  // if (hoursDiff < 8) {
-  //   showToast({
-  //     type: 'warning',
-  //     message: `Belum bisa pulang. Baru ${hoursDiff.toFixed(1)} jam, minimal 8 jam.`,
-  //   });
-  //   return;
-  // }
+    // const checkInTime = new Date(attendanceToday.check_in);
+    // const now = new Date();
+    // const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+    // if (hoursDiff < 8) {
+    //   showToast({
+    //     type: 'warning',
+    //     message: `Belum bisa pulang. Baru ${hoursDiff.toFixed(1)} jam, minimal 8 jam.`,
+    //   });
+    //   return;
+    // }
     // Tampilkan notifikasi konfirmasi clock out
     setNotifData({
       title: 'Konfirmasi Pulang',
@@ -345,17 +378,17 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
       if (fetchError || !attendanceToday) {
         throw new Error('Data kehadiran tidak ditemukan');
       }
-  // Nonaktifkan cek ulang 8 jam sebelum submit
-  // const checkInTime = new Date(attendanceToday.check_in);
-  // const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
-  // if (hoursDiff < 8) {
-  //   showToast({
-  //     type: 'warning',
-  //     message: `Belum bisa pulang. Baru ${hoursDiff.toFixed(1)} jam, minimal 8 jam.`,
-  //   });
-  //   setShowKeteranganPulangModal(false);
-  //   return;
-  // }
+      // Nonaktifkan cek ulang 8 jam sebelum submit
+      // const checkInTime = new Date(attendanceToday.check_in);
+      // const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+      // if (hoursDiff < 8) {
+      //   showToast({
+      //     type: 'warning',
+      //     message: `Belum bisa pulang. Baru ${hoursDiff.toFixed(1)} jam, minimal 8 jam.`,
+      //   });
+      //   setShowKeteranganPulangModal(false);
+      //   return;
+      // }
       const { error: updateError } = await supabase
         .from('attendances')
         .update({ check_out: now.toISOString(), notes: keteranganPulang })
@@ -374,13 +407,13 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
 
   const handleConfirmPulang = async () => {
     if (!scanUserRef.current) return;
-    const { user_id, name }  = scanUserRef.current
+    const { user_id, name } = scanUserRef.current
 
     try {
-      await handlePulangAction({user_id,name},isOutside)
+      await handlePulangAction({ user_id, name }, isOutside)
       showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
       setNotifOpen((prev) => !prev)
-    } catch (error : any) {
+    } catch (error: any) {
       showToast({ type: 'info', message: error.message });
     }
 

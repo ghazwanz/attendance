@@ -1,152 +1,74 @@
-// components/AddUser.tsx
-"use client";
-import React, { useState } from "react";
-import { X, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { set } from "zod";
-
-export default function AddUser({ onClose }: any) {
-  const router = useRouter();
-  const [state, setState] = useState<{
-    success?: boolean;
-    message?: string;
-    pending?: boolean;
-  }>({});
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    setState({ pending: true });
-
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get("name") as string,
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-    };
-
-    try {
-      const response = await fetch("/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        setState({
-          success: true,
-          message: result.message || "User created successfully!",
-          pending: false,
-        });
-        setTimeout(() => {
-          onClose();
-        }, 500);
-      } else {
-        setState({
-          success: false,
-          message: result.message || "An error occurred",
-          pending: false,
-        });
-      }
-    } catch (error) {
-      console.log(error);
-      setState({
-        success: false,
-        message: "Network error. Please try again.",
-        pending: false,
-      });
-    }
-  };
-
+export default function CreateUserModal({
+  onClose,
+  onSubmit,
+  isPending,
+}: {
+  onClose: () => void;
+  onSubmit: (formData: FormData) => void;
+  isPending: boolean;
+}) {
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 p-6 rounded-xl shadow-md transition-all w-full max-w-sm"
-      >
-        <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-          ✏️ Tambah User
-        </h2>
-
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            name="email"
-            id="email"
-            required
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            disabled={state.pending}
-            placeholder="Enter email address"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >
-            Name
-          </label>
-          <input
-            type="text"
-            name="name"
-            id="name"
-            required
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            disabled={state.pending}
-            placeholder="Enter full name"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-          >
-            Password
-          </label>
-          <input
-            type="password"
-            name="password"
-            id="password"
-            required
-            minLength={6}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-            disabled={state.pending}
-            placeholder="Enter password (min 6 characters)"
-          />
-        </div>
-
-        {/* Success Message */}
-        <p className={state?.success ? `text-green-700` : `text-red-700`}>
-          {state?.message?.toString()}
-        </p>
-
-        <div className="flex justify-end space-x-2">
-          <Button type="submit" disabled={state.pending} className="w-full">
-            {state.pending ? "Creating User..." : "Create User"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="w-full"
-          >
-            Batal
-          </Button>
-        </div>
-      </form>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+        <h3 className="text-lg font-semibold mb-4">Tambah Pengguna Baru</h3>
+        <form action={onSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Nama</label>
+            <input
+              type="text"
+              name="name"
+              required
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Email</label>
+            <input
+              type="email"
+              name="email"
+              required
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Password</label>
+            <input
+              type="password"
+              name="password"
+              required
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Role</label>
+            <select
+              name="role"
+              required
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="employee">Employee</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isPending}
+              className="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {isPending ? "Menyimpan..." : "Simpan"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
