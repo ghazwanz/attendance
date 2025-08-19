@@ -40,18 +40,19 @@ export const handleAbsenHadir = async (
         const [jamJadwal, menitJadwal] = jadwalHariIni.start_time.split(':').map(Number);
 
         // Convert to local time
-        const local = new Date();
-        const jamNow = local.getHours();
-        const menitNow = local.getMinutes();
-        console.log(`local : ${local}\njamNow : ${jamNow}\nmenitNow : ${menitNow}`)
+        // const optionsTime = { weekday: 'long'} as const;
+        const getLocaleTime = nowDate.toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' });
+        // const jamNow = nowDate.getHours();
+        const jamNow = parseInt(getLocaleTime.split('.')[0]);
+        const menitNow = parseInt(getLocaleTime.split('.')[1]);
+        // const menitNow = nowDate.getMinutes();
 
         let status = 'HADIR';
         if (jamNow > jamJadwal || (jamNow === jamJadwal && menitNow > menitJadwal))
             status = 'TERLAMBAT';
 
 
-        const today = local.toISOString().split('T')[0];
-
+        const today = nowDate.toISOString().split('T')[0];
         // Check existing attendance
 
         const { error } = await supabase.from('attendances').insert({
