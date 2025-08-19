@@ -5,9 +5,14 @@ import { createClient } from "@/lib/supabase/client";
 import CreateForm from "./CreateForm";
 import UpdateForm from "./UpdateForm";
 import { Attendance } from "@/lib/type";
+import { showToast } from "@/lib/utils/toast";
+import { useLocationStores } from "@/lib/stores/useLocationStores";
 
 export default function Page() {
   const supabase = createClient();
+
+  const isOutside = useLocationStores(state=>state.isOutside)
+  
 
   // ====== State dasar ======
   const [userList, setUserList] = useState<{ id: string; name: string }[]>([]);
@@ -213,6 +218,7 @@ export default function Page() {
                 void fetchData();
                 showSuccessToast("Absensi masuk berhasil disimpan!");
               }}
+              isOutside={isOutside}
               userRole={userRole ?? ""}
             />
           </div>
@@ -536,10 +542,10 @@ export default function Page() {
                       <td className="py-2 px-4">
                         <span
                           className={`text-sm font-semibold ${item.status === "HADIR"
-                              ? "text-green-400"
-                              : item.status === "IZIN"
-                                ? "text-yellow-400"
-                                : "text-red-400"
+                            ? "text-green-400"
+                            : item.status === "IZIN"
+                              ? "text-yellow-400"
+                              : "text-red-400"
                             }`}
                         >
                           {item.status}
@@ -740,6 +746,8 @@ export default function Page() {
               </button>
               <button
                 onClick={async () => {
+                  if (isOutside) return showToast({ type: "error", message: "Anda berada di luar area kantor" })
+
                   const now = new Date();
                   const batasPulang = new Date();
                   batasPulang.setHours(16, 0, 0, 0);
