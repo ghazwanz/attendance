@@ -40,18 +40,34 @@ export default function EditUserModal({
             />
           </div>
           {role === "admin" && (
-            <div>
-              <label className="block text-sm font-medium mb-1">Role</label>
-              <select
-                name="role"
-                defaultValue={user.role}
-                required
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="employee">Employee</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-medium mb-1">Role</label>
+                <select
+                  name="role"
+                  defaultValue={user.role}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="employee">Employee</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Status</label>
+                <select
+                  name="is-active"
+                  id="is-active"
+                  defaultValue={user.is_active ? "aktif" : "tidak-aktif"}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="aktif">Aktif</option>
+                  <option value="tidak-aktif">Tidak Aktif</option>
+                </select>
+              </div>
+            </>
           )}
           <div className="flex gap-2 justify-end">
             <button
@@ -63,8 +79,7 @@ export default function EditUserModal({
               Batal
             </button>
             <button
-              type="button"
-              onClick={onClose}
+              type="submit"
               disabled={isPending}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
             >

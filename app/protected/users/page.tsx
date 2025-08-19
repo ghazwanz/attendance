@@ -68,6 +68,8 @@ async function updateUser(formData: FormData) {
   const name = formData.get('name') as string;
   const role = formData.get('role') as string;
   const email = formData.get('email') as string;
+  const isActive = formData.get('is-active') as string;
+  const isActiveBool = isActive === 'aktif' ? true : false;
 
   // Only admin can update role/email, but user can update their own name
   const isAdmin = currentUser?.role === 'admin';
@@ -88,12 +90,13 @@ async function updateUser(formData: FormData) {
           role,
         },
       });
-      if (updateError) throw updateError;
+      if (updateError) throw new Error(updateError.message);
+
       const { error } = await supabase
         .from('users')
-        .update({ name, role })
+        .update({ name, role, is_active:isActiveBool })
         .eq('id', userId);
-      if (error) throw error;
+      if (error) throw new Error(error.message);
     } else if (isSelf) {
       // User can update their own name and email
       const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
@@ -191,7 +194,7 @@ export default async function UsersPage({
           email: user.email || '',
           role: user.user_metadata?.role || fallbackUser?.role || '',
           created_at: user.created_at,
-          is_active: fallbackUser?.is_active ?? true, // Use is_active from user table or default to true
+          is_active: fallbackUser?.is_active, // Use is_active from user table or default to true
         };
       });
     }
