@@ -180,7 +180,7 @@ export default async function UsersPage({
     const { data: allAuthUsers, error } = await supabaseAdmin.auth.admin.listUsers();
     const { data: userTableData } = await supabaseAdmin
       .from('users')
-      .select('id, name, role');
+      .select('id, name, role, is_active');
 
     if (!error && allAuthUsers?.users) {
       users = allAuthUsers.users.map((user) => {
@@ -191,6 +191,7 @@ export default async function UsersPage({
           email: user.email || '',
           role: user.user_metadata?.role || fallbackUser?.role || '',
           created_at: user.created_at,
+          is_active: fallbackUser?.is_active ?? true, // Use is_active from user table or default to true
         };
       });
     }
