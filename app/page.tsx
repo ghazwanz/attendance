@@ -91,6 +91,11 @@ export default async function Home() {
         <div className="flex-1 flex flex-col gap-12 max-w-6xl px-6 py-10 sm:py-16">
           <Hero />
           {/* <QRForm users={users ?? []} encryptedQRData={null} /> */}
+          <div>
+            <QRWrapper />
+            <QRTips />
+          </div>
+          
 
           {/* GOOGLE MAPS: Lokasi Mahative Studio */}
           <section className="mt-16 bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
@@ -114,10 +119,6 @@ export default async function Home() {
               />
             </div>
           </section>
-          <div>
-            <QRWrapper />
-            <QRTips />
-          </div>
         </div>
 
         {/* FOOTER */}
