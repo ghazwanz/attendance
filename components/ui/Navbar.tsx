@@ -96,14 +96,14 @@ const Navbar = async () => {
                             {/* Desktop Dropdown Schedule */}
                             <div className="relative p-2 group">
                                 <button className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
-                                    <CalendarClock size={16} /> Jadwal
+                                    <CalendarClock size={16} /> Jadwal Masuk
                                 </button>
                                 <div className="absolute hidden group-hover:flex flex-col bg-white dark:bg-slate-800 shadow-lg rounded-md mt-2 min-w-[180px] z-50">
                                     <Link
                                         href="/protected/schedule"
                                         className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
                                     >
-                                        <CalendarClock size={16} /> Jadwal
+                                        <CalendarClock size={16} /> Jadwal Masuk
                                     </Link>
                                     <Link
                                         href="/protected/jadwal-piket"
