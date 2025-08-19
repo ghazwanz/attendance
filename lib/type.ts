@@ -4,6 +4,7 @@ export type User = {
   email: string;
   role: "admin" | "employee";
   created_at: string; // ISO 8601 format
+  is_active?: boolean; // New field to indicate if the user is active
 };
 
 export type Schedule = {

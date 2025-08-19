@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { User } from "@/lib/type";
 import { useDebouncedCallback } from "use-debounce";
 import UpdatePasswordModal from "./components/UpdatePasswordModal";
-import ActionButtons from "./components/ActionButtons"
+import ActionButtons from "./components/ActionButtons";
 import EditUserModal from "./EditUserModal";
 import CreateUserModal from "./AddUser";
 import DeleteUserModal from "./DeleteUserModal";
@@ -150,6 +150,7 @@ export default function UsersTable({
               <th className="px-6 py-4 text-left">Nama</th>
               <th className="px-6 py-4 text-left">Email</th>
               <th className="px-6 py-4 text-left">Peran</th>
+              <th className="px-6 py-4 text-left">Status</th>
               <th className="px-6 py-4 text-left">Tanggal Buat</th>
               <th className="px-6 py-4 text-left">Aksi</th>
             </tr>
@@ -157,7 +158,7 @@ export default function UsersTable({
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center text-gray-400 py-6">
+                <td colSpan={7} className="text-center text-gray-400 py-6">
                   Tidak ada data pengguna.
                 </td>
               </tr>
@@ -165,27 +166,45 @@ export default function UsersTable({
               users.map((user, index) => (
                 <tr
                   key={user.id}
-                  className={`transition duration-150 cursor-pointer ${index % 2 === 0
-                    ? "bg-white dark:bg-slate-800"
-                    : "bg-blue-50 dark:bg-slate-700"
-                    } hover:bg-gray-100 dark:hover:bg-slate-600`}
-                  onClick={() => (window.location.href = `/protected/users/${user.id}`)}
+                  className={`transition duration-150 cursor-pointer ${
+                    index % 2 === 0
+                      ? "bg-white dark:bg-slate-800"
+                      : "bg-blue-50 dark:bg-slate-700"
+                  } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                  onClick={() =>
+                    (window.location.href = `/protected/users/${user.id}`)
+                  }
                 >
                   <td className="px-6 py-4 font-medium">{index + 1}</td>
                   <td className="px-6 py-4">{user.name}</td>
                   <td className="px-6 py-4">{user.email}</td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full ${user.role === "admin"
-                        ? "bg-red-100 text-red-600"
-                        : "bg-blue-100 text-blue-600"
-                        }`}
+                      className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                        user.role === "admin"
+                          ? "bg-red-100 text-red-600"
+                          : "bg-blue-100 text-blue-600"
+                      }`}
                     >
                       {user.role === "employee" ? "user" : user.role}
                     </span>
                   </td>
+
+                  {/* ✅ Kolom Status */}
+                  <td>
+                    <span
+                      className={`px-3 py-1 text-xs text-nowrap font-semibold rounded-full ${
+                        user.is_active
+                          ? "bg-green-100 text-green-600"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {user.is_active ? "Aktif" : "Tidak Aktif"}
+                    </span>
+                  </td>
+
                   <td className="px-6 py-4">
-                    {new Date(user.created_at).toLocaleDateString("id-ID")}
+                    {new Date(user.created_at).toLocaleDateString("id-ID",{timeZone: "Asia/Jakarta"})}
                   </td>
                   <td className="px-6 py-4 space-x-2">
                     <ActionButtons
