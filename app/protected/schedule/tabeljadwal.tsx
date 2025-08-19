@@ -11,10 +11,7 @@ export default function Tabeljadwal() {
   const [showDelete, setShowDelete] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Schedule | null>(null);
-  const [currentUser, setCurrentUser] = useState<{
-    id: string;
-    role: string;
-  } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; role: string } | null>(null);
   const supabase = createClient();
 
   const fetchData = async () => {
@@ -40,6 +37,7 @@ export default function Tabeljadwal() {
   };
 
   const formatTime = (time: string | any) => {
+    if (!time) return "-";
     const times = time.split(":");
     return `${times[0]}:${times[1]}`;
   };
@@ -50,10 +48,7 @@ export default function Tabeljadwal() {
   }, []);
 
   const handleDelete = async (item: Schedule) => {
-    const { error } = await supabase
-      .from("schedules")
-      .delete()
-      .eq("id", item.id);
+    const { error } = await supabase.from("schedules").delete().eq("id", item.id);
     if (!error) {
       setData((prev) => prev.filter((i) => i.id !== item.id));
     }
@@ -74,9 +69,7 @@ export default function Tabeljadwal() {
       .eq("id", updatedItem.id);
 
     if (!error) {
-      setData((prev) =>
-        prev.map((i) => (i.id === updatedItem.id ? updatedItem : i))
-      );
+      setData((prev) => prev.map((i) => (i.id === updatedItem.id ? updatedItem : i)));
     }
     setShowEdit(false);
   };
@@ -84,84 +77,89 @@ export default function Tabeljadwal() {
   return (
     <>
       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
-        <table className="min-w-full text-sm">
-          <thead className="bg-blue-600 text-white text-xs uppercase tracking-wide">
-            <tr>
-              <th className="px-6 py-4 text-left">No</th>
-              <th className="px-6 py-4 text-left">Hari</th>
-              <th className="px-6 py-4 text-left">Jam Masuk</th>
-              <th className="px-6 py-4 text-left">Jam Pulang</th>
-              <th className="px-6 py-4 text-left">Mulai Istirahat</th>
-              <th className="px-6 py-4 text-left">Selesai Istirahat</th>
-              <th className="px-6 py-4 text-left">Aktif</th>
-              {currentUser?.role === "admin" && (
-                <th className="px-6 py-4 text-left">Aksi</th>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {data?.map((schedule, index) => (
-              <tr
-                key={schedule.id}
-                className={`transition duration-150 ${index % 2 === 0
-                      ? "bg-white dark:bg-slate-800"
-                      : "bg-blue-50 dark:bg-slate-700"
-                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
-              >
-                <td className="px-6 py-4 font-medium">{index + 1}</td>
-                <td className="px-6 py-4">{schedule.day.toUpperCase()}</td>
-                <td className="px-6 py-4 text-yellow-500 font-semibold">
-                  {formatTime(schedule.start_time)}
-                </td>
-                <td className="px-6 py-4 text-blue-500 font-semibold">
-                  {formatTime(schedule.end_time)}
-                </td>
-                <td className="px-6 py-4 text-orange-500 font-semibold">
-                  {formatTime(schedule.mulai_istirahat) || "11:30"}
-                </td>
-                <td className="px-6 py-4 text-orange-500 font-semibold">
-                  {formatTime(schedule.selesai_istirahat) || "12:30"}
-                </td>
-                <td className="px-6 py-4">
-                  {schedule.is_active ? (
-                    <span className="text-green-600 font-semibold">Aktif</span>
-                  ) : (
-                    <span className="text-red-600 font-semibold">Tidak Aktif</span>
-                  )}
-                </td>
+        {/* Tambah wrapper scroll biar responsif di HP */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-blue-600 text-white text-xs uppercase tracking-wide">
+              <tr>
+                <th className="px-6 py-4 text-left">No</th>
+                <th className="px-6 py-4 text-left">Hari</th>
+                <th className="px-6 py-4 text-left">Jam Masuk</th>
+                <th className="px-6 py-4 text-left">Jam Pulang</th>
+                <th className="px-6 py-4 text-left">Mulai Istirahat</th>
+                <th className="px-6 py-4 text-left">Selesai Istirahat</th>
+                <th className="px-6 py-4 text-left">Aktif</th>
                 {currentUser?.role === "admin" && (
-                  <td className="px-6 py-4 space-x-2">
-                    <button
-                      onClick={() => {
-                        setSelectedItem(schedule);
-                        setShowEdit(true);
-                      }}
-                      className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                    >
-                      ✏️ Edit
-                    </button>
-                    {/* <button
-                      onClick={() => {
-                        setSelectedItem(schedule);
-                        setShowDelete(true);
-                      }}
-                      className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                    >
-                      🗑️ Delete
-                    </button> */}
-                  </td>
+                  <th className="px-6 py-4 text-left">Aksi</th>
                 )}
               </tr>
-            ))}
-            {data.length === 0 && (
-              <tr>
-                <td colSpan={8} className="text-center text-gray-400 py-6">
-                  Tidak ada data jadwal.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data?.map((schedule, index) => (
+                <tr
+                  key={schedule.id}
+                  className={`transition duration-150 ${
+                    index % 2 === 0
+                      ? "bg-white dark:bg-slate-800"
+                      : "bg-blue-50 dark:bg-slate-700"
+                  } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                >
+                  <td className="px-6 py-4 font-medium">{index + 1}</td>
+                  <td className="px-6 py-4">{schedule.day.toUpperCase()}</td>
+                  <td className="px-6 py-4 text-yellow-500 font-semibold">
+                    {formatTime(schedule.start_time)}
+                  </td>
+                  <td className="px-6 py-4 text-blue-500 font-semibold">
+                    {formatTime(schedule.end_time)}
+                  </td>
+                  <td className="px-6 py-4 text-orange-500 font-semibold">
+                    {formatTime(schedule.mulai_istirahat) || "11:30"}
+                  </td>
+                  <td className="px-6 py-4 text-orange-500 font-semibold">
+                    {formatTime(schedule.selesai_istirahat) || "12:30"}
+                  </td>
+                  <td className="px-6 py-4">
+                    {schedule.is_active ? (
+                      <span className="text-green-600 font-semibold">Aktif</span>
+                    ) : (
+                      <span className="text-red-600 font-semibold">Tidak Aktif</span>
+                    )}
+                  </td>
+                  {currentUser?.role === "admin" && (
+                    <td className="px-6 py-4 space-x-2">
+                      <button
+                        onClick={() => {
+                          setSelectedItem(schedule);
+                          setShowEdit(true);
+                        }}
+                        className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                      >
+                        ✏️ Edit
+                      </button>
+                      {/* Delete bisa diaktifkan lagi kalau perlu */}
+                      {/* <button
+                        onClick={() => {
+                          setSelectedItem(schedule);
+                          setShowDelete(true);
+                        }}
+                        className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                      >
+                        🗑️ Delete
+                      </button> */}
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {data.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="text-center text-gray-400 py-6">
+                    Tidak ada data jadwal.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* EditModal hanya admin */}

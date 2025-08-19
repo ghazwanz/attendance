@@ -153,11 +153,11 @@ export default function PermissionTable({
   };
 
   return (
-    <div>
+    <div className="w-full">
       {/* Header & Filter */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         {/* Judul */}
-        <h1 className="text-3xl font-bold mb-4">
+        <h1 className="text-3xl font-bold">
           <span role="img" aria-label="doc">📋 Tabel Izin</span>
         </h1>
 
@@ -202,8 +202,8 @@ export default function PermissionTable({
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10">
-        <table className="w-full text-sm text-left border-separate border-spacing-y-2 table-auto">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10 overflow-x-auto">
+        <table className="w-full min-w-[900px] text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
             <tr className="bg-blue-600 text-white uppercase tracking-wider">
               <th className="px-4 py-3 rounded-l-xl">NO</th>
