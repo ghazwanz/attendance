@@ -316,7 +316,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
       await handlePulangAction({ user_id, name, notes:keteranganPulang }, isOutside)
       showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
       setShowKeteranganPulangModal(false);
-      setNotifOpen((prev) => !prev)
+      setNotifOpen(false)
     } catch (error: any) {
       showToast({ type: 'info', message: error.message });
     }

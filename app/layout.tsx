@@ -22,6 +22,9 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+export const dynamic = 'force-dynamic'; // Ensure this page is always revalidated
+export const revalidate = 0; // Ensure this page is always revalidated
+
 export default function RootLayout({
   children,
 }: Readonly<{
