@@ -14,6 +14,8 @@ import QRTips from '@/components/QRTips';
 import AutoRequestNotification from "@/components/AutoRequestNotification";
 import TestNotificationButton from "@/components/TestNotificationButton";
 import LokasiKantor from '@/components/LokasiKantor';
+// import QRImageUploader from '@/components/QRImageUploader';
+// import QRWrapperFile from '@/components/QRWrapperFile';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -96,6 +98,9 @@ export default async function Home() {
           <div>
             <QRWrapper />
             <QRTips />
+          </div>
+          <div>
+            {/* <QRWrapperFile/> */}
           </div>
           
 
