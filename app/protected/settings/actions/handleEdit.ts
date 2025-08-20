@@ -59,7 +59,7 @@ export async function handleEditEmail(
     const { error } = await supabase.auth.updateUser({
         email:email,
     },{
-        emailRedirectTo: `/`
+        emailRedirectTo: `protected`
     });
 
     if (error) {
