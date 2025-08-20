@@ -1,76 +1,73 @@
 // actions/attendanceActions.ts
-import { createClient } from '@/lib/supabase/client';
+"use server"
+import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export interface AttendanceUser {
     user_id: string;
     name: string;
 }
 
+export interface ResultStatus {
+    status: "success" | "error"
+    msg: string
+}
+
 export const handleAbsenHadir = async (
     user: AttendanceUser,
     isOutside: boolean,
-    showToast: (options: { type: 'success' | 'error' | 'info' | 'warning'; message: string }) => void
 ): Promise<boolean> => {
-    const supabase = createClient();
+    if (isOutside) throw new Error("Anda berada di luar area kantor.")
+    const { user_id, name } = user
+    const supabase = await createClient();
 
-    if (isOutside) {
-        showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
-        return false;
-    }
+    // Get today's day name
+    const nowDate = new Date();
+    const options = { weekday: 'long' } as const;
+    const todayName = nowDate.toLocaleDateString('id-ID', options).toLowerCase();
 
-    try {
-        const { user_id, name } = user;
-        const nowDate = new Date();
-        const now = nowDate.toISOString();
+    const { data: scheduleData, error: scheduleError } = await supabase
+        .from('schedules')
+        .select('start_time,day')
+        .eq('day', todayName)
+        .single();
 
-        // Get today's day name
-        const options = { weekday: 'long' } as const;
-        const todayName = nowDate.toLocaleDateString('id-ID', options).toLowerCase();
+    if (!scheduleData || scheduleError) throw new Error('Jadwal tidak ditemukan untuk hari ini');
 
-        // Get today's schedule
-        const { data: jadwalHariIni, error: jadwalError } = await supabase
-            .from('schedules')
-            .select('start_time')
-            .eq('day', todayName)
-            .single();
+    const [jadwalJam, jadwalMenit] = scheduleData.start_time.split(':').map(Number);
 
-        if (jadwalError || !jadwalHariIni)
-            throw new Error(`Jadwal hari ${todayName} tidak ditemukan`);
+    const localeOptions = { hour: '2-digit', minute: '2-digit', second: "2-digit", hour12: false, timeZone: 'Asia/Jakarta' } as const;
+    const getLocaleTime = nowDate.toLocaleString('id-ID', localeOptions);
+    // const jamNow = nowDate.getHours();
+    const jamNow = parseInt(getLocaleTime.split('.')[0]);
+    const menitNow = parseInt(getLocaleTime.split('.')[1]);
 
-        const [jamJadwal, menitJadwal] = jadwalHariIni.start_time.split(':').map(Number);
+    const status = (jamNow >= jadwalJam && menitNow >= jadwalMenit) ? "terlambat" : "hadir";
 
-        // Convert to local time
-        // const optionsTime = { weekday: 'long'} as const;
-        const getLocaleTime = nowDate.toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' });
-        // const jamNow = nowDate.getHours();
-        const jamNow = parseInt(getLocaleTime.split('.')[0]);
-        const menitNow = parseInt(getLocaleTime.split('.')[1]);
-        // const menitNow = nowDate.getMinutes();
+    const today = nowDate.toISOString().split('T')[0];
 
-        let status = 'HADIR';
-        if (jamNow > jamJadwal || (jamNow === jamJadwal && menitNow > menitJadwal))
-            status = 'TERLAMBAT';
+    const { data: getAttendanceToday, error: getAttendanceError } = await supabase
+        .from('attendances')
+        .select('*')
+        .eq('user_id', user_id)
+        .eq('date', today)
+        .single();
 
+    if (getAttendanceToday || !getAttendanceError) throw new Error('Anda sudah melakukan absensi masuk hari ini');
 
-        const today = nowDate.toISOString().split('T')[0];
-        // Check existing attendance
-
-        const { error } = await supabase.from('attendances').insert({
-            user_id,
+    const { error: insertError } = await supabase
+        .from('attendances').insert({
+            user_id: user_id,
             date: today,
-            check_in: now,
-            check_out: null,
-            notes: '',
-            created_at: now,
-            status,
-        });
-
-        if (error) throw new Error('Gagal menyimpan kehadiran');
-
-        showToast({ type: 'success', message: `Berhasil hadir (${status}) untuk ${name}` });
-        return true;
-    } catch (err) {
-        showToast({ type: 'error', message: (err as Error).message });
-        return false;
-    }
+            check_in: nowDate.toISOString(),
+            status: status.toUpperCase()
+        })
+        .eq('user_id', user_id)
+        .eq('date', today)
+        .single();
+    console.log("Jam sekarang: ", jamNow, "Menit sekarang: ", menitNow, "\nJadwal jam: ", jadwalJam, "Menit jadwal", jadwalMenit, "\nStatus: ", status, "\nlocaleTime:", getLocaleTime);
+    
+    if (insertError) throw new Error('Gagal mencatat kehadiran');
+    revalidatePath('/scan');
+    return true
 };

@@ -213,13 +213,15 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
     }
   };
 
-  // Fungsi untuk handle pilihan Hadir
+  // Handler submit keterangan pulang
   const handleHadirSelection = async () => {
     if (!scanUserRef.current) return;
-    const success = await handleAbsenHadir(scanUserRef.current, isOutside, showToast);
-    if (success) {
+    try {
+      await handleAbsenHadir(scanUserRef.current, isOutside);
+      showToast({type:"success",message:`Absen hadir berhasil untuk ${scanUserRef.current.name}`});
       onScanSuccess?.();
       setShowChoiceModal(false);
+
       const isPiket = await getPiket({ user_id: scanUserRef.current.user_id })
       const type = isPiket ? "piket_reminder" : null
       if (!type) return
@@ -228,8 +230,10 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
         setNotifData({ title: msg?.title, message: msg?.message, type })
         setNotifOpen((prev) => !prev)
       }
+    } catch (error: any) {
+      showToast({ type: 'info', message: error.message });
     }
-  };
+  }
 
 
   const handleAbsenIzin = () => {
@@ -294,7 +298,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
   const handlePulang = async () => {
     if (!scanUserRef.current) return;
     if (isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
-    
+
     setNotifData({
       title: 'Konfirmasi Pulang',
       message: 'Apakah Anda yakin ingin pulang sekarang?',
@@ -311,9 +315,9 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
 
     try {
       if (!keteranganPulang.trim())
-        throw new Error('Keterangan kegiatan hari ini wajib diisi.' );
+        throw new Error('Keterangan kegiatan hari ini wajib diisi.');
 
-      await handlePulangAction({ user_id, name, notes:keteranganPulang }, isOutside)
+      await handlePulangAction({ user_id, name, notes: keteranganPulang }, isOutside)
       showToast({ type: 'info', message: `Pulang dicatat untuk ${name}` });
       setShowKeteranganPulangModal(false);
       setNotifOpen(false)
