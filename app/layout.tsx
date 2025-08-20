@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <link rel="manifest" href="/manifest.json" />
-      <meta httpEquiv="refresh" content="3600"/>
+      {/* <meta httpEquiv="refresh" content="3600"/> */}
       <meta name="theme-color" content="#4CAF50" />
 
       <body className={`${geistSans.className} antialiased`}>
