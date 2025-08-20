@@ -15,8 +15,6 @@ import AutoRequestNotification from "@/components/AutoRequestNotification";
 import TestNotificationButton from "@/components/TestNotificationButton";
 import LokasiKantor from '@/components/LokasiKantor';
 
-export const dynamic = 'force-dynamic'; // Ensure this page is always revalidated
-
 export default async function Home() {
   const supabase = await createClient();
   const {
