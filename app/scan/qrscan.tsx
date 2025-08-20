@@ -30,6 +30,12 @@ const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'wa
   toast(`${icon} ${message}`, { style: { ...baseStyle, background, color } });
 };
 
+export type NotificationProps = { 
+  title: string, 
+  message: string, 
+  type: "piket_reminder" | "piket_out_reminder" | "clock_out_reminder" 
+} | null
+
 export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRScannerProps) {
   const supabase = createClient();
   const scannerRef = useRef<HTMLDivElement>(null);
@@ -50,7 +56,9 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
   const [sudahIzinPulang, setSudahIzinPulang] = useState(false);
   const [showChoiceBesokModal, setShowChoiceBesokModal] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifData, setNotifData] = useState<{ title: string, message: string, type: "piket_reminder" | "piket_out_reminder" | "clock_out_reminder" } | null>({ title: "", message: "", type: "clock_out_reminder" })
+  const [notifData, setNotifData] = useState<NotificationProps>({ title: "", message: "", type: "clock_out_reminder" })
+  const [pending, setPending] = useState(false)
+  const [disabled, setDisabled] = useState(false)
 
   const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
@@ -217,8 +225,10 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
   const handleHadirSelection = async () => {
     if (!scanUserRef.current) return;
     try {
+      setDisabled(prev=>!prev);
+      setPending(prev=>!prev);
       await handleAbsenHadir(scanUserRef.current, isOutside);
-      showToast({type:"success",message:`Absen hadir berhasil untuk ${scanUserRef.current.name}`});
+      showToast({ type: "success", message: `Absen hadir berhasil untuk ${scanUserRef.current.name}` });
       onScanSuccess?.();
       setShowChoiceModal(false);
 
@@ -232,6 +242,9 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
       }
     } catch (error: any) {
       showToast({ type: 'info', message: error.message });
+    } finally{
+      setDisabled(prev=>!prev);
+      setPending(prev=>!prev);
     }
   }
 
@@ -404,6 +417,8 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
         onClose={() => setShowChoiceModal(false)}
         onSelectHadir={handleHadirSelection}
         onSelectIzin={handleAbsenIzin}
+        pending={pending}
+        disabled={disabled}
       />
       {/* Modal Ubah dari Izin ke Hadir */}
       {showIzinToHadirModal && (

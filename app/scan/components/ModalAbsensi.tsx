@@ -6,18 +6,19 @@ interface ChoiceModalProps {
     onClose: () => void;
     onSelectHadir: () => void;
     onSelectIzin: () => void;
+    disabled?: boolean;
+    pending?: boolean;
 }
 
 export default function ClockInModal({
     isOpen,
     onClose,
     onSelectHadir,
-    onSelectIzin
+    onSelectIzin,
+    disabled,
+    pending
 }: ChoiceModalProps) {
     if (!isOpen) return null;
-
-    const [pending,setPending] = useState(false)
-    const [disabled,setDisabled] = useState(false)
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
@@ -34,8 +35,6 @@ export default function ClockInModal({
                     <button
                         disabled={disabled}
                         onClick={()=>{
-                            setPending(prev=> !prev)
-                            setDisabled(prev=> !prev)
                             onSelectHadir()
                         }}
                         className="w-full px-4 py-2 bg-green-600 disabled:bg-green-600/80 text-white rounded-md"
