@@ -12,9 +12,7 @@ export default function LocationTable() {
   // ambil data lokasi
   useEffect(() => {
     async function fetchLocations() {
-      const { data, error } = await supabase
-        .from("location_company")
-        .select("*");
+      const { data, error } = await supabase.from("location_company").select("*");
       if (!error) setLocations(data || []);
     }
     fetchLocations();
@@ -41,11 +39,7 @@ export default function LocationTable() {
       .eq("id", selectedLoc.id);
 
     if (!error) {
-      setLocations((prev) =>
-        prev.map((loc) =>
-          loc.id === selectedLoc.id ? selectedLoc : loc
-        )
-      );
+      setLocations((prev) => prev.map((loc) => (loc.id === selectedLoc.id ? selectedLoc : loc)));
       setShowEditModal(false);
       setSelectedLoc(null);
       alert("Lokasi berhasil diperbarui ✅");
@@ -64,15 +58,10 @@ export default function LocationTable() {
   const confirmDelete = async () => {
     if (!selectedLoc) return;
 
-    const { error } = await supabase
-      .from("location_company")
-      .delete()
-      .eq("id", selectedLoc.id);
+    const { error } = await supabase.from("location_company").delete().eq("id", selectedLoc.id);
 
     if (!error) {
-      setLocations((prev) =>
-        prev.filter((loc) => loc.id !== selectedLoc.id)
-      );
+      setLocations((prev) => prev.filter((loc) => loc.id !== selectedLoc.id));
       setShowDeleteModal(false);
       setSelectedLoc(null);
       alert("Lokasi berhasil dihapus ✅");
@@ -85,114 +74,100 @@ export default function LocationTable() {
     <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10 mt-8">
       <h3 className="text-xl font-bold mb-4">📍 Tabel Lokasi Perusahaan</h3>
 
-      {/* TABLE WRAPPER BIAR RESPONSIVE */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-blue-600 text-white text-xs uppercase tracking-wide">
-            <tr>
-              <th className="px-6 py-4 text-left">No</th>
-              <th className="px-6 py-4 text-left">Nama Lokasi</th>
-              <th className="px-6 py-4 text-left">Map</th>
-              <th className="px-6 py-4 text-left">Status</th>
-              <th className="px-6 py-4 text-left">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {locations.map((loc, idx) => (
-              <tr
-                key={loc.id}
-                className={
-                  idx % 2 === 0
-                    ? "bg-white dark:bg-slate-800"
-                    : "bg-blue-50 dark:bg-slate-700"
-                }
-              >
-                <td className="px-6 py-4 font-medium">{idx + 1}</td>
-                <td className="px-6 py-4">{loc.location_name}</td>
-                <td className="px-6 py-4">
-                  <div className="rounded-xl overflow-hidden shadow-lg">
-                    <iframe
-                      title={`Map ${loc.location_name}`}
-                      src={`https://maps.google.com/maps?q=${loc.longtitude},${loc.latitude}&z=15&output=embed`}
-                      width="200"
-                      height="150"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                    ></iframe>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  {loc.status ? (
-                    <span className="text-green-600 font-semibold">Aktif</span>
-                  ) : (
-                    <span className="text-red-600 font-semibold">Tidak Aktif</span>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(loc)}
-                      className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow-md transition"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(loc)}
-                      className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md shadow-md transition"
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {locations.length === 0 && (
+      {/* ==== TABLET/DESKTOP: TABEL ==== */}
+      <div className="w-full">
+        <div className="overflow-x-auto">
+          {/* min-w agar kolom tidak saling menekan; table-fixed membantu wrapping */}
+          <table className=" w-full table-fixed text-sm">
+            <thead className="bg-blue-600 text-white text-xs uppercase tracking-wide">
               <tr>
-                <td colSpan={5} className="text-center text-gray-400 py-6">
-                  Tidak ada data lokasi.
-                </td>
+                <th className="px-6 py-4 text-left w-14">No</th>
+                <th className="px-6 py-4 text-left w-72">Nama Lokasi</th>
+                <th className="px-6 py-4 text-left w-72">Map</th>
+                <th className="px-6 py-4 text-left w-32">Status</th>
+                <th className="px-6 py-4 text-left w-40">Aksi</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {locations.map((loc, idx) => (
+                <tr
+                  key={loc.id}
+                  className={idx % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-blue-50 dark:bg-slate-700"}
+                >
+                  <td className="px-6 py-4 align-middle">{idx + 1}</td>
+                  <td className="px-6 py-4 align-middle break-words">{loc.location_name}</td>
+                  <td className="px-6 py-4 align-middle">
+                    <div className="w-[240px] h-[160px] rounded-xl overflow-hidden shadow">
+                      <iframe
+                        title={`Map ${loc.location_name}`}
+                        src={`https://maps.google.com/maps?q=${loc.longtitude},${loc.latitude}&z=15&output=embed`}
+                        className="w-full h-full"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                      ></iframe>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 align-middle">
+                    {loc.status ? (
+                      <span className="text-green-600 font-semibold">Aktif</span>
+                    ) : (
+                      <span className="text-red-600 font-semibold">Tidak Aktif</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 align-middle">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleEdit(loc)}
+                        className="px-3 py-1 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow-md transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(loc)}
+                        className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md shadow-md transition"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {locations.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="text-center text-gray-400 py-6">
+                    Tidak ada data lokasi.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal Edit */}
       {showEditModal && selectedLoc && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md w-[28rem]">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md w-[28rem] max-w-[90vw]">
             <h3 className="text-lg font-bold mb-4">Edit Lokasi</h3>
 
-            {/* Nama Lokasi */}
             <div className="mb-3">
               <label className="block mb-1 text-sm font-medium">Nama Lokasi</label>
               <input
                 type="text"
                 value={selectedLoc.location_name}
-                onChange={(e) =>
-                  setSelectedLoc({
-                    ...selectedLoc,
-                    location_name: e.target.value,
-                  })
-                }
+                onChange={(e) => setSelectedLoc({ ...selectedLoc, location_name: e.target.value })}
                 className="w-full px-3 py-2 border rounded-md dark:bg-slate-700"
                 placeholder="Nama Lokasi"
               />
             </div>
 
-            {/* Status */}
             <div className="mb-3">
               <label className="block mb-1 text-sm font-medium">Status</label>
               <select
                 value={selectedLoc.status ? "1" : "0"}
-                onChange={(e) =>
-                  setSelectedLoc({
-                    ...selectedLoc,
-                    status: e.target.value === "1",
-                  })
-                }
+                onChange={(e) => setSelectedLoc({ ...selectedLoc, status: e.target.value === "1" })}
                 className="w-full px-3 py-2 border rounded-md dark:bg-slate-700"
               >
                 <option value="1">Aktif</option>
@@ -200,17 +175,15 @@ export default function LocationTable() {
               </select>
             </div>
 
-            {/* Map Preview */}
             {selectedLoc.latitude && selectedLoc.longtitude && (
-              <div className="mb-4 rounded-xl overflow-hidden shadow-md">
+              <div className="mb-4 rounded-xl overflow-hidden shadow">
                 <iframe
                   title="Preview Map"
                   src={`https://maps.google.com/maps?q=${selectedLoc.longtitude},${selectedLoc.latitude}&z=15&output=embed`}
-                  width="100%"
-                  height="200"
+                  className="w-full h-52"
                   style={{ border: 0 }}
-                  allowFullScreen
                   loading="lazy"
+                  allowFullScreen
                   referrerPolicy="no-referrer-when-downgrade"
                 ></iframe>
               </div>
@@ -237,7 +210,7 @@ export default function LocationTable() {
       {/* Modal Konfirmasi Hapus */}
       {showDeleteModal && selectedLoc && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md w-80 text-center">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md w-80 max-w-[90vw] text-center">
             <h3 className="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
             <p className="mb-4">
               Yakin ingin menghapus <b>{selectedLoc.location_name}</b>?
