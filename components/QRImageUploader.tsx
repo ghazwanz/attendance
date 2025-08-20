@@ -1,258 +1,320 @@
-// "use client"
-// import { useEffect, useRef, useState } from "react";
-// import { Camera, Upload, X, CheckCircle } from "lucide-react";
+"use client";
 
-// // Import the actual Html5Qrcode from html5-qrcode module
-// import { Html5Qrcode } from "html5-qrcode";
+import { useEffect, useRef, useState } from "react";
+import { Camera, Upload, X } from "lucide-react";
+import { Html5Qrcode } from "html5-qrcode";
+import { createClient } from "@/lib/supabase/client";
+import toast from "react-hot-toast";
+import { handleAbsenHadir } from "@/app/scan/actions/AbsensiMasukAction";
+import getPiket from "@/app/scan/actions/getPiket";
+import getMessage from "@/app/scan/actions/getMessage";
+import { handlePulangAction } from "@/app/scan/actions/AbsensiPulangAction";
+import ClockInModal from "@/app/scan/components/ModalAbsensi";
+import ReminderModal from "@/app/scan/components/ReminderModal";
 
-// // Mock for demonstration - replace the above import when using
 
-// export default function QRImageUploader() {
-//   const [qrResult, setQrResult] = useState<string | null>(null);
-//   const [isScanning, setIsScanning] = useState(false);
-//   const [isDragOver, setIsDragOver] = useState(false);
-//   const [scanMode, setScanMode] = useState<'upload' | 'camera'>('upload');
-//   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
-//   const fileInputRef = useRef<HTMLInputElement>(null);
+export default function QRImageUploader() {
+  const supabase = createClient();
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanMode, setScanMode] = useState<"upload" | "camera">("upload");
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-//   useEffect(() => {
-//     if (!html5QrCodeRef.current) {
-//       html5QrCodeRef.current = new Html5Qrcode("qr-reader");
-//     }
+  // --- state modal & logika sama kayak qrscan.tsx ---
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [showPulangModal, setShowPulangModal] = useState(false);
+  const [showIzinForm, setShowIzinForm] = useState(false);
+  const [showIzinToHadirModal, setShowIzinToHadirModal] = useState(false);
+  const [showChoiceBesokModal, setShowChoiceBesokModal] = useState(false);
+  const [showKeteranganPulangModal, setShowKeteranganPulangModal] = useState(false);
 
-//     return () => {
-//       if (html5QrCodeRef.current) {
-//         html5QrCodeRef.current.stop().catch(() => { });
-//       }
-//     };
-//   }, []);
+  const [izinReason, setIzinReason] = useState("");
+  const [izinStart, setIzinStart] = useState("");
+  const [izinEnd, setIzinEnd] = useState("");
+  const [keteranganPulang, setKeteranganPulang] = useState("");
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifData, setNotifData] = useState<any>(null);
 
-//   const startCameraScan = async () => {
-//     if (!html5QrCodeRef.current) return;
-//     setIsScanning(true);
-//     setScanMode('camera');
+  const scanUserRef = useRef<{ user_id: string; name: string } | null>(null);
 
-//     try {
-//       await html5QrCodeRef.current.start(
-//         { facingMode: "environment" },
-//         { fps: 30, qrbox: { width: 250, height: 250 } },
-//         (decodedText) => {
-//           setQrResult(decodedText);
-//           console.log(decodedText);
-//           setIsScanning(false);
-//           html5QrCodeRef.current?.stop();
-//         },
-//         (errorMessage) => {
-//           // Handle scan errors
-//         }
-//       );
-//     } catch (err) {
-//       setQrResult("❌ Failed to open camera: " + (err as any).message);
-//       setIsScanning(false);
-//     }
-//   };
+  useEffect(() => {
+    if (!html5QrCodeRef.current) {
+      html5QrCodeRef.current = new Html5Qrcode("qr-reader");
+    }
+    return () => {
+      if (html5QrCodeRef.current) {
+        html5QrCodeRef.current.stop().catch(() => {});
+      }
+    };
+  }, []);
 
-//   const stopCameraScan = async () => {
-//     if (html5QrCodeRef.current) {
-//       try {
-//         await html5QrCodeRef.current.stop();
-//         setIsScanning(false);
-//       } catch (err) {
-//         console.error("Error stopping camera:", err);
-//       }
-//     }
-//   };
+  // === CORE: aksi setelah QR berhasil dibaca (upload / camera) ===
+  const handleScanResult = async (decodedText: string) => {
+    try {
+      const data = JSON.parse(decodedText);
 
-//   const handleFileSelect = async (file: File) => {
-//     if (!file || !html5QrCodeRef.current) return;
+      const { data: userData, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", data.user_id)
+        .single();
 
-//     try {
-//       setIsScanning(true);
-//       const result = await html5QrCodeRef.current.scanFile(file, true);
-//       setQrResult(result);
-//     } catch (err) {
-//       setQrResult("❌ Failed to read QR from image: " + (err as any).message);
-//     } finally {
-//       setIsScanning(false);
-//     }
-//   };
+      if (error || !userData) throw new Error("User tidak ditemukan");
 
-//   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-//     const file = event.target.files?.[0];
-//     if (file) {
-//       await handleFileSelect(file);
-//     }
-//   };
+      scanUserRef.current = { user_id: data.user_id, name: userData.name };
 
-//   const handleDrop = async (e: React.DragEvent) => {
-//     e.preventDefault();
-//     setIsDragOver(false);
+      const today = new Date().toISOString().split("T")[0];
 
-//     const files = Array.from(e.dataTransfer.files);
-//     const imageFile = files.find(file => file.type.startsWith('image/'));
+      const { data: attendanceToday } = await supabase
+        .from("attendances")
+        .select("*")
+        .eq("user_id", userData.id)
+        .eq("date", today)
+        .maybeSingle();
 
-//     if (imageFile) {
-//       await handleFileSelect(imageFile);
-//     }
-//   };
+      const { data: izinHariIni } = await supabase
+        .from("permissions")
+        .select("*")
+        .eq("user_id", userData.id)
+        .eq("status", "pending")
+        .eq("date", today)
+        .maybeSingle();
 
-//   const handleDragOver = (e: React.DragEvent) => {
-//     e.preventDefault();
-//     setIsDragOver(true);
-//   };
+      if (attendanceToday) {
+        if (
+          attendanceToday.status === "IZIN" &&
+          !attendanceToday.check_in &&
+          !attendanceToday.check_out
+        ) {
+          setShowIzinToHadirModal(true);
+        } else if (attendanceToday.check_in && !attendanceToday.check_out) {
+          setShowPulangModal(true);
+        } else {
+          setShowChoiceBesokModal(true);
+        }
+      } else {
+        if (izinHariIni) {
+          setShowIzinToHadirModal(true);
+        } else {
+          setShowChoiceModal(true);
+        }
+      }
+    } catch (err) {
+      toast.error("❌ QR tidak valid atau user tidak ditemukan");
+    }
+  };
 
-//   const handleDragLeave = (e: React.DragEvent) => {
-//     e.preventDefault();
-//     setIsDragOver(false);
-//   };
+  // === Upload Gambar ===
+  const handleFileSelect = async (file: File) => {
+    if (!file || !html5QrCodeRef.current) return;
+    try {
+      setIsScanning(true);
+      const result = await html5QrCodeRef.current.scanFile(file, true);
+      await handleScanResult(result);
+    } catch (err) {
+      toast.error("❌ Gagal membaca QR");
+    } finally {
+      setIsScanning(false);
+    }
+  };
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileSelect(file);
+  };
 
-//   const resetScanner = () => {
-//     setQrResult(null);
-//     setScanMode('upload');
-//     if (fileInputRef.current) {
-//       fileInputRef.current.value = '';
-//     }
-//   };
+  // === Scan Kamera ===
+  const startCameraScan = async () => {
+    if (!html5QrCodeRef.current) return;
+    setIsScanning(true);
+    setScanMode("camera");
+    try {
+      await html5QrCodeRef.current.start(
+        { facingMode: "environment" },
+        { fps: 30, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          html5QrCodeRef.current?.stop();
+          setIsScanning(false);
+          handleScanResult(decodedText);
+        }, 
+        (errorMessage) => {
+          console.warn("QR Code scan error: ", errorMessage);
+        }
+      );
+    } catch (err) {
+      toast.error("❌ Gagal buka kamera");
+      setIsScanning(false);
+    }
+  };
+  const stopCameraScan = async () => {
+    if (html5QrCodeRef.current) {
+      await html5QrCodeRef.current.stop();
+      setIsScanning(false);
+    }
+  };
 
-//   return (
-//     <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
-//       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
-//         {/* Header */}
-//         <div className="text-center mb-6">
-//           <h2 className="text-xl font-semibold text-gray-800 mb-2">
-//             Upload Your QR Code
-//           </h2>
-//           <p className="text-sm text-gray-500">
-//             Scan Your Brand Engagement With Images
-//           </p>
-//         </div>
+  // === Aksi dari modal (contoh hadir & pulang, sisanya bisa copy dari qrscan.tsx) ===
+  const handleHadirSelection = async () => {
+    if (!scanUserRef.current) return;
+    try {
+      await handleAbsenHadir(scanUserRef.current, false);
+      toast.success(`✅ Hadir dicatat untuk ${scanUserRef.current.name}`);
+      setShowChoiceModal(false);
 
-//         {/* QR Scanner Display Area */}
-//         {scanMode === 'camera' && isScanning && (
-//           <div className="mb-6">
-//             <div className="border-2 border-dashed border-blue-400 rounded-xl p-4 bg-blue-50">
-//               <div
-//                 id="qr-reader"
-//                 className="w-full h-48 rounded-lg overflow-hidden border-2 border-blue-200 bg-white"
-//                 style={{ minHeight: '192px' }}
-//               />
-//             </div>
-//             <button
-//               onClick={stopCameraScan}
-//               className="mt-3 w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
-//             >
-//               <X size={16} />
-//               Stop Camera
-//             </button>
-//           </div>
-//         )}
+      const isPiket = await getPiket({ user_id: scanUserRef.current.user_id });
+      if (isPiket) {
+        const msg = await getMessage("piket_reminder");
+        if (msg) setNotifData(msg), setNotifOpen(true);
+      }
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
 
-//         {/* Upload Area */}
-//         {scanMode === 'upload' && (
-//           <div
-//             className={`border-2 border-dashed rounded-xl p-8 h-48 flex items-center justify-center text-center transition-all cursor-pointer ${isDragOver
-//                 ? 'border-blue-400 bg-blue-50'
-//                 : 'border-gray-300 hover:border-gray-400'
-//               }`}
-//             onDrop={handleDrop}
-//             onDragOver={handleDragOver}
-//             onDragLeave={handleDragLeave}
-//             onClick={() => fileInputRef.current?.click()}
-//           >
-//             <div className="flex flex-col items-center gap-3">
-//               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-//                 <Upload className="w-6 h-6 text-blue-600" />
-//               </div>
+  const handlePulang = async () => {
+    if (!scanUserRef.current) return;
+    setNotifData({
+      title: "Konfirmasi Pulang",
+      message: "Apakah yakin ingin pulang?",
+      type: "clock_out_reminder",
+    });
+    setNotifOpen(true);
+    setShowPulangModal(false);
+  };
 
-//               <div>
-//                 <p className="text-sm font-medium text-gray-700 mb-1">
-//                   Click To Upload Or Drag And Drop
-//                 </p>
-//                 <p className="text-xs text-gray-500">
-//                   Max File Size: 5 MB
-//                 </p>
-//               </div>
-//             </div>
+  const handleConfirmPulang = async () => {
+    if (!scanUserRef.current) return;
+    try {
+      await handlePulangAction(
+        { user_id: scanUserRef.current.user_id, name: scanUserRef.current.name, notes: keteranganPulang },
+        false
+      );
+      toast.success(`Pulang dicatat untuk ${scanUserRef.current.name}`);
+      setShowKeteranganPulangModal(false);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
 
-//             <input
-//               ref={fileInputRef}
-//               type="file"
-//               accept="image/*"
-//               onChange={handleUpload}
-//               className="hidden"
-//             />
-//           </div>
-//         )}
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+      <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-md">
+        {/* Area upload */}
+        {scanMode === "upload" && (
+          <div
+            className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="mx-auto text-blue-600 w-8 h-8" />
+            <p className="mt-2 text-gray-600">Klik untuk upload gambar QR</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleUpload}
+            />
+          </div>
+        )}
 
-//         {/* Action Buttons */}
-//         <div className="flex gap-3 mt-6">
-//           <button
-//             onClick={() => {
-//               setScanMode('upload');
-//               fileInputRef.current?.click();
-//             }}
-//             disabled={isScanning}
-//             className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-//           >
-//             <Upload size={16} />
-//             Upload Image
-//           </button>
+        {/* Area kamera */}
+        {scanMode === "camera" && isScanning && (
+          <div>
+            <div
+              id="qr-reader"
+              className="w-full h-64 bg-gray-100 rounded-lg mb-3"
+            />
+            <button
+              onClick={stopCameraScan}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-lg"
+            >
+              <X size={16} /> Stop Kamera
+            </button>
+          </div>
+        )}
 
-//           <button
-//             onClick={startCameraScan}
-//             disabled={isScanning}
-//             className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-//           >
-//             <Camera size={16} />
-//             Scan Camera
-//           </button>
-//         </div>
+        {/* Tombol aksi */}
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={() => setScanMode("upload")}
+            disabled={isScanning}
+            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            <Upload size={16} /> Upload
+          </button>
+          <button
+            onClick={startCameraScan}
+            disabled={isScanning}
+            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg"
+          >
+            <Camera size={16} /> Kamera
+          </button>
+        </div>
 
-//         {/* Loading State */}
-//         {isScanning && scanMode === 'upload' && (
-//           <div className="mt-4 text-center">
-//             <div className="inline-flex items-center gap-2 text-blue-600">
-//               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-//               Processing QR code...
-//             </div>
-//           </div>
-//         )}
+        {/* === Modal sama seperti qrscan.tsx === */}
+        <ClockInModal
+          isOpen={showChoiceModal}
+          onClose={() => setShowChoiceModal(false)}
+          onSelectHadir={handleHadirSelection}
+          onSelectIzin={() => {
+            setShowChoiceModal(false);
+            setShowIzinForm(true);
+          }}
+        />
 
-//         {/* Result Display */}
-//         {qrResult && (
-//           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-//             <div className="flex items-start gap-3">
-//               <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-//               <div className="flex-1">
-//                 <p className="text-sm font-medium text-gray-700 mb-1">
-//                   QR Code Result:
-//                 </p>
-//                 <p className="text-sm text-gray-600 break-all">
-//                   {qrResult}
-//                 </p>
-//               </div>
-//               <button
-//                 onClick={resetScanner}
-//                 className="text-gray-400 hover:text-gray-600 transition-colors"
-//               >
-//                 <X size={16} />
-//               </button>
-//             </div>
-//           </div>
-//         )}
+        {showPulangModal && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/70">
+            <div className="bg-white p-6 rounded-lg w-80">
+              <h2 className="text-lg mb-4">Sudah Hadir</h2>
+              <button
+                onClick={handlePulang}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md mb-2"
+              >
+                Pulang
+              </button>
+              <button
+                onClick={() => {
+                  setShowIzinForm(true);
+                  setShowPulangModal(false);
+                }}
+                className="w-full px-4 py-2 bg-orange-500 text-white rounded-md"
+              >
+                Izin Pulang Awal
+              </button>
+            </div>
+          </div>
+        )}
 
-//         {/* Hidden QR Reader for camera mode */}
-//         {scanMode !== 'camera' && (
-//           <div id="qr-reader" className="hidden" />
-//         )}
+        {showKeteranganPulangModal && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/70">
+            <div className="bg-white p-6 rounded-lg w-96">
+              <h2 className="text-lg mb-2">Keterangan Pulang</h2>
+              <textarea
+                className="w-full border p-2 rounded mb-3"
+                value={keteranganPulang}
+                onChange={(e) => setKeteranganPulang(e.target.value)}
+              />
+              <button
+                onClick={handleConfirmPulang}
+                className="w-full px-4 py-2 bg-green-600 text-white rounded-md"
+              >
+                Simpan & Pulang
+              </button>
+            </div>
+          </div>
+        )}
 
-//         {/* Footer */}
-//         <div className="text-center mt-6">
-//           <p className="text-xs text-gray-400">
-//             Powered by html5-qrcode
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
+        <ReminderModal
+          title={notifData?.title}
+          message={notifData?.message}
+          type={notifData?.type || ""}
+          isOpen={notifOpen}
+          onConfirm={() => {
+            setNotifOpen(false);
+            setShowKeteranganPulangModal(true);
+          }}
+          onClose={() => setNotifOpen(false)}
+        />
+      </div>
+    </div>
+  );
+}
