@@ -32,6 +32,9 @@ export default function JadwalPiketPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  // urutan hari custom
+  const dayOrder = ["selasa", "rabu", "kamis", "jumat", "sabtu", "senin", "minggu"];
+
   useEffect(() => {
     fetchData();
     fetchUsers();
@@ -78,7 +81,7 @@ export default function JadwalPiketPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if(currentUser?.role !== "admin"){
+    if (currentUser?.role !== "admin") {
       toast.error("Anda tidak dapat melakukan aksi ini")
     }
 
@@ -108,7 +111,6 @@ export default function JadwalPiketPage() {
       return;
     }
 
-    // Cek jika user sudah punya jadwal lain
     if (!editingId && existing && existing.length > 0) {
       toast.error("❌ User sudah memiliki jadwal piket.");
       return;
@@ -182,15 +184,21 @@ export default function JadwalPiketPage() {
     }
   }
 
-  const filteredData = data.filter((item) => {
-    const name = item.users?.name?.toLowerCase() || "";
-    const hari = item.schedules?.day?.toLowerCase() || "";
-    return (
-      !searchTerm ||
-      name.includes(searchTerm.toLowerCase()) ||
-      hari.includes(searchTerm.toLowerCase())
-    );
-  });
+  const filteredData = data
+    .filter((item) => {
+      const name = item.users?.name?.toLowerCase() || "";
+      const hari = item.schedules?.day?.toLowerCase() || "";
+      return (
+        !searchTerm ||
+        name.includes(searchTerm.toLowerCase()) ||
+        hari.includes(searchTerm.toLowerCase())
+      );
+    })
+    .sort((a, b) => {
+      const orderA = dayOrder.indexOf(a.schedules?.day?.toLowerCase() || "");
+      const orderB = dayOrder.indexOf(b.schedules?.day?.toLowerCase() || "");
+      return orderA - orderB;
+    });
 
   return (
     <div className="w-full max-w-screen-xl mx-auto px-6 py-8 text-black dark:text-white">
@@ -254,10 +262,9 @@ export default function JadwalPiketPage() {
             <thead>
               <tr className="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm uppercase">
                 <th className="px-6 py-3 rounded-l-xl">No.</th>
-                <th className="px-6 py-3">👤 Nama</th>
                 <th className="px-6 py-3">📅 Hari</th>
-                {
-                  currentUser?.role === "admin" &&
+                <th className="px-6 py-3">👤 Nama</th>
+                {currentUser?.role === "admin" &&
                   <th className="px-6 py-3 rounded-r-xl">⚙️ Aksi</th>
                 }
               </tr>
@@ -273,17 +280,20 @@ export default function JadwalPiketPage() {
                       } hover:bg-gray-100 dark:hover:bg-slate-600`}
                   >
                     <td className="px-6 py-4 rounded-l-xl font-semibold">{idx + 1}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-lg">👤</span>
-                        <span>{item.users?.name || "-"}</span>
-                      </div>
-                    </td>
+
                     <td className="px-6 py-4">
                       <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-white">
                         {item.schedules?.day?.toUpperCase() || "-"}
                       </span>
                     </td>
+
+                    <td className="px-6 py-4 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">👤</span>
+                        <span>{item.users?.name || "-"}</span>
+                      </div>
+                    </td>
+
                     {currentUser?.role === "admin" && (
                       <td className="px-6 py-4 rounded-r-xl flex items-center justify-center gap-2">
                         <>

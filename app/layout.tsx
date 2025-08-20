@@ -22,6 +22,9 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+export const dynamic = 'force-dynamic'; // Ensure this page is always revalidated
+export const revalidate = 0; // Ensure this page is always revalidated
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,6 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <link rel="manifest" href="/manifest.json" />
+      {/* <meta httpEquiv="refresh" content="3600"/> */}
       <meta name="theme-color" content="#4CAF50" />
 
       <body className={`${geistSans.className} antialiased`}>

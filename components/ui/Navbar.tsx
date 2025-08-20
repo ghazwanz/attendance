@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AuthButton } from "../auth-button";
 import { EnvVarWarning } from "../env-var-warning";
 import { ThemeSwitcher } from "../theme-switcher";
-import { CalendarCheck2, CalendarClock, ClipboardCheckIcon, ClipboardList, Home, QrCode, Settings, Users } from "lucide-react";
+import { CalendarCheck2, CalendarClock, ClipboardCheckIcon, ClipboardList, ClipboardListIcon, ClipboardPen, ClipboardType, Home, LucideClipboardEdit, LucideClipboardType, QrCode, Settings, Users } from "lucide-react";
 import Image from "next/image";
 import { hasEnvVars } from "@/lib/utils";
 
@@ -71,7 +71,7 @@ const Navbar = async () => {
                                         href="/protected/users"
                                         className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition"
                                     >
-                                        <Users size={16} /> Users
+                                        <Users size={16} /> User
                                     </Link>
                                     :
                                     <Link
@@ -96,14 +96,14 @@ const Navbar = async () => {
                             {/* Desktop Dropdown Schedule */}
                             <div className="relative p-2 group">
                                 <button className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition">
-                                    <CalendarClock size={16} /> Jadwal
+                                    <CalendarClock size={16} /> Jadwal 
                                 </button>
                                 <div className="absolute hidden group-hover:flex flex-col bg-white dark:bg-slate-800 shadow-lg rounded-md mt-2 min-w-[180px] z-50">
                                     <Link
                                         href="/protected/schedule"
                                         className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
                                     >
-                                        <CalendarClock size={16} /> Jadwal
+                                        <CalendarClock size={16} /> Jadwal Masuk
                                     </Link>
                                     <Link
                                         href="/protected/jadwal-piket"
@@ -116,6 +116,12 @@ const Navbar = async () => {
                                         className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
                                     >
                                         <ClipboardCheckIcon size={16} /> Pengingat
+                                    </Link>
+                                    <Link
+                                        href="/protected/location"
+                                        className="px-4 py-2 flex gap-1 hover:bg-gray-100 dark:hover:bg-slate-700 transition whitespace-nowrap"
+                                    >
+                                        <ClipboardType size={16} /> Lokasi
                                     </Link>
                                 </div>
                             </div>
@@ -147,7 +153,7 @@ const Navbar = async () => {
                                 href="/protected/users"
                                 className="flex items-center gap-1 hover:text-blue-500 dark:hover:text-white/80 transition"
                             >
-                                <Users size={16} /> Users
+                                <Users size={16} /> User
                             </Link>
                             :
                             <Link
@@ -161,7 +167,7 @@ const Navbar = async () => {
                         href="/protected/attendances"
                         className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition"
                     >
-                        <CalendarCheck2 size={16} /> Attendance
+                        <CalendarCheck2 size={16} /> Absensi
                     </Link>
                     <Link
                         href="/protected/izin"
@@ -173,19 +179,25 @@ const Navbar = async () => {
                         href="/protected/schedule"
                         className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition"
                     >
-                        <CalendarClock size={16} /> Schedule
+                        <CalendarClock size={16} /> Jadwal Masuk
                     </Link>
                     <Link
                         href="/protected/jadwal-piket"
                         className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition"
                     >
-                        <CalendarClock size={16} /> Jadwal Piket
+                        <ClipboardList size={16} /> Jadwal Piket
                     </Link>
                     <Link
                         href="/protected/reminder"
                         className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition"
                     >
-                        <CalendarClock size={16} /> Reminder
+                        <ClipboardCheckIcon size={16} /> Pengingat
+                    </Link>
+                    <Link
+                        href="/protected/location"
+                        className="flex items-center gap-2 px-2 hover:text-blue-500 dark:hover:text-white/80 transition"
+                    >
+                        <ClipboardType size={16} /> Lokasi
                     </Link>
                     <div className="flex items-center gap-3 px-2">
                         <ThemeSwitcher />

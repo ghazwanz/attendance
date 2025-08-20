@@ -1,24 +1,3 @@
-import {
-  Moon,
-  Home,
-  Users,
-  CalendarCheck2,
-  ClipboardList,
-  CalendarClock,
-  QrCodeIcon,
-  QrCode,
-  CalendarDays,
-  ClipboardCheckIcon,
-} from "lucide-react";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import { AuthButton } from "@/components/auth-button"; // ✅ diperbaiki di sini
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { hasEnvVars } from "@/lib/utils";
-import Image from "next/image";
-import Link from "next/link";
-import { Toaster } from "react-hot-toast";
-import { DeployButton } from "@/components/deploy-button";
-import ReminderPage from "./reminder/page";
 import Navbar from "@/components/ui/Navbar";
 
 export default function ProtectedLayout({

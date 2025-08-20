@@ -6,9 +6,11 @@ import { useLocationStores } from "@/lib/stores/useLocationStores";
 import { showToast } from "@/lib/utils/toast";
 
 export default function CreateForm({
+  isOutside,
   onRefresh,
   userRole,
 }: {
+  isOutside: boolean;
   onRefresh: () => void;
   userRole: string;
 }) {
@@ -26,7 +28,7 @@ export default function CreateForm({
 
   const today = new Date().toISOString().split("T")[0];
   // const allowedIP = ["125.166.12.91", "125.166.1.71"]; // Ganti sesuai IP kantor
-  const isOutside = useLocationStores(state=>state.isOutside)
+  // const isOutside = useLocationStores(state=>state.isOutside)
 
   useUserLocationEffect()
 

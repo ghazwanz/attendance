@@ -1,18 +1,22 @@
 // components/ChoiceModal.tsx
-import React from 'react';
+import React, { useState } from 'react';
 
 interface ChoiceModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSelectHadir: () => void;
     onSelectIzin: () => void;
+    disabled?: boolean;
+    pending?: boolean;
 }
 
 export default function ClockInModal({
     isOpen,
     onClose,
     onSelectHadir,
-    onSelectIzin
+    onSelectIzin,
+    disabled,
+    pending
 }: ChoiceModalProps) {
     if (!isOpen) return null;
 
@@ -29,14 +33,18 @@ export default function ClockInModal({
                 </button>
                 <div className="flex flex-col gap-3">
                     <button
-                        onClick={onSelectHadir}
-                        className="w-full px-4 py-2 bg-green-600 text-white rounded-md"
+                        disabled={disabled}
+                        onClick={()=>{
+                            onSelectHadir()
+                        }}
+                        className="w-full px-4 py-2 bg-green-600 disabled:bg-green-600/80 text-white rounded-md"
                     >
-                        ✅ Hadir
+                        {pending?`🕒 Memproses`:`✅ Hadir`}
                     </button>
                     <button
                         onClick={onSelectIzin}
-                        className="w-full px-4 py-2 bg-yellow-500 text-white rounded-md"
+                        disabled={disabled}
+                        className="w-full px-4 py-2 bg-yellow-500 disabled:bg-yellow-500/80 text-white rounded-md"
                     >
                         📝 Izin Tidak Hadir
                     </button>
