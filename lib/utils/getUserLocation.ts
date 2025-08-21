@@ -1,9 +1,20 @@
-"use client";
+"use client"
 
+// Deteksi lokasi awal
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useLocationStores, useUserLocationStores } from "../stores/useLocationStores";
+
 import { showToast } from "./toast";
+import { createClient } from "../supabase/client";
+
+export type StudioLocation = {
+  location_name: string;
+  latitude: number;
+  longtitude: number;
+}
+
+const RADIUS_METER = 1000;
+const mahativeStudio = { lat: -8.0017804, lng: 112.6075698 };
 
 function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371e3;
@@ -17,90 +28,103 @@ function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number,
   return R * c;
 }
 
-// 🔥 Sekarang companyLocations berupa array
-export function useUserLocationEffect() {
-  const supabase = createClient();
+export function UseUserLocationEffect() {
   const setLocation = useUserLocationStores((state) => state.setLocation);
   const setIsOutside = useLocationStores((state) => state.setIsOutside);
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(true);
+  const [stdLocation, setStdLocation] = useState<StudioLocation[]>([])
+  const supabase = createClient();
 
-  const [companyLocations, setCompanyLocations] = useState<
-    { id: string; lat: number; lng: number; radius: number; name: string }[]
-  >([]);
-
-  // 🚀 Ambil semua lokasi aktif dari Supabase
   useEffect(() => {
-    async function fetchCompanyLocations() {
-      const { data, error } = await supabase
-        .from("location_company")
-        .select("*")
-        .eq("status", true); // hanya ambil lokasi aktif
+    const handleGetStdLoc = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('location_company')
+          .select('location_name, latitude, longtitude')
 
-      if (!error && data) {
-        const formatted = data.map((loc: any) => ({
-          id: loc.id,
-          lat: loc.latitude,
-          lng: loc.longtitude,
-          radius: loc.radius_meter || 1000,
-          name: loc.location_name,
-        }));
-        setCompanyLocations(formatted);
+        if (error) {
+          showToast({ type: 'error', message: `Gagal mendapatkan lokasi studio: ${error.message}` });
+          console.error('Error fetching company locations:', error);
+          setIsLoadingCompanies(false);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          console.log('Company locations fetched:', data);
+          setStdLocation(data);
+        } else console.log('No company locations found in database');
+      } catch (error) {
+        console.error('Error fetching company locations:', error);
+      } finally {
+        setIsLoadingCompanies(false);
       }
     }
-    fetchCompanyLocations();
-  }, [supabase]);
+    handleGetStdLoc();
+  }, [supabase])
 
-  // 🚀 Tracking lokasi user
   useEffect(() => {
-    if (companyLocations.length === 0) return;
-    if (!("geolocation" in navigator)) {
-      showToast({ type: "error", message: "Browser tidak mendukung Geolocation" });
+    // if (!navigator.geolocation) return;
+    if (isLoadingCompanies || !navigator.geolocation || stdLocation.length === 0) {
+      console.log('Waiting for company locations...', {
+        isLoadingCompanies,
+        hasGeolocation: !!navigator.geolocation,
+        companyCount: stdLocation.length
+      });
       return;
     }
 
-    let lastLat = 0;
-    let lastLng = 0;
+    console.log('Starting geolocation with company locations:', stdLocation);
 
     const handleLocation = (position: GeolocationPosition) => {
-      const { latitude, longitude } = position.coords;
+      const userLoc = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      };
+      setLocation(userLoc);
 
-      const moved = getDistanceFromLatLonInMeters(lastLat, lastLng, latitude, longitude);
-      if (moved < 5) return; // skip kalau pergeseran < 5m
+      let closestDistance = Infinity;
+      let closestCompany: StudioLocation | any = null;
 
-      lastLat = latitude;
-      lastLng = longitude;
+      stdLocation.forEach((company) => {
+        const distance = getDistanceFromLatLonInMeters(
+          userLoc.lat,
+          userLoc.lng,
+          company.latitude,
+          company.longtitude
+        );
 
-      setLocation({ lat: latitude, lng: longitude });
+        console.log(`Distance to ${company.location_name}: ${Math.round(distance)}m`);
 
-      // ✅ Cek apakah user berada di dalam salah satu lokasi
-      const inside = companyLocations.some((loc) => {
-        const dist = getDistanceFromLatLonInMeters(latitude, longitude, loc.lat, loc.lng);
-        return dist <= loc.radius;
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestCompany = company;
+        }
       });
 
-      setIsOutside(!inside);
+      const isOutside = closestDistance > RADIUS_METER;
+      setIsOutside(isOutside);
+
+      if (closestCompany) {
+        console.log(`Closest company: ${closestCompany?.location_name}, Distance: ${Math.round(closestDistance)}m, IsOutside: ${isOutside}`);
+      }
     };
 
     const handleError = (err: GeolocationPositionError) => {
-      if (err.code === err.PERMISSION_DENIED) {
-      } else if (err.code === err.POSITION_UNAVAILABLE) {
-        showToast({ type: "error", message: "Lokasi tidak tersedia" });
-      } else if (err.code === err.TIMEOUT) {
-        showToast({ type: "error", message: "Request lokasi timeout" });
-      }
+      console.error(`Failed to detect location: ${err.message}`);
+      // Handle error as needed
+      // showToast({type:"error", message:`Gagal mendapatkan Lokasi User: ${err.message}`})
+      // setError(`Failed to detect location: ${err.message}`);
     };
 
     navigator.geolocation.getCurrentPosition(handleLocation, handleError, {
       enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 1000,
     });
 
     const watchId = navigator.geolocation.watchPosition(handleLocation, handleError, {
       enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 1000,
     });
 
     return () => navigator.geolocation.clearWatch(watchId);
-  }, [companyLocations, setLocation, setIsOutside]);
+  }, [setLocation, setIsOutside, stdLocation, isLoadingCompanies]);
+  return null
 }

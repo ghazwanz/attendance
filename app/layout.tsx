@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import LocationPermissionChecker from "@/components/LocationPermissionChecker"; // ⬅️ import
+import { UseUserLocationEffect } from "@/lib/utils/getUserLocation";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -30,6 +31,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en" suppressHydrationWarning>
       <link rel="manifest" href="/manifest.json" />
@@ -42,7 +44,8 @@ export default function RootLayout({
           defaultTheme="light"
           enableSystem
           disableTransitionOnChange
-        >
+          >
+          <UseUserLocationEffect/>
           <Toaster position="top-center" reverseOrder={false} />
           <LocationPermissionChecker /> {/* ⬅️ tambahkan di sini */}
           {children}

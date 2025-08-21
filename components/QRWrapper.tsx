@@ -1,11 +1,11 @@
 "use client"
 import QRScanner from '@/app/scan/qrscan'
 import { useLocationStores } from '@/lib/stores/useLocationStores'
-import { useUserLocationEffect } from '@/lib/utils/getUserLocation'
+import { UseUserLocationEffect } from '@/lib/utils/getUserLocation'
 
 
 const QRWrapper = () => {
-    useUserLocationEffect()
+    // useUserLocationEffect()
 
     const isOutside = useLocationStores(state=>state.isOutside)
     console.log(isOutside)
