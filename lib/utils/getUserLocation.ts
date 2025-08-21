@@ -82,7 +82,6 @@ export function useUserLocationEffect() {
 
     const handleError = (err: GeolocationPositionError) => {
       if (err.code === err.PERMISSION_DENIED) {
-        showToast({ type: "error", message: "Izin lokasi ditolak" });
       } else if (err.code === err.POSITION_UNAVAILABLE) {
         showToast({ type: "error", message: "Lokasi tidak tersedia" });
       } else if (err.code === err.TIMEOUT) {
