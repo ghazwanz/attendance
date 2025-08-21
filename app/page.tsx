@@ -14,6 +14,9 @@ import QRTips from '@/components/QRTips';
 import AutoRequestNotification from "@/components/AutoRequestNotification";
 import TestNotificationButton from "@/components/TestNotificationButton";
 import LokasiKantor from '@/components/LokasiKantor';
+import QRImageUploader from '@/components/QRImageUploader';
+import QRWrapperFile from '@/components/QRWrapperFile';
+// import QRWrapperFile from '@/components/QRWrapperFile';
 import LokasiKantor2 from '@/components/LokasiKantor2';
 
 export default async function Home() {
@@ -97,6 +100,10 @@ export default async function Home() {
           <div>
             <QRWrapper />
             <QRTips />
+          </div>
+          <div>
+            {/* <QRImageUploader /> */}
+            <QRWrapperFile/>
           </div>
 
 
