@@ -48,17 +48,9 @@ export default function QRWrapperFile() {
     const isOutside = useLocationStores(state => state.isOutside)
     const [notifData, setNotifData] = useState<NotificationProps>({ title: "", message: "", type: "clock_out_reminder" })
 
-    useEffect(() => {
-        if (!html5QrCodeRef.current) {
-            html5QrCodeRef.current = new Html5Qrcode("qr-reader");
-        }
-        return () => {
-            html5QrCodeRef.current?.stop().catch(() => { });
-        };
-    }, []);
+    // html5QrCodeRef.current = new Html5Qrcode("qr-reader");
     // --- HANDLE SUCCESS (rapi dari qrscan.tsx)
     const handleScanSuccess = async (decodedText: string) => {
-       
         try {
             const data = JSON.parse(decodedText);
 
@@ -142,6 +134,7 @@ export default function QRWrapperFile() {
     };
 
     const startCameraScan = async () => {
+        html5QrCodeRef.current = new Html5Qrcode("qr-reader");
         if (!html5QrCodeRef.current) return;
         setIsScanning(true);
         setScanMode("camera");
@@ -155,6 +148,8 @@ export default function QRWrapperFile() {
                     (decodedText) => {
                         setIsScanning(false);
                         html5QrCodeRef.current?.stop();
+                        handleScanSuccess(decodedText);
+
                     },
                     (err: any) => {
                         console.log(err.message)
@@ -185,9 +180,9 @@ export default function QRWrapperFile() {
             const jsonResult = JSON.parse(result);
             console.log("QR Code Result:", jsonResult);
             handleScanSuccess(result);
-            
+
         } catch (err: any) {
-            
+
         } finally {
             setIsScanning(false);
         }
@@ -195,7 +190,7 @@ export default function QRWrapperFile() {
 
     const resetScanner = () => {
 
-       
+
         // setScanMode("upload");
 
 
@@ -350,62 +345,61 @@ export default function QRWrapperFile() {
     };
 
     return (
-       <div className="flex items-center justify-center min-h-screen">
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 w-full max-w-md transition-colors">
-        {/* Header */}
-        <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                        Upload QR CODE Kamu!
-                    </h2>
-                    
-                </div>
+        <>
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 w-full max-w-md transition-colors">
+                    {/* Header */}
+                    <div className="text-center mb-6">
+                        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
+                            Upload QR CODE Kamu!
+                        </h2>
 
-                {/* Upload or Camera */}
-                {scanMode === "upload" && (
-                    <UploadCard onFileSelect={handleFileSelect} disabled={isScanning} />
-                )}
-                {scanMode === "camera" && <CameraScanner isScanning={isScanning} onStop={stopCameraScan} />}
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 mt-6">
-                    <button
-                        onClick={() => setScanMode("upload")}
-                        disabled={isScanning}
-                        className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                    >
-                        <Upload size={16} />
-                        Upload QR
-                    </button>
-                    <button
-                        onClick={startCameraScan}
-                        disabled={isScanning}
-                        className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                    >
-                        <Camera size={16} />
-                        Scan Camera
-                    </button>
-                </div>
-
-                {/* Loading */}
-                {isScanning && scanMode === "upload" && (
-                    <div className="mt-4 text-center text-blue-600 flex justify-center gap-2">
-                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        Processing QR code...
                     </div>
-                )}
 
-                {/* Result */}
-               
+                    {/* Upload or Camera */}
+                    {scanMode === "upload" && (
+                        <UploadCard onFileSelect={handleFileSelect} disabled={isScanning} />
+                    )}
+                    {scanMode === "camera" && <CameraScanner isScanning={isScanning} onStop={stopCameraScan} />}
 
-                {/* Hidden div untuk camera init */}
-                {scanMode !== "camera" && <div id="qr-reader" className="hidden" />}
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 mt-6">
+                        <button
+                            onClick={() => setScanMode("upload")}
+                            disabled={isScanning}
+                            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Upload size={16} />
+                            Upload QR
+                        </button>
+                        <button
+                            onClick={startCameraScan}
+                            disabled={isScanning}
+                            className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Camera size={16} />
+                            Scan Camera
+                        </button>
+                    </div>
 
-                {/* Footer */}
-                <div className="text-center mt-6 text-xs text-gray-400">
-                    Powered by html5-qrcode
+                    {/* Loading */}
+                    {isScanning && scanMode === "upload" && (
+                        <div className="mt-4 text-center text-blue-600 flex justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                            Processing QR code...
+                        </div>
+                    )}
+
+                    {/* Hidden div untuk camera init */}
+                    {scanMode !== "camera" && <div id="qr-reader" className="hidden" />}
+
+                    {/* Footer */}
+                    <div className="text-center mt-6 text-xs text-gray-400">
+                        Powered by html5-qrcode
+                    </div>
                 </div>
+                {/* Modal Pilih Hadir / Izin */}
             </div>
-            {/* Modal Pilih Hadir / Izin */}
             <ClockInModal
                 isOpen={showChoiceModal}
                 onClose={() => setShowChoiceModal(false)}
@@ -673,7 +667,7 @@ export default function QRWrapperFile() {
                                             showToast({ type: "error", message: "Gagal mencatat kembali" });
                                         } else {
                                             showToast({ type: "success", message: "Kamu berhasil kembali ke kantor" });
-                                            
+
                                         }
                                     }
                                 }}
@@ -739,7 +733,6 @@ export default function QRWrapperFile() {
                 onClose={() => setNotifOpen(false)}
                 type={notifData?.type || ""}
             />
-
-        </div>
+        </>
     );
 }

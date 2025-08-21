@@ -19,6 +19,9 @@ import QRWrapperFile from '@/components/QRWrapperFile';
 // import QRWrapperFile from '@/components/QRWrapperFile';
 import LokasiKantor2 from '@/components/LokasiKantor2';
 
+export const revalidate = 0; // Disable caching
+export const dynamic = 'force-dynamic'; // Force dynamic rendering
+
 export default async function Home() {
   const supabase = await createClient();
   const {
