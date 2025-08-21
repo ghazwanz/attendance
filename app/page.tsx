@@ -14,6 +14,10 @@ import QRTips from '@/components/QRTips';
 import AutoRequestNotification from "@/components/AutoRequestNotification";
 import TestNotificationButton from "@/components/TestNotificationButton";
 import LokasiKantor from '@/components/LokasiKantor';
+import QRImageUploader from '@/components/QRImageUploader';
+import QRWrapperFile from '@/components/QRWrapperFile';
+// import QRWrapperFile from '@/components/QRWrapperFile';
+import LokasiKantor2 from '@/components/LokasiKantor2';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -97,7 +101,11 @@ export default async function Home() {
             <QRWrapper />
             <QRTips />
           </div>
-          
+          <div>
+            {/* <QRImageUploader /> */}
+            <QRWrapperFile/>
+          </div>
+
 
           {/* GOOGLE MAPS: Lokasi Mahative Studio */}
           <section className="mt-16 bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
@@ -108,7 +116,20 @@ export default async function Home() {
             <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
               Jalan Kemantren, Bandungrejosari, Sukun, Kota Malang – Jawa Timur, Indonesia
             </p>
-            <LokasiKantor />        
+            <LokasiKantor />
+          </section>
+
+          {/* GOOGLE MAPS: Lokasi Mahative Studio */}
+          <section className="mt-16 bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
+            <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2">
+              <span className="text-red-500 text-3xl">📍</span>
+              Lokasi KipaWorks
+            </h2>
+            <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
+              Kipaworks, Jl. Simpang Jl. Gapura No.334, Krajan, Pandanlandung,
+              Kec. Wagir, Kabupaten Malang, Jawa Timur 65158
+            </p>
+            <LokasiKantor2 />
           </section>
         </div>
 
