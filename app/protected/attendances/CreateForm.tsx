@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useUserLocationEffect } from "@/lib/utils/getUserLocation";
+// import { useUserLocationEffect } from "@/lib/utils/getUserLocation";
 import { useLocationStores } from "@/lib/stores/useLocationStores";
 import { showToast } from "@/lib/utils/toast";
 
@@ -30,7 +30,7 @@ export default function CreateForm({
   // const allowedIP = ["125.166.12.91", "125.166.1.71"]; // Ganti sesuai IP kantor
   // const isOutside = useLocationStores(state=>state.isOutside)
 
-  useUserLocationEffect()
+  // useUserLocationEffect()
 
   useEffect(() => {
     const init = async () => {

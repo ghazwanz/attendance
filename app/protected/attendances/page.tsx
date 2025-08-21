@@ -746,7 +746,7 @@ export default function Page() {
               </button>
               <button
                 onClick={async () => {
-                  if (isOutside) return showToast({ type: "error", message: "Anda berada di luar area kantor" })
+                  // if (isOutside) return showToast({ type: "error", message: "Anda berada di luar area kantor" })
 
                   const now = new Date();
                   const batasPulang = new Date();
