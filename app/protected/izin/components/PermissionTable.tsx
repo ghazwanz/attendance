@@ -206,7 +206,7 @@ export default function PermissionTable({
         <table className="w-full min-w-[900px] text-sm text-left border-separate border-spacing-y-2 table-auto">
           <thead>
             <tr className="bg-blue-600 text-white uppercase tracking-wider">
-              <th className="px-4 py-3 rounded-l-xl">NO</th>
+              <th className="px-4 py-3 rounded-tl-lg">NO</th>
               <th className="px-4 py-3">Nama</th>
               <th className="px-4 py-3">Mulai Izin</th>
               <th className="px-4 py-3">Selesai Izin</th>
@@ -214,7 +214,7 @@ export default function PermissionTable({
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Dibuat</th>
               <th className="px-4 py-3">Disetujui Oleh</th>
-              <th className="px-4 py-3 rounded-r-xl">Aksi</th>
+              <th className="px-4 py-3 rounded-tr-lg">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -224,7 +224,9 @@ export default function PermissionTable({
                 : "bg-blue-50 dark:bg-slate-700"
                 } hover:bg-gray-100 dark:hover:bg-slate-600`}>
                 <td className="px-4 py-3">{idx + 1}</td>
-                <td className="px-4 py-3 rounded-l-xl">{item.user?.name || "-"}</td>
+                <td className="px-4 py-3 
+                
+                ">{item.user?.name || "-"}</td>
                 <td className="px-4 py-3">{item.exit_time ? formatDateTime(item.exit_time) : "-"}</td>
                 <td className="px-4 py-3">{item.reentry_time ? formatDateTime(item.reentry_time) : "-"}</td>
                 <td className="px-4 py-3">{item.reason || "-"}</td>

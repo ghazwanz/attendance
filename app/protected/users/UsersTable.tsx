@@ -145,14 +145,14 @@ export default function UsersTable({
       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-white/10 overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-inherit text-xs uppercase tracking-wide">
-            <tr className="bg-blue-600 text-white uppercase tracking-wider">
-              <th className="px-6 py-4 text-left">No</th>
-              <th className="px-6 py-4 text-left">Nama</th>
-              <th className="px-6 py-4 text-left">Email</th>
-              <th className="px-6 py-4 text-left">Peran</th>
-              <th className="px-6 py-4 text-left">Status</th>
-              <th className="px-6 py-4 text-left">Tanggal Buat</th>
-              <th className="px-6 py-4 text-left">Aksi</th>
+            <tr className="bg-blue-600 text-white uppercase tracking-wider ">
+              <th className="px-3 py-4 text-left rounded-tl-lg">No</th>
+              <th className="px-3 py-4 text-left">Nama</th>
+              <th className="px-3 py-4 text-left">Email</th>
+              <th className="px-3 py-4 text-left">Peran</th>
+              <th className="px-3 py-4 text-left">Status</th>
+              <th className="px-3 py-4 text-left">Tanggal Buat</th>
+              <th className="px-3 py-4 text-left rounded-tr-lg">Aksi</th>
             </tr>
           </thead>
           <tbody>
