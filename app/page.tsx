@@ -18,6 +18,7 @@ import QRImageUploader from '@/components/QRImageUploader';
 import QRWrapperFile from '@/components/QRWrapperFile';
 // import QRWrapperFile from '@/components/QRWrapperFile';
 import LokasiKantor2 from '@/components/LokasiKantor2';
+import LocationQualityIndicator from '@/components/LocationQualityIndicator';
 
 export const revalidate = 0; // Disable caching
 export const dynamic = 'force-dynamic'; // Force dynamic rendering
@@ -100,14 +101,17 @@ export default async function Home() {
         <div className="flex-1 flex flex-col gap-12 max-w-6xl px-6 py-10 sm:py-16">
           <Hero />
           {/* <QRForm users={users ?? []} encryptedQRData={null} /> */}
-          <div>
+          <div className='flex lg:flex-row flex-col gap-5'>
             {/* <QRWrapper /> */}
-            <QRWrapperFile/>
-            <QRTips />
+            <QRWrapperFile />
+            <div className='w-full flex items-start flex-col gap-5'>
+              <QRTips className='h-full' />
+              <LocationQualityIndicator showInClockIn={true} className="h-full w-full" />
+            </div>
           </div>
-          <div>
+          {/* <div> */}
             {/* <QRImageUploader /> */}
-          </div>
+          {/* </div> */}
 
 
           {/* GOOGLE MAPS: Lokasi Mahative Studio */}

@@ -8,16 +8,16 @@ export interface AttendanceUser {
     name: string;
 }
 
-export interface ResultStatus {
-    status: "success" | "error"
-    msg: string
+export interface PromiseResult {
+    status: "success" | "error"; 
+    message: string;
 }
 
 export const handleAbsenHadir = async (
     user: AttendanceUser,
     isOutside: boolean,
-): Promise<boolean> => {
-    if (isOutside) throw new Error("Anda berada di luar area kantor.")
+): Promise<PromiseResult> => {
+    if (isOutside) return {status: "error", message: "Anda berada di luar area kantor."}
     const { user_id, name } = user
     const supabase = await createClient();
 
@@ -53,7 +53,7 @@ export const handleAbsenHadir = async (
         .eq('date', today)
         .single();
 
-    if (getAttendanceToday || !getAttendanceError) throw new Error('Anda sudah melakukan absensi masuk hari ini');
+    if (getAttendanceToday || !getAttendanceError) return {status: "error", message: "Anda sudah melakukan absensi masuk hari ini"};
 
     const { error: insertError } = await supabase
         .from('attendances').insert({
@@ -66,8 +66,8 @@ export const handleAbsenHadir = async (
         .eq('date', today)
         .single();
     console.log("Jam sekarang: ", jamNow, "Menit sekarang: ", menitNow, "\nJadwal jam: ", jadwalJam, "Menit jadwal", jadwalMenit, "\nStatus: ", status, "\nlocaleTime:", getLocaleTime);
+    if (insertError) return {status: "error", message: "Gagal melakukan absensi masuk"};
     
-    if (insertError) throw new Error('Gagal mencatat kehadiran');
     revalidatePath('/scan');
-    return true
+    return {status: "success", message: `Absensi masuk berhasil untuk ${name}`}
 };

@@ -31,7 +31,7 @@ export default function AttendancePage() {
   // const [isOutside, setIsOutside] = useState<boolean>(false);
   const [user, setUser] = useState<any>()
   const isOutside = useLocationStores(state => state.isOutside)
-  const setIsOutside = useLocationStores(state => state.setIsOutside)
+  // const setIsOutside = useLocationStores(state => state.setIsOutside)
   const supabase = createClient();
 
   useEffect(() => {
@@ -251,7 +251,7 @@ export default function AttendancePage() {
           </div>
         </div>
         {/* LOKASI PENGGUNA */}
-        <UserLocationSection setIsOutside={setIsOutside} isOutside={isOutside} />
+        <UserLocationSection isOutside={isOutside} />
         {/* TIPS */}
         <QRTips />
       </div>
