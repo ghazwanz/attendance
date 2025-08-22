@@ -55,12 +55,10 @@ export type Reminder = {
 
 export interface UserLocationMapProps {
   isOutside: boolean;
-  setIsOutside: (isOutside: boolean) => void;
 }
 
 export interface UserLocationSectionProps {
   isOutside: boolean;
-  setIsOutside: (isOutside: boolean) => void;
 }
 
 export interface QRScannerProps {

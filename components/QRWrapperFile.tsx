@@ -23,7 +23,7 @@ export type NotificationProps = {
     type: "piket_reminder" | "piket_out_reminder" | "clock_out_reminder"
 } | null
 
-export default function QRWrapperFile() {
+export default function QRWrapperFile({className}:{className?:string}) {
     // useUserLocationEffect()
     const [qrData, setQrData] = useState<string | null>(null)
     const [isScanning, setIsScanning] = useState(false);
@@ -203,8 +203,11 @@ export default function QRWrapperFile() {
         try {
             setDisabled(prev => !prev);
             setPending(prev => !prev);
-            await handleAbsenHadir(scanUserRef.current, isOutside);
-            showToast({ type: "success", message: `Absen hadir berhasil untuk ${scanUserRef.current.name}` });
+
+            const { status, message } = await handleAbsenHadir(scanUserRef.current, isOutside);
+
+            if (status === "error") throw new Error(message)
+            showToast({ type: "success", message: message });
 
             setShowChoiceModal(false);
 
@@ -349,8 +352,7 @@ export default function QRWrapperFile() {
 
     return (
         <>
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 w-full max-w-md transition-colors">
+                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 w-full transition-colors">
                     {/* Header */}
                     <div className="text-center mb-6">
                         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
@@ -397,11 +399,11 @@ export default function QRWrapperFile() {
                     {scanMode !== "camera" && <div id="qr-reader" className="hidden" />}
 
                     {qrData && (
-                    <div className="py-2 px-3 mt-4 w-full relative bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
-                        <p>{qrData}</p>
-                        {/* <p>message test</p> */}
-                        <button onClick={resetScanner} className="absolute right-1 top-3"> <X size={16} /> </button>
-                    </div>
+                        <div className="py-2 px-3 mt-4 w-full relative bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
+                            <p>{qrData}</p>
+                            {/* <p>message test</p> */}
+                            <button onClick={resetScanner} className="absolute right-1 top-3"> <X size={16} /> </button>
+                        </div>
                     )}
 
                     {/* Footer */}
@@ -410,7 +412,6 @@ export default function QRWrapperFile() {
                     </div>
                 </div>
                 {/* Modal Pilih Hadir / Izin */}
-            </div>
             <ClockInModal
                 isOpen={showChoiceModal}
                 onClose={() => setShowChoiceModal(false)}
