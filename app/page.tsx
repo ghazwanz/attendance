@@ -98,12 +98,12 @@ export default async function Home() {
           <Hero />
           {/* <QRForm users={users ?? []} encryptedQRData={null} /> */}
           <div>
-            <QRWrapper />
+            {/* <QRWrapper /> */}
+            <QRWrapperFile/>
             <QRTips />
           </div>
           <div>
             {/* <QRImageUploader /> */}
-            <QRWrapperFile/>
           </div>
 
 
