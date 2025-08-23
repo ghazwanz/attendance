@@ -2,86 +2,89 @@
 "use server"
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { AttendanceUser, PromiseResult } from '../lib/types';
+import { 
+    checkExistingAttendance, 
+    determineAttendanceStatus, 
+    fetchExternalTime, 
+    getScheduleForDay, 
+    insertAttendanceRecord, 
+    logDebugInfo, 
+    parseTimeData 
+} from '../lib/utils';
 
-export interface AttendanceUser {
-    user_id: string;
-    name: string;
-}
-
-export interface PromiseResult {
-    status: "success" | "error";
-    message: string;
-}
 
 export const handleAbsenHadir = async (
     user: AttendanceUser,
     isOutside: boolean,
 ): Promise<PromiseResult> => {
-    if (isOutside) return { status: "error", message: "Anda berada di luar area kantor." }
-    const { user_id, name } = user
-    const supabase = await createClient();
+    try {
+        // Early validation
+        if (isOutside) {
+            return {
+                status: "error",
+                message: "Anda berada di luar area kantor."
+            };
+        }
 
-    // Get today's day name
-    const nowDate = new Date();
-    const options = { weekday: 'long' } as const;
-    const todayName = nowDate.toLocaleDateString('id-ID', options).toLowerCase();
+        const { user_id, name } = user;
+        const supabase = await createClient();
 
-    const { data: scheduleData, error: scheduleError } = await supabase
-        .from('schedules')
-        .select('start_time,day')
-        .eq('day', todayName)
-        .single();
+        // Get current time from external API
+        const externalTime = await fetchExternalTime();
+        const currentTime = parseTimeData(externalTime);
 
-    if (!scheduleData || scheduleError) throw new Error('Jadwal tidak ditemukan untuk hari ini');
+        // Get schedule for today
+        const schedule = await getScheduleForDay(supabase, currentTime.dayName);
 
-    const [jadwalJam, jadwalMenit] = scheduleData.start_time.split(':').map(Number);
+        // Determine attendance status
+        const status = determineAttendanceStatus(
+            currentTime.totalMinutes,
+            schedule.totalMinutes
+        );
 
-    const localeOptions = { hour: '2-digit', minute: '2-digit', second: "2-digit", hour12: false, timeZone: 'Asia/Jakarta' } as const;
-    const getLocaleTime = nowDate.toLocaleString('id-ID', localeOptions);
-    // const jamNow = nowDate.getHours();
-    // const jamNow = parseInt(getLocaleTime.split('.')[0]);
-    // const menitNow = parseInt(getLocaleTime.split('.')[1]);
-    const jamNow = nowDate.getHours();
-    const menitNow = nowDate.getMinutes();
+        // Log debug information
+        logDebugInfo(currentTime, schedule, status);
 
+        // Check if user has already checked in today
+        const hasCheckedIn = await checkExistingAttendance(
+            supabase,
+            user_id,
+            currentTime.dateString
+        );
 
-    // const status = (jamNow >= jadwalJam && menitNow >= jadwalMenit) ? "terlambat" : "hadir";
-    const jadwalTotalMenit = jadwalJam * 60 + jadwalMenit;
-    const nowTotalMenit = jamNow * 60 + menitNow;
+        if (hasCheckedIn) {
+            return {
+                status: "error",
+                message: "Anda sudah melakukan absensi masuk hari ini"
+            };
+        }
 
-    const status = nowTotalMenit > jadwalTotalMenit ? "terlambat" : "hadir";
-    // === DEBUG LOG ===
-    console.log("⏰ Debug Absensi");
-    console.log("Tanggal:", nowDate);
-    console.log("Jadwal:", `${jadwalJam}:${jadwalMenit.toString().padStart(2, "0")}`);
-    console.log("Sekarang:", `${jamNow}:${menitNow.toString().padStart(2, "0")}`);
-    console.log("Total Menit Jadwal:", jadwalTotalMenit);
-    console.log("Total Menit Sekarang:", nowTotalMenit);
-    console.log("Status:", status);
-    const today = nowDate.toISOString().split('T')[0];
+        // Insert attendance record
+        await insertAttendanceRecord(
+            supabase,
+            user_id,
+            currentTime.dateString,
+            currentTime.date.toISOString(),
+            status
+        );
 
-    const { data: getAttendanceToday, error: getAttendanceError } = await supabase
-        .from('attendances')
-        .select('*')
-        .eq('user_id', user_id)
-        .eq('date', today)
-        .single();
+        // Revalidate the scan page
+        revalidatePath('/');
 
-    if (getAttendanceToday || !getAttendanceError) return { status: "error", message: "Anda sudah melakukan absensi masuk hari ini" };
+        return {
+            status: "success",
+            message: `Absensi masuk berhasil untuk ${name}. Status: ${status}`
+        };
 
-    const { error: insertError } = await supabase
-        .from('attendances').insert({
-            user_id: user_id,
-            date: today,
-            check_in: nowDate.toISOString(),
-            status: status.toUpperCase()
-        })
-        .eq('user_id', user_id)
-        .eq('date', today)
-        .single();
-    console.log("Jam sekarang: ", jamNow, "Menit sekarang: ", menitNow, "\nJadwal jam: ", jadwalJam, "Menit jadwal", jadwalMenit, "\nStatus: ", status, "\nlocaleTime:", getLocaleTime);
-    if (insertError) return { status: "error", message: "Gagal melakukan absensi masuk" };
+    } catch (error) {
+        console.error('Attendance error:', error);
 
-    revalidatePath('/scan');
-    return { status: "success", message: `Absensi masuk berhasil untuk ${name}` }
+        // Return user-friendly error message
+        const errorMessage = error instanceof Error ? error.message : 'Terjadi kesalahan sistem';
+        return {
+            status: "error",
+            message: errorMessage
+        };
+    }
 };

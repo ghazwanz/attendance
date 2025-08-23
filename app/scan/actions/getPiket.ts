@@ -9,7 +9,7 @@ const getPiket = async ({user_id}:{user_id:string}): Promise<boolean> => {
     .select("user_id, schedules(day)")
     .eq("schedules.day",day)
     .eq("user_id",user_id)
-    .single()
+    .maybeSingle()
 
     if (piketData?.schedules) return true
     return false

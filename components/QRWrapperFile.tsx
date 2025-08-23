@@ -16,6 +16,7 @@ import { handlePulangAction } from '@/app/scan/actions/AbsensiPulangAction';
 import { showToast } from "@/lib/utils/toast";
 import { useLocationStores } from "@/lib/stores/useLocationStores";
 import { UseUserLocationEffect } from "@/lib/utils/getUserLocation";
+import { fetchExternalTime, parseTimeData } from "@/app/scan/lib/utils";
 
 export type NotificationProps = {
     title: string,
@@ -67,15 +68,16 @@ export default function QRWrapperFile({ className }: { className?: string }) {
             setQrData(`Berhasil Memproses QR.`);
             scanUserRef.current = { user_id: data.user_id, name: userData.name };
 
-            const today = new Date().toLocaleDateString("sv",{timeZone:"Asia/Jakarta"})
-            console.log(today)
+            const todayExt = await fetchExternalTime()
+            const today = parseTimeData(todayExt)
+            console.log(today, todayExt)
 
             // 🔍 cek absen hari ini
-            const { data: attendanceToday } = await supabase
+            const { data: attendanceToday, error:attendanceError } = await supabase
                 .from("attendances")
                 .select("*")
                 .eq("user_id", userData.id)
-                .eq("date", today)
+                .eq("date", today.dateString)
                 .maybeSingle();
 
             // 🔍 cek izin hari ini
@@ -84,9 +86,10 @@ export default function QRWrapperFile({ className }: { className?: string }) {
                 .select("*")
                 .eq("user_id", userData.id)
                 .eq("status", "pending")
-                .eq("date", today)
+                .eq("date", today.dateString)
                 .maybeSingle();
 
+            if (attendanceError) throw new Error("Gagal Memproses QR")
             // === logika ===
             if (attendanceToday) {
                 // kalau hari ini statusnya izin & belum absen → tawarkan ubah ke Hadir
@@ -104,7 +107,7 @@ export default function QRWrapperFile({ className }: { className?: string }) {
                         .select("*")
                         .eq("user_id", userData.id)
                         .eq("status", "pending")
-                        .eq("date", today)
+                        .eq("date", today.dateString)
                         .not("exit_time", "is", null)
                         .is("reentry_time", null)
                         .maybeSingle();
