@@ -39,11 +39,25 @@ export const handleAbsenHadir = async (
     const localeOptions = { hour: '2-digit', minute: '2-digit', second: "2-digit", hour12: false, timeZone: 'Asia/Jakarta' } as const;
     const getLocaleTime = nowDate.toLocaleString('id-ID', localeOptions);
     // const jamNow = nowDate.getHours();
-    const jamNow = parseInt(getLocaleTime.split('.')[0]);
-    const menitNow = parseInt(getLocaleTime.split('.')[1]);
+    // const jamNow = parseInt(getLocaleTime.split('.')[0]);
+    // const menitNow = parseInt(getLocaleTime.split('.')[1]);
+    const jamNow = nowDate.getHours();
+    const menitNow = nowDate.getMinutes();
 
-    const status = (jamNow >= jadwalJam && menitNow >= jadwalMenit) ? "terlambat" : "hadir";
 
+    // const status = (jamNow >= jadwalJam && menitNow >= jadwalMenit) ? "terlambat" : "hadir";
+    const jadwalTotalMenit = jadwalJam * 60 + jadwalMenit;
+    const nowTotalMenit = jamNow * 60 + menitNow;
+
+    const status = nowTotalMenit > jadwalTotalMenit ? "terlambat" : "hadir";
+// === DEBUG LOG ===
+console.log("⏰ Debug Absensi");
+console.log("Tanggal:", nowDate);
+console.log("Jadwal:", `${jadwalJam}:${jadwalMenit.toString().padStart(2, "0")}`);
+console.log("Sekarang:", `${jamNow}:${menitNow.toString().padStart(2, "0")}`);
+console.log("Total Menit Jadwal:", jadwalTotalMenit);
+console.log("Total Menit Sekarang:", nowTotalMenit);
+console.log("Status:", status);
     const today = nowDate.toISOString().split('T')[0];
 
     const { data: getAttendanceToday, error: getAttendanceError } = await supabase
@@ -66,7 +80,7 @@ export const handleAbsenHadir = async (
         .eq('date', today)
         .single();
     console.log("Jam sekarang: ", jamNow, "Menit sekarang: ", menitNow, "\nJadwal jam: ", jadwalJam, "Menit jadwal", jadwalMenit, "\nStatus: ", status, "\nlocaleTime:", getLocaleTime);
-    
+
     if (insertError) throw new Error('Gagal mencatat kehadiran');
     revalidatePath('/scan');
     return true
