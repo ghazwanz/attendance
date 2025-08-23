@@ -562,7 +562,7 @@ export default function Page() {
                             <>
                               {userRole === "admin" ? (
                                 <button
-                                  onClick={() => setSelected(item)}
+                                  onClick={(e) => { e.stopPropagation(); setSelected(item); }}
                                   className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                                 >
                                   ✏️ Edit
@@ -570,7 +570,7 @@ export default function Page() {
                               ) : (
                                 item.date?.split("T")[0] === new Date().toISOString().split("T")[0] && (
                                   <button
-                                    onClick={() => setSelected(item)}
+                                    onClick={(e) => { e.stopPropagation(); setSelected(item); }}
                                     className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                                   >
                                     ✏️ Edit
@@ -580,7 +580,7 @@ export default function Page() {
 
                               {userRole === "admin" && (
                                 <button
-                                  onClick={() => setDeleteItem(item)}
+                                  onClick={(e) => { e.stopPropagation(); setDeleteItem(item); }}
                                   className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                                 >
                                   🗑 Delete
@@ -602,16 +602,16 @@ export default function Page() {
                               )}
 
                               {userRole === "admin" ? (
-                                <button
-                                  onClick={() => setSelected(item)}
-                                  className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
-                                >
-                                  ✏️ Edit
-                                </button>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setSelected(item); }}
+                                    className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
+                                  >
+                                    ✏️ Edit
+                                  </button>
                               ) : (
                                 item.date?.split("T")[0] === new Date().toISOString().split("T")[0] && (
                                   <button
-                                    onClick={() => setSelected(item)}
+                                    onClick={(e) => { e.stopPropagation(); setSelected(item); }}
                                     className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                                   >
                                     ✏️ Edit
@@ -621,7 +621,7 @@ export default function Page() {
 
                               {userRole === "admin" && (
                                 <button
-                                  onClick={() => setDeleteItem(item)}
+                                  onClick={(e) => { e.stopPropagation(); setDeleteItem(item); }}
                                   className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
                                 >
                                   🗑 Delete
