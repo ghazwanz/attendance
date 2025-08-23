@@ -109,15 +109,15 @@ export default function LocationTable() {
       click(e) {
         setSelectedLoc({
           ...selectedLoc,
-          latitude: e.latlng.lng,
-          longtitude: e.latlng.lat,
+          latitude: e.latlng.lat,
+          longtitude: e.latlng.lng,
         });
       },
     });
 
     return selectedLoc.latitude && selectedLoc.longtitude ? (
       <Marker
-        position={[selectedLoc.longtitude, selectedLoc.latitude]}
+        position={[selectedLoc.latitude, selectedLoc.longtitude]}
       />
     ) : null;
   }
@@ -169,7 +169,7 @@ export default function LocationTable() {
                     <div className="w-[240px] h-[160px] rounded-xl overflow-hidden shadow">
                       <iframe
                         title={`Map ${loc.location_name}`}
-                        src={`https://maps.google.com/maps?q=${loc.longtitude},${loc.latitude}&z=15&output=embed`}
+                        src={`https://maps.google.com/maps?q=${loc.latitude},${loc.longtitude}&z=15&output=embed`}
                         className="w-full h-full"
                         style={{ border: 0 }}
                         loading="lazy"
@@ -269,8 +269,8 @@ export default function LocationTable() {
             <div className="mb-4 h-64 w-full rounded-xl overflow-hidden shadow">
               <MapContainer
                 center={[
-                  selectedLoc.longtitude || 106.8,
                   selectedLoc.latitude || -6.2,
+                  selectedLoc.longtitude || 106.8,
                 ]}
                 zoom={13}
                 style={{ height: "100%", width: "100%" }}
@@ -286,8 +286,8 @@ export default function LocationTable() {
 
             {/* Koordinat */}
             <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-3">
-              <span>Lng: {selectedLoc.longtitude}</span>
               <span>Lat: {selectedLoc.latitude}</span>
+              <span>Lng: {selectedLoc.longtitude}</span>
             </div>
 
             <div className="flex justify-end gap-2">
