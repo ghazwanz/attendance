@@ -144,23 +144,23 @@ export default function LocationTable() {
           <table className="w-full table-fixed text-sm">
             <thead className="bg-blue-600 text-white text-xs uppercase tracking-wide">
               <tr>
-                <th className="px-6 py-4 text-left w-14">No</th>
+                <th className="px-6 py-4 text-left w-14 rounded-tl-lg">No</th>
                 <th className="px-6 py-4 text-left w-72">Nama Lokasi</th>
                 <th className="px-6 py-4 text-left w-72">Map</th>
                 <th className="px-6 py-4 text-left w-32">Status</th>
-                <th className="px-6 py-4 text-left w-40">Aksi</th>
+                <th className="px-6 py-4 text-left w-40 rounded-tr-lg">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {locations.map((loc, idx) => (
                 <tr
-                  key={loc.id}
-                  className={
-                    idx % 2 === 0
-                      ? "bg-white dark:bg-slate-800"
-                      : "bg-blue-50 dark:bg-slate-700"
-                  }
-                >
+                      key={loc.id}
+                      className={`transition duration-150 ${
+                        idx % 2 === 0
+                          ? "bg-white dark:bg-slate-800"
+                          : "bg-blue-50 dark:bg-slate-700"
+                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                    >
                   <td className="px-6 py-4 align-middle">{idx + 1}</td>
                   <td className="px-6 py-4 align-middle break-words">
                     {loc.location_name}

@@ -261,11 +261,11 @@ export default function JadwalPiketPage() {
           <table className="w-full border-separate text-center border-spacing-y-4 text-sm text-gray-800 dark:text-gray-100">
             <thead>
               <tr className="bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm uppercase">
-                <th className="px-6 py-3 rounded-l-xl">No.</th>
+                <th className="px-6 py-3 rounded-tl-lg">No.</th>
                 <th className="px-6 py-3">📅 Hari</th>
                 <th className="px-6 py-3">👤 Nama</th>
                 {currentUser?.role === "admin" &&
-                  <th className="px-6 py-3 rounded-r-xl">⚙️ Aksi</th>
+                  <th className="px-6 py-3 rounded-tr-lg">⚙️ Aksi</th>
                 }
               </tr>
             </thead>
