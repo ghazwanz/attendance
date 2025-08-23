@@ -23,7 +23,7 @@ export type NotificationProps = {
     type: "piket_reminder" | "piket_out_reminder" | "clock_out_reminder"
 } | null
 
-export default function QRWrapperFile({className}:{className?:string}) {
+export default function QRWrapperFile({ className }: { className?: string }) {
     // useUserLocationEffect()
     const [qrData, setQrData] = useState<string | null>(null)
     const [isScanning, setIsScanning] = useState(false);
@@ -67,7 +67,8 @@ export default function QRWrapperFile({className}:{className?:string}) {
             setQrData(`Berhasil Memproses QR.`);
             scanUserRef.current = { user_id: data.user_id, name: userData.name };
 
-            const today = new Date().toISOString().split("T")[0];
+            const today = new Date().toLocaleDateString("sv",{timeZone:"Asia/Jakarta"})
+            console.log(today)
 
             // 🔍 cek absen hari ini
             const { data: attendanceToday } = await supabase
@@ -137,7 +138,7 @@ export default function QRWrapperFile({className}:{className?:string}) {
     };
 
     const startCameraScan = async () => {
-        html5QrCodeRef.current?.clear();
+        await html5QrCodeRef.current?.clear();
         html5QrCodeRef.current = new Html5Qrcode("qr-reader");
         if (!html5QrCodeRef.current) return;
         setIsScanning(true);
@@ -189,17 +190,19 @@ export default function QRWrapperFile({className}:{className?:string}) {
             showToast({ type: 'error', message: err.message || 'Gagal membaca QR' });
             setQrData("Gagal membaca QR");
         } finally {
+            await html5QrCodeRef.current?.clear();
             setIsScanning(false);
         }
     };
 
-    const resetScanner = () => {
+    const resetScanner = async () => {
         // setScanMode("upload");
+        await html5QrCodeRef.current?.clear();
         setQrData(null)
-        html5QrCodeRef.current?.clear();
     };
     const handleHadirSelection = async () => {
         if (!scanUserRef.current) return;
+        toast.dismiss()
         try {
             setDisabled(prev => !prev);
             setPending(prev => !prev);
@@ -242,6 +245,8 @@ export default function QRWrapperFile({className}:{className?:string}) {
     // Handler Pulang: setelah klik pulang, cek 8 jam dan tampilkan notifikasi konfirmasi
     const handlePulang = async () => {
         if (!scanUserRef.current) return;
+        toast.dismiss()
+
         if (isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
 
         setNotifData({
@@ -257,6 +262,7 @@ export default function QRWrapperFile({className}:{className?:string}) {
     const handleConfirmPulang = async () => {
         if (!scanUserRef.current) return;
         const { user_id, name } = scanUserRef.current
+        toast.dismiss()
 
         try {
             if (!keteranganPulang.trim())
@@ -308,7 +314,7 @@ export default function QRWrapperFile({className}:{className?:string}) {
         }
     };
     const handleSubmitIzin = async () => {
-
+        toast.dismiss()
         if (!izinReason.trim() || !scanUserRef.current || !izinStart || !izinEnd) {
             showToast({ type: 'error', message: 'Mohon isi tanggal mulai, hingga, dan alasan izin' });
             return;
@@ -352,66 +358,66 @@ export default function QRWrapperFile({className}:{className?:string}) {
 
     return (
         <>
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 w-full transition-colors">
-                    {/* Header */}
-                    <div className="text-center mb-6">
-                        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
-                            Upload QR CODE Kamu!
-                        </h2>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 w-full transition-colors">
+                {/* Header */}
+                <div className="text-center mb-6">
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
+                        Upload QR CODE Kamu!
+                    </h2>
 
-                    </div>
-
-                    {/* Upload or Camera */}
-                    {scanMode === "upload" && (
-                        <UploadCard onFileSelect={handleFileSelect} disabled={isScanning} />
-                    )}
-                    {scanMode === "camera" && <CameraScanner isScanning={isScanning} onStop={stopCameraScan} />}
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-3 mt-6">
-                        <button
-                            onClick={() => setScanMode("upload")}
-                            disabled={isScanning}
-                            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                        >
-                            <Upload size={16} />
-                            Upload QR
-                        </button>
-                        <button
-                            onClick={startCameraScan}
-                            disabled={isScanning}
-                            className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-                        >
-                            <Camera size={16} />
-                            Scan Camera
-                        </button>
-                    </div>
-
-                    {/* Loading */}
-                    {isScanning && scanMode === "upload" && (
-                        <div className="mt-4 text-center text-blue-600 flex justify-center gap-2">
-                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            Processing QR code...
-                        </div>
-                    )}
-
-                    {/* Hidden div untuk camera init */}
-                    {scanMode !== "camera" && <div id="qr-reader" className="hidden" />}
-
-                    {qrData && (
-                        <div className="py-2 px-3 mt-4 w-full relative bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
-                            <p>{qrData}</p>
-                            {/* <p>message test</p> */}
-                            <button onClick={resetScanner} className="absolute right-1 top-3"> <X size={16} /> </button>
-                        </div>
-                    )}
-
-                    {/* Footer */}
-                    <div className="text-center mt-6 text-xs text-gray-400">
-                        Powered by html5-qrcode
-                    </div>
                 </div>
-                {/* Modal Pilih Hadir / Izin */}
+
+                {/* Upload or Camera */}
+                {scanMode === "upload" && (
+                    <UploadCard onFileSelect={handleFileSelect} disabled={isScanning} />
+                )}
+                {scanMode === "camera" && <CameraScanner isScanning={isScanning} onStop={stopCameraScan} />}
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 mt-6">
+                    <button
+                        onClick={() => setScanMode("upload")}
+                        disabled={isScanning}
+                        className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <Upload size={16} />
+                        Upload QR
+                    </button>
+                    <button
+                        onClick={startCameraScan}
+                        disabled={isScanning}
+                        className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <Camera size={16} />
+                        Scan Camera
+                    </button>
+                </div>
+
+                {/* Loading */}
+                {isScanning && scanMode === "upload" && (
+                    <div className="mt-4 text-center text-blue-600 flex justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        Processing QR code...
+                    </div>
+                )}
+
+                {/* Hidden div untuk camera init */}
+                {scanMode !== "camera" && <div id="qr-reader" className="hidden" />}
+
+                {qrData && (
+                    <div className="py-2 px-3 mt-4 w-full relative bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
+                        <p>{qrData}</p>
+                        {/* <p>message test</p> */}
+                        <button onClick={resetScanner} className="absolute right-1 top-3"> <X size={16} /> </button>
+                    </div>
+                )}
+
+                {/* Footer */}
+                <div className="text-center mt-6 text-xs text-gray-400">
+                    Powered by html5-qrcode
+                </div>
+            </div>
+            {/* Modal Pilih Hadir / Izin */}
             <ClockInModal
                 isOpen={showChoiceModal}
                 onClose={() => setShowChoiceModal(false)}

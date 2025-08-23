@@ -199,7 +199,6 @@ export function UseUserLocationEffect() {
 
       if (closestCompany) {
         // Show location status with better formatting
-        toast.dismiss()
         if (isOutside) {
           const distanceKm = closestDistance > 1000 ? `${(closestDistance / 1000).toFixed(1)}km` : `${Math.round(closestDistance)}m`;
           console.log({
@@ -216,7 +215,7 @@ export function UseUserLocationEffect() {
     };
 
     const handleError = (err: GeolocationPositionError) => {
-      console.error(`Failed to detect location: ${err.message}`);
+      console.log(`Failed to detect location: ${err.message}`);
       setLocationMethod('denied');
 
       let errorMessage = 'Gagal mendapatkan lokasi: ';
@@ -240,7 +239,7 @@ export function UseUserLocationEffect() {
     // Enhanced geolocation options
     const geoOptions: PositionOptions = {
       enableHighAccuracy: true,
-      timeout: isMobile ? 15000 : 10000, // Longer timeout for mobile GPS
+      timeout: isMobile ? 25000 : 20000, // Longer timeout for mobile GPS
       maximumAge: isMobile ? 30000 : 60000 // Fresher data for mobile
     };
 

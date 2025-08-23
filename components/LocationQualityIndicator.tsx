@@ -66,10 +66,10 @@ export default function LocationQualityIndicator({ showInClockIn = false, classN
             <div className={`px-3 py-2 rounded-lg border ${getAccuracyColor(locationInfo.locationAccuracy)} flex items-center space-x-2`}>
                 <span className="text-lg">{getAccuracyIcon(locationInfo.locationAccuracy)}</span>
                 <div className="flex-1">
-                    <div className="text-sm font-medium">
+                    <div className="text-base font-medium">
                         {getAccuracyDescription(locationInfo.locationAccuracy, locationInfo.accuracyRadius)}
                     </div>
-                    <div className="text-xs opacity-75">
+                    <div className="text-sm opacity-75">
                         {getMethodDescription(locationInfo.locationMethod!)} • {locationInfo.isMobile ? 'Mobile' : 'Desktop'}
                     </div>
                 </div>
@@ -78,10 +78,10 @@ export default function LocationQualityIndicator({ showInClockIn = false, classN
             {/* Improvement Suggestions */}
             {shouldShowImprovement && (
                 <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="text-sm font-medium text-blue-800 mb-1">
+                    <div className="text-base font-medium text-blue-800 mb-1">
                         💡 Tips untuk Akurasi Lebih Baik:
                     </div>
-                    <ul className="text-xs text-blue-700 space-y-1">
+                    <ul className="text-sm text-blue-700 space-y-1">
                         {!locationInfo.isMobile && (
                             <li>• Gunakan smartphone untuk akurasi GPS terbaik</li>
                         )}
@@ -102,11 +102,11 @@ export default function LocationQualityIndicator({ showInClockIn = false, classN
             {/* Clock-in Specific Warnings */}
             {showInClockIn && locationInfo.locationAccuracy === 'low' && (
                 <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    <div className="text-sm font-medium text-orange-800 flex items-center space-x-2">
+                    <div className="text-base font-medium text-orange-800 flex items-center space-x-2">
                         <span>⚠️</span>
                         <span>Perhatian Absensi</span>
                     </div>
-                    <div className="text-xs text-orange-700 mt-1">
+                    <div className="text-sm text-orange-700 mt-1">
                         Akurasi rendah dapat mempengaruhi validasi lokasi absensi.
                         {!locationInfo.isMobile && ' Disarankan menggunakan smartphone.'}
                     </div>
