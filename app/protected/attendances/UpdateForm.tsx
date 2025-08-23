@@ -56,6 +56,7 @@ export default function UpdateForm({
     e.preventDefault();
     setTimeError(null);
 
+
     const checkInISO = form.check_in
       ? localDateTimeToISO(form.date, form.check_in)
       : null;
@@ -65,6 +66,18 @@ export default function UpdateForm({
     const dateISO = form.date
       ? new Date(form.date + "T00:00:00Z").toISOString()
       : null;
+
+    // Validasi: jika admin edit check-in > 08:00, status otomatis TERLAMBAT
+    // Jika kurang dari jam 08:00, status otomatis HADIR
+    let newStatus = form.status;
+    if (userRole === "admin" && form.check_in) {
+      const [jam, menit] = form.check_in.split(":").map(Number);
+      if (jam > 8 || (jam === 8 && menit > 0)) {
+        newStatus = "TERLAMBAT";
+      } else {
+        newStatus = "HADIR";
+      }
+    }
 
     if (checkInISO && checkOutISO && checkOutISO < checkInISO) {
       setTimeError("❌ Waktu pulang tidak boleh lebih awal dari waktu masuk!");
@@ -92,7 +105,7 @@ export default function UpdateForm({
         check_in: checkInISO,
         check_out: checkOutISO,
         notes: form?.notes,
-        status: userRole === "admin" ? form.status : form.status, // status hanya bisa diedit oleh admin
+        status: userRole === "admin" ? newStatus : form.status,
       })
       .eq("id", form.id);
 
