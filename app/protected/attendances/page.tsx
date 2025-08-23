@@ -524,22 +524,24 @@ export default function Page() {
                       <td className="py-2 px-4">
                         <span className="text-yellow-400 font-mono text-sm">
                           {item.check_in
-                            ? new Date(item.check_in).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })
+                            ? new Date(item.check_in).toString().split(" ")[4]
+                            // toLocaleTimeString([], {
+                            //   hour: "2-digit",
+                            //   minute: "2-digit",
+                            //   hour12: false,
+                            // })
                             : "-"}
                         </span>
                       </td>
                       <td className="py-2 px-4">
                         <span className="text-blue-400 font-mono text-sm">
                           {item.check_out
-                            ? new Date(item.check_out).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                              hour12: false,
-                            })
+                            ? new Date(item.check_out).toString().split(" ")[4]
+                            // toLocaleTimeString([], {
+                            //   hour: "2-digit",
+                            //   minute: "2-digit",
+                            //   hour12: false,
+                            // })
                             : "-"}
                         </span>
                       </td>
