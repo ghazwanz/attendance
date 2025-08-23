@@ -34,8 +34,8 @@ export const handlePulangAction = async (
     const checkInTime = new Date(attendanceToday.check_in);
     const hoursDiff = (now.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
 
-    if (hoursDiff < 8)
-        throw new Error(`Belum bisa pulang. Baru ${hoursDiff.toFixed(1)} jam, minimal 8 jam.`);
+    if (hoursDiff < 7.5)
+        throw new Error(`Anda belum bisa melakukan aksi ini`);
 
     const { error: updateError } = await supabase
         .from('attendances')

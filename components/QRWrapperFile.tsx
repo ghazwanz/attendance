@@ -57,6 +57,7 @@ export default function QRWrapperFile({ className }: { className?: string }) {
         try {
             const data = JSON.parse(decodedText);
 
+            showToast({type:"warning",message:"Memproses QR..."})
             // 🔍 cek user
             const { data: userData, error } = await supabase
                 .from("users")
@@ -137,6 +138,8 @@ export default function QRWrapperFile({ className }: { className?: string }) {
         } catch (err: any) {
             toast.error(err.message || "Gagal membaca QR");
             setQrData(err.message || "Gagal membaca QR");
+        } finally{
+            toast.dismiss()
         }
     };
 

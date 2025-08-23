@@ -70,7 +70,8 @@ export const handleAbsenHadir = async (
         );
 
         // Revalidate the scan page
-        revalidatePath('/');
+        revalidatePath('/', "layout");
+        revalidatePath('/scan');
 
         return {
             status: "success",
