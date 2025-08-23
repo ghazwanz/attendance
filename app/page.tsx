@@ -18,6 +18,10 @@ import QRImageUploader from '@/components/QRImageUploader';
 import QRWrapperFile from '@/components/QRWrapperFile';
 // import QRWrapperFile from '@/components/QRWrapperFile';
 import LokasiKantor2 from '@/components/LokasiKantor2';
+import LocationQualityIndicator from '@/components/LocationQualityIndicator';
+
+export const revalidate = 0; // Disable caching
+export const dynamic = 'force-dynamic'; // Force dynamic rendering
 
 export default async function Home() {
   const supabase = await createClient();
@@ -97,40 +101,45 @@ export default async function Home() {
         <div className="flex-1 flex flex-col gap-12 max-w-6xl px-6 py-10 sm:py-16">
           <Hero />
           {/* <QRForm users={users ?? []} encryptedQRData={null} /> */}
-          <div>
+          <div className='flex lg:flex-row flex-col gap-5'>
             {/* <QRWrapper /> */}
-            <QRWrapperFile/>
-            <QRTips />
+            <QRWrapperFile />
+            <div className='w-full flex items-start flex-col gap-5'>
+              <QRTips className='h-full w-full' />
+              <LocationQualityIndicator showInClockIn={true} className="h-full w-full" />
+            </div>
           </div>
-          <div>
-            {/* <QRImageUploader /> */}
-          </div>
+          {/* <div> */}
+          {/* <QRImageUploader /> */}
+          {/* </div> */}
 
 
           {/* GOOGLE MAPS: Lokasi Mahative Studio */}
-          <section className="mt-16 bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
-            <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2">
-              <span className="text-red-500 text-3xl">📍</span>
-              Lokasi Mahative Studio
-            </h2>
-            <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
-              Jalan Kemantren, Bandungrejosari, Sukun, Kota Malang – Jawa Timur, Indonesia
-            </p>
-            <LokasiKantor />
-          </section>
+          <article className='flex mt-16 gap-8 lg:flex-row flex-col'>
+            <section className=" bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
+              <h2 className="sm:text-3xl text-2xl font-extrabold text-center text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2">
+                <span className="text-red-500 text-3xl">📍</span>
+                Lokasi Mahative Studio
+              </h2>
+              <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm">
+                Jalan Kemantren, Bandungrejosari, Sukun, Kota Malang – Jawa Timur, Indonesia
+              </p>
+              <LokasiKantor />
+            </section>
 
-          {/* GOOGLE MAPS: Lokasi Mahative Studio */}
-          <section className="mt-16 bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
-            <h2 className="text-3xl font-extrabold text-center text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2">
-              <span className="text-red-500 text-3xl">📍</span>
-              Lokasi KipaWorks
-            </h2>
-            <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
-              Kipaworks, Jl. Simpang Jl. Gapura No.334, Krajan, Pandanlandung,
-              Kec. Wagir, Kabupaten Malang, Jawa Timur 65158
-            </p>
-            <LokasiKantor2 />
-          </section>
+            {/* GOOGLE MAPS: Lokasi Mahative Studio */}
+            <section className=" bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
+              <h2 className="sm:text-3xl text-2xl font-extrabold text-center text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2">
+                <span className="text-red-500 text-3xl">📍</span>
+                Lokasi KipaWorks
+              </h2>
+              <p className="text-center text-gray-600 dark:text-gray-300 mb-6 text-sm">
+                Kipaworks, Jl. Simpang Jl. Gapura No.334, Krajan, Pandanlandung,
+                Kec. Wagir, Kabupaten Malang, Jawa Timur 65158
+              </p>
+              <LokasiKantor2 />
+            </section>
+          </article>
         </div>
 
         {/* FOOTER */}

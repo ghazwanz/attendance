@@ -15,6 +15,7 @@ import ReminderModal from '@/app/scan/components/ReminderModal';
 import { handlePulangAction } from '@/app/scan/actions/AbsensiPulangAction';
 import { showToast } from "@/lib/utils/toast";
 import { useLocationStores } from "@/lib/stores/useLocationStores";
+import { UseUserLocationEffect } from "@/lib/utils/getUserLocation";
 
 export type NotificationProps = {
     title: string,
@@ -22,7 +23,8 @@ export type NotificationProps = {
     type: "piket_reminder" | "piket_out_reminder" | "clock_out_reminder"
 } | null
 
-export default function QRWrapperFile() {
+export default function QRWrapperFile({ className }: { className?: string }) {
+    // useUserLocationEffect()
     const [qrData, setQrData] = useState<string | null>(null)
     const [isScanning, setIsScanning] = useState(false);
     const [scanMode, setScanMode] = useState<"upload" | "camera">("upload");
@@ -48,17 +50,9 @@ export default function QRWrapperFile() {
     const isOutside = useLocationStores(state => state.isOutside)
     const [notifData, setNotifData] = useState<NotificationProps>({ title: "", message: "", type: "clock_out_reminder" })
 
-    useEffect(() => {
-        if (!html5QrCodeRef.current) {
-            html5QrCodeRef.current = new Html5Qrcode("qr-reader");
-        }
-        return () => {
-            html5QrCodeRef.current?.stop().catch(() => { });
-        };
-    }, []);
+    // html5QrCodeRef.current = new Html5Qrcode("qr-reader");
     // --- HANDLE SUCCESS (rapi dari qrscan.tsx)
     const handleScanSuccess = async (decodedText: string) => {
-       
         try {
             const data = JSON.parse(decodedText);
 
@@ -70,10 +64,11 @@ export default function QRWrapperFile() {
                 .single();
 
             if (error || !userData) throw new Error("User tidak ditemukan");
-
+            setQrData(`Berhasil Memproses QR.`);
             scanUserRef.current = { user_id: data.user_id, name: userData.name };
 
-            const today = new Date().toISOString().split("T")[0];
+            const today = new Date().toLocaleDateString("sv",{timeZone:"Asia/Jakarta"})
+            console.log(today)
 
             // 🔍 cek absen hari ini
             const { data: attendanceToday } = await supabase
@@ -138,10 +133,13 @@ export default function QRWrapperFile() {
             }
         } catch (err: any) {
             toast.error(err.message || "Gagal membaca QR");
+            setQrData(err.message || "Gagal membaca QR");
         }
     };
 
     const startCameraScan = async () => {
+        await html5QrCodeRef.current?.clear();
+        html5QrCodeRef.current = new Html5Qrcode("qr-reader");
         if (!html5QrCodeRef.current) return;
         setIsScanning(true);
         setScanMode("camera");
@@ -152,9 +150,11 @@ export default function QRWrapperFile() {
                 await html5QrCodeRef.current!.start(
                     { facingMode: "environment" },
                     { fps: 30, qrbox: { width: 250, height: 250 } },
-                    (decodedText) => {
+                    async (decodedText) => {
+                        setQrData("Memproses QR code...");
                         setIsScanning(false);
-                        html5QrCodeRef.current?.stop();
+                        await html5QrCodeRef.current?.stop();
+                        handleScanSuccess(decodedText);
                     },
                     (err: any) => {
                         console.log(err.message)
@@ -178,35 +178,39 @@ export default function QRWrapperFile() {
     };
 
     const handleFileSelect = async (file: File) => {
+        html5QrCodeRef.current?.clear();
+        html5QrCodeRef.current = new Html5Qrcode("qr-reader");
         if (!file || !html5QrCodeRef.current) return;
         try {
             setIsScanning(true);
             const result = await html5QrCodeRef.current.scanFile(file, true);
-            const jsonResult = JSON.parse(result);
-            console.log("QR Code Result:", jsonResult);
+            setQrData("Memproses QR code...");
             handleScanSuccess(result);
-            
         } catch (err: any) {
-            
+            showToast({ type: 'error', message: err.message || 'Gagal membaca QR' });
+            setQrData("Gagal membaca QR");
         } finally {
+            await html5QrCodeRef.current?.clear();
             setIsScanning(false);
         }
     };
 
-    const resetScanner = () => {
-
-       
+    const resetScanner = async () => {
         // setScanMode("upload");
-
-
+        await html5QrCodeRef.current?.clear();
+        setQrData(null)
     };
     const handleHadirSelection = async () => {
         if (!scanUserRef.current) return;
+        toast.dismiss()
         try {
             setDisabled(prev => !prev);
             setPending(prev => !prev);
-            await handleAbsenHadir(scanUserRef.current, isOutside);
-            showToast({ type: "success", message: `Absen hadir berhasil untuk ${scanUserRef.current.name}` });
+
+            const { status, message } = await handleAbsenHadir(scanUserRef.current, isOutside);
+
+            if (status === "error") throw new Error(message)
+            showToast({ type: "success", message: message });
 
             setShowChoiceModal(false);
 
@@ -241,6 +245,8 @@ export default function QRWrapperFile() {
     // Handler Pulang: setelah klik pulang, cek 8 jam dan tampilkan notifikasi konfirmasi
     const handlePulang = async () => {
         if (!scanUserRef.current) return;
+        toast.dismiss()
+
         if (isOutside) return showToast({ type: 'error', message: 'Anda berada di luar area kantor' });
 
         setNotifData({
@@ -256,6 +262,7 @@ export default function QRWrapperFile() {
     const handleConfirmPulang = async () => {
         if (!scanUserRef.current) return;
         const { user_id, name } = scanUserRef.current
+        toast.dismiss()
 
         try {
             if (!keteranganPulang.trim())
@@ -307,7 +314,7 @@ export default function QRWrapperFile() {
         }
     };
     const handleSubmitIzin = async () => {
-
+        toast.dismiss()
         if (!izinReason.trim() || !scanUserRef.current || !izinStart || !izinEnd) {
             showToast({ type: 'error', message: 'Mohon isi tanggal mulai, hingga, dan alasan izin' });
             return;
@@ -350,14 +357,14 @@ export default function QRWrapperFile() {
     };
 
     return (
-       <div className="flex items-center justify-center min-h-screen">
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 w-full max-w-md transition-colors">
-        {/* Header */}
-        <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
+        <>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 w-full transition-colors">
+                {/* Header */}
+                <div className="text-center mb-6">
+                    <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
                         Upload QR CODE Kamu!
                     </h2>
-                    
+
                 </div>
 
                 {/* Upload or Camera */}
@@ -394,11 +401,16 @@ export default function QRWrapperFile() {
                     </div>
                 )}
 
-                {/* Result */}
-               
-
                 {/* Hidden div untuk camera init */}
                 {scanMode !== "camera" && <div id="qr-reader" className="hidden" />}
+
+                {qrData && (
+                    <div className="py-2 px-3 mt-4 w-full relative bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
+                        <p>{qrData}</p>
+                        {/* <p>message test</p> */}
+                        <button onClick={resetScanner} className="absolute right-1 top-3"> <X size={16} /> </button>
+                    </div>
+                )}
 
                 {/* Footer */}
                 <div className="text-center mt-6 text-xs text-gray-400">
@@ -673,7 +685,7 @@ export default function QRWrapperFile() {
                                             showToast({ type: "error", message: "Gagal mencatat kembali" });
                                         } else {
                                             showToast({ type: "success", message: "Kamu berhasil kembali ke kantor" });
-                                            
+
                                         }
                                     }
                                 }}
@@ -739,7 +751,6 @@ export default function QRWrapperFile() {
                 onClose={() => setNotifOpen(false)}
                 type={notifData?.type || ""}
             />
-
-        </div>
+        </>
     );
 }

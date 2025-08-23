@@ -227,11 +227,14 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
     try {
       setDisabled(prev=>!prev);
       setPending(prev=>!prev);
-      await handleAbsenHadir(scanUserRef.current, isOutside);
-      showToast({ type: "success", message: `Absen hadir berhasil untuk ${scanUserRef.current.name}` });
+
+      const { status, message } = await handleAbsenHadir(scanUserRef.current, isOutside);
+      if (status === "error") throw new Error(message)
+        
       onScanSuccess?.();
       setShowChoiceModal(false);
 
+      showToast({ type: 'info', message: message });
       const isPiket = await getPiket({ user_id: scanUserRef.current.user_id })
       const type = isPiket ? "piket_reminder" : null
       if (!type) return

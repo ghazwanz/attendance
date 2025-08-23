@@ -3,7 +3,12 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import LocationPermissionChecker from "@/components/LocationPermissionChecker"; // ⬅️ import
+import LocationPermissionChecker from "@/components/LocationPermissionChecker";
+import dynamic from "next/dynamic";
+
+// Dynamic imports for location components
+const LocationEffectComponent = dynamic(() => import('@/components/LocationEffectComponents'));
+const DeviceLocationGuard = dynamic(() => import('@/components/DeviceLocationGuard'));
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -22,8 +27,7 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-export const dynamic = 'force-dynamic'; // Ensure this page is always revalidated
-export const revalidate = 0; // Ensure this page is always revalidated
+export const revalidate = 0;
 
 export default function RootLayout({
   children,
@@ -32,10 +36,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <link rel="manifest" href="/manifest.json" />
-      {/* <meta httpEquiv="refresh" content="3600"/> */}
-      <meta name="theme-color" content="#4CAF50" />
-
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#4CAF50" />
+        {/* Enhanced PWA capabilities for better mobile experience */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      </head>
       <body className={`${geistSans.className} antialiased`}>
         <ThemeProvider
           attribute="class"
@@ -43,8 +52,28 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Toaster position="top-center" reverseOrder={false} />
-          <LocationPermissionChecker /> {/* ⬅️ tambahkan di sini */}
+          {/* Device and location detection - shows warnings/guidance */}
+          <DeviceLocationGuard />
+
+          {/* Enhanced location tracking */}
+          <LocationEffectComponent />
+
+          {/* Toast notifications with reduced duration */}
+          <Toaster
+            position="top-center"
+            reverseOrder={false}
+            toastOptions={{
+              duration: 3000, // Reduced from 5000
+              style: {
+                background: 'var(--background)',
+                color: 'var(--foreground)',
+              },
+            }}
+          />
+
+          {/* Original location permission checker */}
+          <LocationPermissionChecker />
+
           {children}
         </ThemeProvider>
       </body>

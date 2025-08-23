@@ -47,7 +47,7 @@ function SetMapView({ location }: { location: { lat: number; lng: number } }) {
   return null;
 }
 
-function UserLocationMap({ isOutside, setIsOutside }: UserLocationMapProps) {
+function UserLocationMap({ isOutside }: UserLocationMapProps) {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
@@ -73,7 +73,6 @@ function UserLocationMap({ isOutside, setIsOutside }: UserLocationMapProps) {
         mahativeStudio.lng
       );
       setDistance(dist);
-      setIsOutside(dist > RADIUS_METER);
     };
 
     // Deteksi lokasi awal

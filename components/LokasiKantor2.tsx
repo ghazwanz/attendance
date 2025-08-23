@@ -22,7 +22,7 @@ const LokasiKantor2 = async () => {
       <div className="w-full h-[440px] rounded-xl overflow-hidden border-4 border-blue-200 dark:border-slate-700 shadow-lg hover:shadow-2xl transition duration-300">
         <iframe
           title="Lokasi Mahative Studio Malang"
-          src={`https://maps.google.com/maps?q=${longitude},${latitude}&z=18&output=embed`}
+          src={`https://maps.google.com/maps?q=${latitude},${longitude}&z=18&output=embed`}
           width="100%"
           height="100%"
           allowFullScreen

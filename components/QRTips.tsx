@@ -1,8 +1,8 @@
 import React from 'react'
 
-const QRTips = () => {
+const QRTips = ({className}:{className?:string}) => {
     return (
-        <div className="mt-12 bg-blue-100 dark:bg-slate-700/40 p-6 rounded-xl">
+        <div className={`${className} bg-blue-100 h-full dark:bg-slate-700/40 p-6 rounded-xl`}>
             <h3 className="text-lg font-semibold text-blue-900 dark:text-white mb-4">
                 ℹ️ Tips Pemindaian QR
             </h3>
