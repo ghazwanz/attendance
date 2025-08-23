@@ -109,15 +109,15 @@ export default function LocationTable() {
       click(e) {
         setSelectedLoc({
           ...selectedLoc,
-          latitude: e.latlng.lng,
-          longtitude: e.latlng.lat,
+          latitude: e.latlng.lat,
+          longtitude: e.latlng.lng,
         });
       },
     });
 
     return selectedLoc.latitude && selectedLoc.longtitude ? (
       <Marker
-        position={[selectedLoc.longtitude, selectedLoc.latitude]}
+        position={[selectedLoc.latitude, selectedLoc.longtitude]}
       />
     ) : null;
   }
@@ -144,23 +144,23 @@ export default function LocationTable() {
           <table className="w-full table-fixed text-sm">
             <thead className="bg-blue-600 text-white text-xs uppercase tracking-wide">
               <tr>
-                <th className="px-6 py-4 text-left w-14">No</th>
+                <th className="px-6 py-4 text-left w-14 rounded-tl-lg">No</th>
                 <th className="px-6 py-4 text-left w-72">Nama Lokasi</th>
                 <th className="px-6 py-4 text-left w-72">Map</th>
                 <th className="px-6 py-4 text-left w-32">Status</th>
-                <th className="px-6 py-4 text-left w-40">Aksi</th>
+                <th className="px-6 py-4 text-left w-40 rounded-tr-lg">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {locations.map((loc, idx) => (
                 <tr
-                  key={loc.id}
-                  className={
-                    idx % 2 === 0
-                      ? "bg-white dark:bg-slate-800"
-                      : "bg-blue-50 dark:bg-slate-700"
-                  }
-                >
+                      key={loc.id}
+                      className={`transition duration-150 ${
+                        idx % 2 === 0
+                          ? "bg-white dark:bg-slate-800"
+                          : "bg-blue-50 dark:bg-slate-700"
+                      } hover:bg-gray-100 dark:hover:bg-slate-600`}
+                    >
                   <td className="px-6 py-4 align-middle">{idx + 1}</td>
                   <td className="px-6 py-4 align-middle break-words">
                     {loc.location_name}
@@ -169,7 +169,7 @@ export default function LocationTable() {
                     <div className="w-[240px] h-[160px] rounded-xl overflow-hidden shadow">
                       <iframe
                         title={`Map ${loc.location_name}`}
-                        src={`https://maps.google.com/maps?q=${loc.longtitude},${loc.latitude}&z=15&output=embed`}
+                        src={`https://maps.google.com/maps?q=${loc.latitude},${loc.longtitude}&z=15&output=embed`}
                         className="w-full h-full"
                         style={{ border: 0 }}
                         loading="lazy"
@@ -269,8 +269,8 @@ export default function LocationTable() {
             <div className="mb-4 h-64 w-full rounded-xl overflow-hidden shadow">
               <MapContainer
                 center={[
-                  selectedLoc.longtitude || 106.8,
                   selectedLoc.latitude || -6.2,
+                  selectedLoc.longtitude || 106.8,
                 ]}
                 zoom={13}
                 style={{ height: "100%", width: "100%" }}
@@ -286,8 +286,8 @@ export default function LocationTable() {
 
             {/* Koordinat */}
             <div className="flex justify-between text-sm text-gray-600 dark:text-gray-300 mb-3">
-              <span>Lng: {selectedLoc.longtitude}</span>
               <span>Lat: {selectedLoc.latitude}</span>
+              <span>Lng: {selectedLoc.longtitude}</span>
             </div>
 
             <div className="flex justify-end gap-2">

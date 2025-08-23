@@ -165,10 +165,10 @@ export default function ReminderPage() {
               <thead>
                 <tr className="bg-blue-600 text-white text-xs uppercase">
                   <th className="py-3 px-4 rounded-tl-lg">Judul</th>
-                  <th className="py-3 px-4">Pesan</th>
-                  <th className="py-3 px-4">Jadwal</th>
-                  <th className="py-3 px-4">Jenis</th>
-                  {userRole === "admin" && <th className="py-3 px-4 rounded-tr-lg">Aksi</th>}
+                  <th className="py-3 px-4" >Pesan</th>
+                  <th className="py-3 px-4" >Jadwal</th>
+                  <th className="py-3 px-4" >Jenis</th>
+                  {userRole === "admin" && <th className="py-3 px-4 rounded-tr-lg" style={{border:'none'}}>Aksi</th>}
                 </tr>
               </thead>
               <tbody>
@@ -188,12 +188,12 @@ export default function ReminderPage() {
                           : "bg-blue-50 dark:bg-slate-700"
                       } hover:bg-gray-100 dark:hover:bg-slate-600`}
                     >
-                      <td className="border px-4 py-2">{r.title}</td>
-                      <td className="border px-4 py-2">{r.message}</td>
-                      <td className="border px-4 py-2">{r.jadwal?.slice(0, 5)}</td>
-                      <td className="border px-4 py-2">{r.type}</td>
+                      <td className=" px-4 py-2">{r.title}</td>
+                      <td className=" px-4 py-2">{r.message}</td>
+                      <td className=" px-4 py-2">{r.jadwal?.slice(0, 5)}</td>
+                      <td className=" px-4 py-2">{r.type}</td>
                       {userRole === "admin" && (
-                        <td className="border px-4 py-2 space-x-2">
+                        <td className=" px-4 py-2 space-x-2">
                           <button
                             onClick={() => {
                               setEditing(r);

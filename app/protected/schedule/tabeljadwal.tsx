@@ -82,13 +82,13 @@ export default function Tabeljadwal() {
           <table className="min-w-full text-sm">
             <thead className="bg-blue-600 text-white text-xs uppercase tracking-wide">
               <tr>
-                <th className="px-6 py-4 text-left">No</th>
+                <th className="px-6 py-4 text-left rounded-tl-lg">No</th>
                 <th className="px-6 py-4 text-left">Hari</th>
                 <th className="px-6 py-4 text-left">Jam Masuk</th>
                 <th className="px-6 py-4 text-left">Jam Pulang</th>
                 <th className="px-6 py-4 text-left">Mulai Istirahat</th>
                 <th className="px-6 py-4 text-left">Selesai Istirahat</th>
-                <th className="px-6 py-4 text-left">Aktif</th>
+                <th className="px-6 py-4 text-left rounded-tr-lg">Aktif</th>
                 {currentUser?.role === "admin" && (
                   <th className="px-6 py-4 text-left">Aksi</th>
                 )}

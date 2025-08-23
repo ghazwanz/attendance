@@ -509,7 +509,12 @@ export default function Page() {
                   data.map((item, i) => (
                     <tr
                       key={item.id}
-                      className={`transition duration-150 ${i % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-blue-50 dark:bg-slate-700"} hover:bg-gray-100 dark:hover:bg-slate-600`}
+                      className={`transition duration-150 cursor-pointer ${i % 2 === 0 ? "bg-white dark:bg-slate-800" : "bg-blue-50 dark:bg-slate-700"} hover:bg-gray-100 dark:hover:bg-slate-600`}
+                      onClick={() => {
+                        if (item.user_id) {
+                          window.location.href = `/protected/users/${item.user_id}`;
+                        }
+                      }}
                     >
                       <td className="py-2 px-4">{startIndex + i + 1}</td>
                       <td className="py-2 px-4 uppercase">{item.users?.name || "Tanpa Nama"}</td>
