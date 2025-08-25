@@ -113,10 +113,9 @@ export default async function Home() {
           {/* <QRImageUploader /> */}
           {/* </div> */}
 
-
           {/* GOOGLE MAPS: Lokasi Mahative Studio */}
-          <article className='flex mt-16 gap-8 lg:flex-row flex-col'>
-            <section className=" bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
+          {/* <article className='flex mt-16 gap-8 lg:flex-row flex-col'> */}
+            {/* <section className=" bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
               <h2 className="sm:text-3xl text-2xl font-extrabold text-center text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2">
                 <span className="text-red-500 text-3xl">📍</span>
                 Lokasi Mahative Studio
@@ -125,10 +124,10 @@ export default async function Home() {
                 Jalan Kemantren, Bandungrejosari, Sukun, Kota Malang – Jawa Timur, Indonesia
               </p>
               <LokasiKantor />
-            </section>
+            </section> */}
 
             {/* GOOGLE MAPS: Lokasi Mahative Studio */}
-            <section className=" bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
+            {/* <section className=" bg-gradient-to-r from-blue-100 via-white to-blue-200 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl p-8 max-w-6xl w-full transition-all duration-500">
               <h2 className="sm:text-3xl text-2xl font-extrabold text-center text-gray-900 dark:text-white mb-4 flex items-center justify-center gap-2">
                 <span className="text-red-500 text-3xl">📍</span>
                 Lokasi KipaWorks
@@ -138,8 +137,8 @@ export default async function Home() {
                 Kec. Wagir, Kabupaten Malang, Jawa Timur 65158
               </p>
               <LokasiKantor2 />
-            </section>
-          </article>
+            </section> */}
+          {/* </article> */}
         </div>
 
         {/* FOOTER */}
