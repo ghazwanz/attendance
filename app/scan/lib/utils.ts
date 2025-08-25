@@ -38,7 +38,7 @@ export function parseTimeData(date: Date): ParsedTime {
         hours: date.getHours(),
         minutes: date.getMinutes(),
         totalMinutes: date.getHours() * 60 + date.getMinutes(),
-        dateString: date.toISOString().split('T')[0]
+        dateString: date.toLocaleDateString('sv')
     };
 }
 

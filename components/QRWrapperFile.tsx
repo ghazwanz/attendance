@@ -326,9 +326,10 @@ export default function QRWrapperFile({ className }: { className?: string }) {
             return;
         }
         // Validasi tanggal tidak boleh kemarin dan hingga >= mulai
-        const today = new Date();
-        const minDate = today.toISOString().split('T')[0];
-        if (izinStart < minDate) {
+        const today = await fetchExternalTime();
+        const {dateString,date} = parseTimeData(today);
+        console.log(dateString)
+        if (izinStart < dateString) {
             showToast({ type: 'error', message: 'Izin tidak bisa untuk hari kemarin.' });
             return;
         }
@@ -338,15 +339,14 @@ export default function QRWrapperFile({ className }: { className?: string }) {
         }
         try {
             const { user_id, name } = scanUserRef.current;
-            const now = new Date().toISOString();
             // Insert ke tabel permissions, field exit_time dan reentry_time
             const { error } = await supabase.from('permissions').insert({
                 user_id,
                 reason: izinReason,
-                created_at: now,
+                created_at: date.toISOString(),
                 exit_time: izinStart,
                 reentry_time: izinEnd,
-                date: izinStart,
+                date: dateString,
                 status: 'pending',
             });
             if (error) throw new Error('Gagal menyimpan izin');
@@ -463,14 +463,15 @@ export default function QRWrapperFile({ className }: { className?: string }) {
                                                     setShowIzinToHadirModal(false);
 
                                                     if (scanUserRef.current) {
-                                                        const today = new Date().toISOString().split("T")[0];
+                                                        const extToday = await fetchExternalTime()
+                                                        const {dateString} = parseTimeData(extToday);
 
                                                         // Hapus izin pending hari ini
                                                         await supabase
                                                             .from("permissions")
                                                             .delete()
                                                             .eq("user_id", scanUserRef.current.user_id)
-                                                            .eq("date", today)
+                                                            .eq("date", dateString)
                                                             .eq("status", "pending");
                                                     }
                                                     handleHadirSelection(); // lanjutkan absen hadir
@@ -512,7 +513,7 @@ export default function QRWrapperFile({ className }: { className?: string }) {
                             >
                                 🏁 Pulang
                             </button>
-                            <button
+                            {/* <button
                                 onClick={() => {
                                     if (!sudahIzinPulang) {
                                         setShowPulangModal(false);
@@ -525,12 +526,12 @@ export default function QRWrapperFile({ className }: { className?: string }) {
                                     }`}
                             >
                                 🚪 Izin Pulang Awal
-                            </button>
+                            </button> */}
                             <button
                                 onClick={() => {
                                     const besok = new Date();
                                     besok.setDate(besok.getDate() + 1);
-                                    const besokStr = besok.toISOString().split('T')[0];
+                                    const besokStr = besok.toLocaleDateString('sv');
                                     setIzinStart(besokStr);
                                     setIzinEnd(besokStr);
                                     setIsIzinPulang(false);
@@ -599,7 +600,8 @@ export default function QRWrapperFile({ className }: { className?: string }) {
                                         value={izinStart}
                                         min={(() => {
                                             const today = new Date();
-                                            return today.toISOString().split('T')[0];
+                                            console.log(today.toLocaleDateString('sv'))
+                                            return today.toLocaleDateString('sv');
                                         })()}
                                         onChange={e => setIzinStart(e.target.value)}
                                         className="w-full p-2 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg"
@@ -613,7 +615,7 @@ export default function QRWrapperFile({ className }: { className?: string }) {
                                         value={izinEnd}
                                         min={izinStart || (() => {
                                             const today = new Date();
-                                            return today.toISOString().split('T')[0];
+                                            return today.toLocaleDateString('sv');
                                         })()}
                                         onChange={e => setIzinEnd(e.target.value)}
                                         className="w-full p-2 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg"

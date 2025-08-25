@@ -53,7 +53,7 @@ export default function EditPermissionModal({
                     </select>
                     <label className="block mb-0 font-medium">Mulai Izin</label>
                     <input
-                        type="datetime-local"
+                        type="date"
                         name="exit_time"
                         value={form.exit_time||""}
                         onChange={onChange}
@@ -62,7 +62,7 @@ export default function EditPermissionModal({
                     />
                     <label className="block mb-0 font-medium">Waktu Masuk Kembali</label>
                     <input
-                        type="datetime-local"
+                        type="date"
                         name="reentry_time"
                         value={form.reentry_time||""}
                         onChange={onChange}

@@ -55,7 +55,6 @@ export const permissionActions = {
 
     try {
       const izinDate = new Date(form.exit_time);
-      izinDate.setHours(0, 0, 0, 0);
       const nextDay = new Date(izinDate);
       nextDay.setDate(izinDate.getDate() + 1);
 
@@ -63,8 +62,8 @@ export const permissionActions = {
         .from("permissions")
         .select("id")
         .eq("user_id", form.user_id)
-        .gte("exit_time", izinDate.toISOString())
-        .lt("exit_time", nextDay.toISOString());
+        .gte("exit_time", izinDate.toLocaleDateString('sv'))
+        .lt("exit_time", nextDay.toLocaleDateString('sv'));
 
       if (fetchError) {
         toast.error("❌ Gagal mengecek data izin sebelumnya.", {

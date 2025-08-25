@@ -96,7 +96,7 @@ export default function PermissionFormComponent({
                     <div>
                         <label className="block mb-1 font-medium">Mulai Izin</label>
                         <input
-                            type="datetime-local"
+                            type="date"
                             name="exit_time"
                             value={form.exit_time}
                             onChange={onChange}
@@ -107,7 +107,7 @@ export default function PermissionFormComponent({
                     <div>
                         <label className="block mb-1 font-medium">Waktu Masuk Kembali</label>
                         <input
-                            type="datetime-local"
+                            type="date"
                             name="reentry_time"
                             value={form.reentry_time}
                             onChange={onChange}
