@@ -85,7 +85,7 @@ export const permissionActions = {
 
       const { error } = await supabase
         .from("permissions")
-        .insert({ ...form, status: "pending" });
+        .insert({ ...form, status: "pending", date:new Date().toLocaleDateString('sv')});
 
       if (error) {
         toast.error("❌ Gagal menyimpan izin: " + error.message, {
