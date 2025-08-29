@@ -1,3 +1,4 @@
+import { differenceInHours, differenceInMinutes, setHours, setMinutes } from "date-fns";
 import { FetchExtResult, ParsedTime, TimeApiResponse } from "./types";
 
 export async function fetchExternalTime(): Promise<FetchExtResult> {
@@ -82,6 +83,16 @@ export async function getScheduleForDay(supabase: any, dayName: string) {
  */
 export function determineAttendanceStatus(currentMinutes: number, scheduleMinutes: number): string {
     return currentMinutes > scheduleMinutes ? "terlambat" : "hadir";
+}
+
+export function determineAttendanceStatusFNS(date:Date,scheduleHour:any): "terlambat"|"hadir" {
+    const nowDateSetMinutes = setMinutes(date,0)
+    const nowDateSetHours = setHours(nowDateSetMinutes,scheduleHour)
+    const minuteDiff = differenceInMinutes(date,nowDateSetHours)
+    console.log("Minute Diff: ",minuteDiff)
+    console.log('Date Schedules: ',nowDateSetHours.toLocaleTimeString('sv'))
+    console.log('Date Now: ',date.toLocaleTimeString('sv'))
+    return minuteDiff > 0 ? "terlambat" : "hadir";
 }
 
 /**

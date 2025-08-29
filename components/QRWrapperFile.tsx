@@ -241,7 +241,7 @@ export default function QRWrapperFile({ className }: { className?: string }) {
         setShowIzinForm(true);
         // Set default tanggal izin ke hari ini setiap buka form
         const today = new Date();
-        const todayStr = today.toISOString().split('T')[0];
+        const todayStr = today.toLocaleDateString('sv');
         setIzinStart(todayStr);
         setIzinEnd(todayStr);
     };

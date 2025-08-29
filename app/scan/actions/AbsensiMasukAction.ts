@@ -5,7 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { AttendanceUser, PromiseResult } from '../lib/types';
 import { 
     checkExistingAttendance, 
-    determineAttendanceStatus, 
+    // determineAttendanceStatus, 
+    determineAttendanceStatusFNS, 
     fetchExternalTime, 
     getScheduleForDay, 
     insertAttendanceRecord, 
@@ -13,6 +14,7 @@ import {
     parseTimeData 
 } from '../lib/utils';
 
+import { formatISO } from 'date-fns';
 
 export const handleAbsenHadir = async (
     user: AttendanceUser,
@@ -38,10 +40,7 @@ export const handleAbsenHadir = async (
         const schedule = await getScheduleForDay(supabase, currentTime.dayName);
 
         // Determine attendance status
-        const status = determineAttendanceStatus(
-            currentTime.totalMinutes,
-            schedule.totalMinutes
-        );
+        const status = determineAttendanceStatusFNS(externalTime.date,schedule.hours);
 
         // Log debug information
         logDebugInfo(currentTime, schedule, status);
@@ -65,7 +64,7 @@ export const handleAbsenHadir = async (
             supabase,
             user_id,
             currentTime.dateString,
-            currentTime.date.toISOString(),
+            formatISO(new Date()),
             status
         );
 

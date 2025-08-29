@@ -11,6 +11,7 @@ import getMessage from './actions/getMessage';
 import getPiket from './actions/getPiket';
 import ReminderModal from './components/ReminderModal';
 import { handlePulangAction } from './actions/AbsensiPulangAction';
+import { fetchExternalTime, parseTimeData } from './lib/utils';
 
 const showToast = ({ type, message }: { type: 'success' | 'error' | 'info' | 'warning'; message: string }) => {
   const baseStyle = {
@@ -106,13 +107,14 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
               name: userData.name,
             };
 
-            const today = new Date().toISOString().split("T")[0];
+            const todayExt = await fetchExternalTime()
+            const today = parseTimeData(todayExt.date)
 
             const { data: attendanceToday } = await supabase
               .from("attendances")
               .select("*")
               .eq("user_id", userData.id)
-              .eq("date", today)
+              .eq("date", today.dateString)
               .limit(1)
               .single();
 
@@ -123,7 +125,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
               .select("*")
               .eq("user_id", userData.id)
               .eq("status", "pending")
-              .eq("date", today) // ✅ Hanya ambil izin untuk hari ini
+              .eq("date", today.dateString) // ✅ Hanya ambil izin untuk hari ini
               .maybeSingle();
 
             if (attendanceToday) {
@@ -139,7 +141,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
                   .select("*")
                   .eq("user_id", userData.id)
                   .eq("status", "pending")
-                  .eq("date", today)
+                  .eq("date", today.dateString)
                   .not("exit_time", "is", null)
                   .is("reentry_time", null)
                   .maybeSingle();
@@ -258,7 +260,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
     setShowIzinForm(true);
     // Set default tanggal izin ke hari ini setiap buka form
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = today.toLocaleDateString("sv");
     setIzinStart(todayStr);
     setIzinEnd(todayStr);
   };
@@ -271,7 +273,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
     }
     // Validasi tanggal tidak boleh kemarin dan hingga >= mulai
     const today = new Date();
-    const minDate = today.toISOString().split('T')[0];
+    const minDate = today.toLocaleDateString("sv");
     if (izinStart < minDate) {
       showToast({ type: 'error', message: 'Izin tidak bisa untuk hari kemarin.' });
       return;
@@ -503,7 +505,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
               >
                 🏁 Pulang
               </button>
-              <button
+              {/* <button
                 onClick={() => {
                   if (!sudahIzinPulang) {
                     setShowPulangModal(false);
@@ -516,12 +518,12 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
                   }`}
               >
                 🚪 Izin Pulang Awal
-              </button>
+              </button> */}
               <button
                 onClick={() => {
                   const besok = new Date();
                   besok.setDate(besok.getDate() + 1);
-                  const besokStr = besok.toISOString().split('T')[0];
+                  const besokStr = besok.toLocaleDateString('sv');
                   setIzinStart(besokStr);
                   setIzinEnd(besokStr);
                   setIsIzinPulang(false);
@@ -604,7 +606,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
                     value={izinEnd}
                     min={izinStart || (() => {
                       const today = new Date();
-                      return today.toISOString().split('T')[0];
+                      return today.toLocaleDateString("sv");
                     })()}
                     onChange={e => setIzinEnd(e.target.value)}
                     className="w-full p-2 border border-teal-500 bg-white dark:bg-[#0f172a] text-gray-900 dark:text-white rounded-lg"
@@ -712,7 +714,7 @@ export default function QRScanner({ onScanSuccess, onScanError, isOutside }: QRS
                 onClick={() => {
                   const tomorrow = new Date();
                   tomorrow.setDate(tomorrow.getDate() + 1);
-                  const besokStr = tomorrow.toISOString().split("T")[0];
+                  const besokStr = tomorrow.toLocaleDateString("sv");
 
                   setShowChoiceBesokModal(false);
                   setIsIzinPulang(false);
