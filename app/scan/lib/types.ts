@@ -32,3 +32,10 @@ export interface ParsedTime {
     totalMinutes: number;
     dateString: string;
 }
+
+export interface FetchExtResult {
+    date:Date;
+    time:string;
+    hour:number;
+    minute:number;
+}

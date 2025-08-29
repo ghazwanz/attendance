@@ -32,7 +32,7 @@ export const handleAbsenHadir = async (
 
         // Get current time from external API
         const externalTime = await fetchExternalTime();
-        const currentTime = parseTimeData(externalTime);
+        const currentTime = parseTimeData(externalTime.date);
 
         // Get schedule for today
         const schedule = await getScheduleForDay(supabase, currentTime.dayName);

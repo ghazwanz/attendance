@@ -1,6 +1,6 @@
-import { ParsedTime, TimeApiResponse } from "./types";
+import { FetchExtResult, ParsedTime, TimeApiResponse } from "./types";
 
-export async function fetchExternalTime(): Promise<Date> {
+export async function fetchExternalTime(): Promise<FetchExtResult> {
     try {
         // Using WorldTimeAPI for Jakarta timezone
         const response = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Asia/Jakarta', {
@@ -16,12 +16,24 @@ export async function fetchExternalTime(): Promise<Date> {
         }
 
         const data: TimeApiResponse = await response.json();
-        return new Date(data.dateTime);
+        const result = {
+            date:new Date(data.dateTime),
+            time: data.time,
+            hour: data.hour,
+            minute: data.minute,
+        }
+        return result;
     } catch (error) {
-        console.error('Failed to fetch external time:', error);
+        console.log('Failed to fetch external time:', error);
         // Fallback to server time if API fails
         console.warn('Falling back to server time');
-        return new Date();
+        const result = {
+            date:new Date(),
+            time: new Date().toLocaleString('sv').split(" ")[1].slice(0,5),
+            hour: new Date().getHours(),
+            minute: new Date().getMinutes(),
+        }
+        return result;
     }
 }
 

@@ -70,7 +70,7 @@ export default function QRWrapperFile({ className }: { className?: string }) {
             scanUserRef.current = { user_id: data.user_id, name: userData.name };
 
             const todayExt = await fetchExternalTime()
-            const today = parseTimeData(todayExt)
+            const today = parseTimeData(todayExt.date)
             console.log(today, todayExt)
 
             // 🔍 cek absen hari ini
@@ -327,7 +327,7 @@ export default function QRWrapperFile({ className }: { className?: string }) {
         }
         // Validasi tanggal tidak boleh kemarin dan hingga >= mulai
         const today = await fetchExternalTime();
-        const {dateString,date} = parseTimeData(today);
+        const {dateString,date} = parseTimeData(today.date);
         console.log(dateString)
         if (izinStart < dateString) {
             showToast({ type: 'error', message: 'Izin tidak bisa untuk hari kemarin.' });
@@ -464,7 +464,7 @@ export default function QRWrapperFile({ className }: { className?: string }) {
 
                                                     if (scanUserRef.current) {
                                                         const extToday = await fetchExternalTime()
-                                                        const {dateString} = parseTimeData(extToday);
+                                                        const {dateString} = parseTimeData(extToday.date);
 
                                                         // Hapus izin pending hari ini
                                                         await supabase

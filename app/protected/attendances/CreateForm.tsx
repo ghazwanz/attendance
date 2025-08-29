@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 // import { useUserLocationEffect } from "@/lib/utils/getUserLocation";
 import { useLocationStores } from "@/lib/stores/useLocationStores";
 import { showToast } from "@/lib/utils/toast";
+import { fetchExternalTime, parseTimeData } from "@/app/scan/lib/utils";
 
 export default function CreateForm({
   isOutside,
@@ -15,6 +16,7 @@ export default function CreateForm({
   userRole: string;
 }) {
   const supabase = createClient();
+  const today = new Date().toISOString().split("T")[0];
 
   const [form, setForm] = useState({ status: "HADIR" });
   const [attendanceId, setAttendanceId] = useState<number | null>(null);
@@ -24,9 +26,8 @@ export default function CreateForm({
   const [showError, setShowError] = useState(false);
   const [showIzinModal, setShowIzinModal] = useState(false);
   const [izinReason, setIzinReason] = useState("");
-  
+  const [extDate, setExtDate] = useState(today)
 
-  const today = new Date().toISOString().split("T")[0];
   // const allowedIP = ["125.166.12.91", "125.166.1.71"]; // Ganti sesuai IP kantor
   // const isOutside = useLocationStores(state=>state.isOutside)
 
@@ -34,6 +35,10 @@ export default function CreateForm({
 
   useEffect(() => {
     const init = async () => {
+      const extToday = await fetchExternalTime()
+      const getToday = parseTimeData(extToday.date)
+      setExtDate(getToday.dateString)
+      
       const {
         data: { user },
       } = await supabase.auth.getUser();
