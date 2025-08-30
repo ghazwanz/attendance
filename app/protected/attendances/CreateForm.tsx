@@ -26,7 +26,7 @@ export default function CreateForm({
   const [showError, setShowError] = useState(false);
   const [showIzinModal, setShowIzinModal] = useState(false);
   const [izinReason, setIzinReason] = useState("");
-  const [extDate, setExtDate] = useState(today)
+  const [isLoading, setIsLoading] = useState(true)
 
   // const allowedIP = ["125.166.12.91", "125.166.1.71"]; // Ganti sesuai IP kantor
   // const isOutside = useLocationStores(state=>state.isOutside)
@@ -35,10 +35,6 @@ export default function CreateForm({
 
   useEffect(() => {
     const init = async () => {
-      const extToday = await fetchExternalTime()
-      const getToday = parseTimeData(extToday.date)
-      setExtDate(getToday.dateString)
-      
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -59,6 +55,7 @@ export default function CreateForm({
         setForm({ status: data.status || "HADIR" });
         setIsFinished(true);
       }
+      setIsLoading(false)
     };
 
     init();
@@ -183,12 +180,11 @@ export default function CreateForm({
             Terima kasih! Anda sudah mengisi absensi hari ini.
           </p>
         </div>
-      ) : (
+      ) : isLoading?<p>Memuat... </p>: (
         <div className="space-y-5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 p-6 rounded-xl shadow-md transition-all">
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
             📥 Absensi Masuk
           </h2>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               📌 Pilih Status Kehadiran

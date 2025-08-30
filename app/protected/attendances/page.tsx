@@ -151,31 +151,16 @@ export default function Page() {
     // ====== Logic khusus user non-admin (cek status & prompt checkout) ======
     if (role !== "admin" && userId) {
       const tStart = new Date();
-      tStart.setHours(0, 0, 0, 0);
-      const tEnd = new Date();
-      tEnd.setHours(23, 59, 59, 999);
 
       const { data: todayRows } = await supabase
         .from("attendances")
         .select("*")
         .eq("user_id", userId)
-        .gte("date", tStart.toISOString())
-        .lte("date", tEnd.toISOString());
+        .eq('date',tStart.toLocaleDateString('sv'))
 
       const now = new Date();
       const batasJam16 = new Date();
       batasJam16.setHours(16, 0, 0, 0); // ✅ fix: memang 16:00
-
-      const belumCheckIn = (todayRows || []).find(
-        (item: any) => !item.check_in && item.status === "HADIR"
-      );
-
-      if (belumCheckIn && now >= batasJam16) {
-        await supabase
-          .from("attendances")
-          .update({ status: "TANPA KETERANGAN" })
-          .eq("id", belumCheckIn.id);
-      }
 
       const batasPulang = new Date();
       batasPulang.setHours(16, 0, 0, 0);
@@ -572,7 +557,7 @@ export default function Page() {
                                   ✏️ Edit
                                 </button>
                               ) : (
-                                item.date?.split("T")[0] === new Date().toISOString().split("T")[0] && (
+                                item.date === new Date().toLocaleDateString('sv') && (
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setSelected(item); }}
                                     className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold shadow"
