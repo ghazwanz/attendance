@@ -1,5 +1,6 @@
-import { differenceInHours, differenceInMinutes, setHours, setMinutes } from "date-fns";
+import { differenceInHours, differenceInMinutes, parseISO, setHours, setMinutes } from "date-fns";
 import { FetchExtResult, ParsedTime, TimeApiResponse } from "./types";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export async function fetchExternalTime(): Promise<FetchExtResult> {
     try {
@@ -58,7 +59,7 @@ export function parseTimeData(date: Date): ParsedTime {
 /**
  * Gets schedule data for the given day
  */
-export async function getScheduleForDay(supabase: any, dayName: string) {
+export async function getScheduleForDay(supabase: SupabaseClient<any, "public", any>, dayName: string) {
     const { data: scheduleData, error: scheduleError } = await supabase
         .from('schedules')
         .select('start_time, day')
@@ -98,27 +99,30 @@ export function determineAttendanceStatusFNS(date:Date,scheduleHour:any): "terla
 /**
  * Checks if user has already checked in today
  */
-export async function checkExistingAttendance(supabase: any, userId: string, dateString: string) {
+export async function checkExistingAttendance(supabase: SupabaseClient<any, "public", any>, userId: string, dateString: string) {
     const { data: existingAttendance, error } = await supabase
         .from('attendances')
-        .select('id')
+        .select('id, created_at')
         .eq('user_id', userId)
         .eq('date', dateString)
         .maybeSingle(); // Use maybeSingle instead of single to avoid error when no record
 
+        console.log(existingAttendance?.created_at)
     // If there's data, user has already checked in
-    return !!existingAttendance;
+    return {
+        exist:!!existingAttendance,
+        clockInTime:existingAttendance?.created_at?parseISO(existingAttendance?.created_at):null
+    };
 }
 
 /**
  * Inserts attendance record
  */
 export async function insertAttendanceRecord(
-    supabase: any,
+    supabase: SupabaseClient<any, "public", any>,
     userId: string,
     dateString: string,
     checkInTime: string,
-    status: string
 ) {
     const { error } = await supabase
         .from('attendances')
@@ -126,8 +130,32 @@ export async function insertAttendanceRecord(
             user_id: userId,
             date: dateString,
             check_in: checkInTime,
-            status: status.toUpperCase()
+            status: "HADIR"
         });
+
+    if (error) {
+        console.error('Database insert error:', error);
+        throw new Error('Gagal menyimpan data absensi');
+    }
+}
+
+export const updateClockInStatus = async (
+    supabase:SupabaseClient<any, "public", any>,
+    userId: string,
+    dateString: string,
+    scheduleHour:any
+) => {
+    const isExist = await checkExistingAttendance(supabase,userId,dateString)
+    if (!isExist) throw new Error('Data Absensi tidak ditemukan');
+    if (!isExist.clockInTime) throw new Error('Gagal menyimpan data absensi')
+
+    const status = determineAttendanceStatusFNS(isExist.clockInTime,scheduleHour)
+    if(status === "hadir") return
+    const { error } = await supabase
+    .from("attendances")
+    .update({ status:status.toUpperCase() })
+    .eq('user_id',userId)
+    .eq('date',dateString)
 
     if (error) {
         console.error('Database insert error:', error);

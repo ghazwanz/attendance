@@ -11,7 +11,8 @@ import {
     getScheduleForDay, 
     insertAttendanceRecord, 
     logDebugInfo, 
-    parseTimeData 
+    parseTimeData, 
+    updateClockInStatus
 } from '../lib/utils';
 
 import { formatISO } from 'date-fns';
@@ -43,7 +44,7 @@ export const handleAbsenHadir = async (
         const status = determineAttendanceStatusFNS(externalTime.date,schedule.hours);
 
         // Log debug information
-        logDebugInfo(currentTime, schedule, status);
+        // logDebugInfo(currentTime, schedule, status);
 
         // Check if user has already checked in today
         const hasCheckedIn = await checkExistingAttendance(
@@ -52,7 +53,7 @@ export const handleAbsenHadir = async (
             currentTime.dateString
         );
 
-        if (hasCheckedIn) {
+        if (hasCheckedIn.exist) {
             return {
                 status: "error",
                 message: "Anda sudah melakukan absensi masuk hari ini"
@@ -65,8 +66,14 @@ export const handleAbsenHadir = async (
             user_id,
             currentTime.dateString,
             formatISO(new Date()),
-            status
         );
+
+        await updateClockInStatus(
+            supabase,
+            user_id,
+            currentTime.dateString,
+            schedule.hours
+        )
 
         // Revalidate the scan page
         revalidatePath('/', "layout");

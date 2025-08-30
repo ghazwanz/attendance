@@ -16,7 +16,7 @@ export default function CreateForm({
   userRole: string;
 }) {
   const supabase = createClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString('sv');
 
   const [form, setForm] = useState({ status: "HADIR" });
   const [attendanceId, setAttendanceId] = useState<number | null>(null);
@@ -67,6 +67,12 @@ export default function CreateForm({
   const handleCheckIn = async (status: string, notes: string | null = null) => {
     try {
       if (isOutside) return showToast({type:"error", message:"Anda berada di luar area kantor"})
+      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return showToast({type:"info",message:"User tidak valid"})
       const now = new Date();
       const nowISO = now.toISOString();
 
@@ -82,16 +88,16 @@ export default function CreateForm({
 
       const { error, data } = await supabase
         .from("attendances")
-        .insert([
+        .insert(
           {
-            user_id: userId,
+            user_id: user.id,
             date: today,
             check_in: status === "IZIN" ? null : nowISO,
             check_out: null,
             notes,
             status: finalStatus,
           },
-        ])
+        )
         .select()
         .single();
 
