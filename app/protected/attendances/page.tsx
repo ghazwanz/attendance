@@ -107,6 +107,8 @@ export default function Page() {
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id || null;
 
+    if(userData.user?.user_metadata.role === 'admin') setSelectedFilter("today")
+
     const { data: userInfo } = await supabase
       .from("users")
       .select("role")
@@ -231,10 +233,10 @@ export default function Page() {
               onChange={(e) => setSelectedFilter(e.target.value)}
               className="px-4 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">📅 Semua Hari</option>
               <option value="today">📆 Hari Ini</option>
               <option value="yesterday">📆 Kemarin</option>
               <option value="last7days">📆 7 Hari Terakhir</option>
+              <option value="all">📅 Semua Hari</option>
             </select>
 
             {/* Search */}
